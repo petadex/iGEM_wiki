@@ -2,19 +2,19 @@ import React from "react"
 import styled from "styled-components"
 import WikiLayout from "../components/layout.js"
 
-const HomePage = () => {
+const AttributionsPage = () => {
   return (
-    <WikiLayout pageTitle="Home">
+    <WikiLayout pageTitle="Attributions">
       <Placeholder>
-        <p>Content for <strong>Home</strong> goes here.</p>
+        <p>✏️ Content for <strong>Attributions</strong> goes here.</p>
       </Placeholder>
     </WikiLayout>
   )
 }
 
-export default HomePage
+export default AttributionsPage
 
-export const Head = () => <title>Home — iGEM Toronto 2026</title>
+export const Head = () => <title>Attributions — iGEM Toronto 2026</title>
 
 const Placeholder = styled.div`
   border: 1px dashed var(--color-border);

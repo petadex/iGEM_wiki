@@ -2,19 +2,20 @@ import React from "react"
 import styled from "styled-components"
 import WikiLayout from "../components/layout.js"
 
-const HomePage = () => {
+
+const TeamPage = () => {
   return (
-    <WikiLayout pageTitle="Home">
+    <WikiLayout pageTitle="Team">
       <Placeholder>
-        <p>Content for <strong>Home</strong> goes here.</p>
+        <p>Content for <strong>Team</strong> goes here.</p>
       </Placeholder>
     </WikiLayout>
   )
 }
 
-export default HomePage
+export default TeamPage
 
-export const Head = () => <title>Home — iGEM Toronto 2026</title>
+export const Head = () => <title>Team — iGEM Toronto 2026</title>
 
 const Placeholder = styled.div`
   border: 1px dashed var(--color-border);

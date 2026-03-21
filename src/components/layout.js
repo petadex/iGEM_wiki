@@ -1,51 +1,83 @@
-/**
- * Layout component that queries for data
- * with Gatsby's useStaticQuery component
- *
- * See: https://www.gatsbyjs.com/docs/how-to/querying-data/use-static-query/
- */
+import React from "react"
+import styled from "styled-components"
+import { GlobalStyle } from "../styles/globalStyles.js"
 
-import * as React from "react"
-import { useStaticQuery, graphql } from "gatsby"
 
-import Header from "./header"
-import "./layout.css"
-
-const Layout = ({ children }) => {
-  const data = useStaticQuery(graphql`
-    query SiteTitleQuery {
-      site {
-        siteMetadata {
-          title
-        }
-      }
-    }
-  `)
-
+const WikiLayout = ({ children, pageTitle }) => {
   return (
     <>
-      <Header siteTitle={data.site.siteMetadata?.title || `Title`} />
-      <div
-        style={{
-          margin: `0 auto`,
-          maxWidth: `var(--size-content)`,
-          padding: `var(--size-gutter)`,
-        }}
-      >
-        <main>{children}</main>
-        <footer
-          style={{
-            marginTop: `var(--space-5)`,
-            fontSize: `var(--font-sm)`,
-          }}
-        >
-          © {new Date().getFullYear()} &middot; Built with
-          {` `}
-          <a href="https://www.gatsbyjs.com">Gatsby</a>
-        </footer>
-      </div>
+      <GlobalStyle />
+
+      <SiteWrapper>
+
+        <Main>
+          {pageTitle && (
+            <PageHeader>
+              <PageTitle>{pageTitle}</PageTitle>
+              <Divider />
+            </PageHeader>
+          )}
+          {children}
+        </Main>
+
+        <Footer>
+          <FooterInner>
+            <span>iGEM Toronto 2026</span>
+            <span>PETadex</span>
+          </FooterInner>
+        </Footer>
+
+      </SiteWrapper>
     </>
   )
 }
 
-export default Layout
+export default WikiLayout
+
+/* ── Styled Components ── */
+
+const SiteWrapper = styled.div`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`
+
+const Main = styled.main`
+  flex: 1;
+  max-width: var(--max-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--page-padding);
+`
+
+const PageHeader = styled.div`
+  margin-bottom: var(--space-xl);
+`
+
+const PageTitle = styled.h1`
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
+`
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1px solid var(--color-accent);
+  width: 4rem;
+  margin: 0;
+`
+
+const Footer = styled.footer`
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-lg) var(--page-padding);
+`
+
+const FooterInner = styled.div`
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+`
