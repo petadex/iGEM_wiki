@@ -1,7 +1,12 @@
 import React from "react"
+import { Link } from "gatsby"
 import styled from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
 
+const nav = [
+  { to: "/", label: "Home" },
+  { to: "/team/", label: "Team" },
+]
 
 const WikiLayout = ({ children, pageTitle }) => {
   return (
@@ -9,6 +14,16 @@ const WikiLayout = ({ children, pageTitle }) => {
       <GlobalStyle />
 
       <SiteWrapper>
+
+        <TopBar>
+          <Nav aria-label="Wiki sections">
+            {nav.map(({ to, label }) => (
+              <NavLink key={to} to={to}>
+                {label}
+              </NavLink>
+            ))}
+          </Nav>
+        </TopBar>
 
         <Main>
           {pageTitle && (
@@ -40,6 +55,33 @@ const SiteWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+`
+
+const TopBar = styled.div`
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+`
+
+const Nav = styled.nav`
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-md) var(--page-padding);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-lg);
+  font-size: 0.9rem;
+`
+
+const NavLink = styled(Link)`
+  color: var(--color-muted);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 `
 
 const Main = styled.main`
