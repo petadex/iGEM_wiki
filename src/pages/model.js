@@ -3,16 +3,16 @@ import styled from "styled-components"
 import WikiLayout from "../components/layout.js"
 import Placeholder from "../components/placeholder-style.js"
 
-const SafetyPage = () => {
+const ModelPage = () => {
   return (
-    <WikiLayout pageTitle="Safety">
+    <WikiLayout pageTitle="Model">
       <Placeholder>
-        <p>Content for <strong>Safety</strong> goes here.</p>
+        <p>✏️ Content for <strong>Model</strong> goes here.</p>
       </Placeholder>
     </WikiLayout>
   )
 }
 
-export default SafetyPage
+export default ModelPage
 
-export const Head = () => <title>Safety — iGEM Toronto 2026</title>
+export const Head = () => <title>Model — iGEM Toronto 2026</title>

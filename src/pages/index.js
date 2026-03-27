@@ -1,6 +1,7 @@
 import React from "react"
 import styled from "styled-components"
 import WikiLayout from "../components/layout.js"
+import Placeholder from "../components/placeholder-style.js"
 
 const HomePage = () => {
   return (
@@ -15,16 +16,3 @@ const HomePage = () => {
 export default HomePage
 
 export const Head = () => <title>Home — iGEM Toronto 2026</title>
-
-const Placeholder = styled.div`
-  border: 1px dashed var(--color-border);
-  border-radius: 4px;
-  padding: var(--space-xl);
-  color: var(--color-muted);
-  text-align: center;
-  font-size: 1.1rem;
-
-  strong {
-    color: var(--color-accent);
-  }
-`
