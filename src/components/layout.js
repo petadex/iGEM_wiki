@@ -1,6 +1,7 @@
 import React from "react"
 import styled from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
+import Header from "../components/header.js"
 
 
 const WikiLayout = ({ children, pageTitle }) => {
@@ -9,7 +10,10 @@ const WikiLayout = ({ children, pageTitle }) => {
       <GlobalStyle />
 
       <SiteWrapper>
-
+        <Header
+          siteTitle="iGEM Toronto 2026"
+          menuLinks={navLinks}
+        />
         <Main>
           {pageTitle && (
             <PageHeader>
@@ -81,3 +85,20 @@ const FooterInner = styled.div`
   color: var(--color-muted);
   font-size: 0.875rem;
 `
+
+const navLinks = [
+    { name: "Description",      link: "/description" },
+    { name: "Wet Lab",          link: "/wet-lab" },
+    { name: "Model",            link: "/model" },
+    { name: "Software",         link: "/software" },
+    { name: "Hardware",         link: "/hardware" },
+    { name: "Engineering",      link: "/engineering" },
+    { name: "Human Practices",  link: "/human-practices" },
+    { name: "Entrepreneurship", link: "/entrepreneurship" },
+    { name: "Team",             link: "/team" },
+    { name: "Attributions",     link: "/attributions" },
+    { name: "Contribution",     link: "/contribution" },
+    { name: "Finance",          link: "/finance" },
+    { name: "Outreach",         link: "/outreach" },
+    { name: "Web",              link: "/web" },
+]
