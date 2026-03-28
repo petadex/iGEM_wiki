@@ -5,7 +5,7 @@ import Placeholder from "../components/placeholder-style.js"
 
 const EntrepreneurshipPage = () => {
   return (
-    <WikiLayout pageTitle="Human Practices">
+    <WikiLayout pageTitle="Entrepreneurship">
       <Placeholder>
         <p>✏️ Content for <strong>Entrepreneurship</strong> goes here.</p>
       </Placeholder>

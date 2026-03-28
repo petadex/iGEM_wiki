@@ -87,18 +87,40 @@ const FooterInner = styled.div`
 `
 
 const navLinks = [
-    { name: "Description",      link: "/description" },
-    { name: "Wet Lab",          link: "/wet-lab" },
-    { name: "Model",            link: "/model" },
-    { name: "Software",         link: "/software" },
-    { name: "Hardware",         link: "/hardware" },
-    { name: "Engineering",      link: "/engineering" },
-    { name: "Human Practices",  link: "/human-practices" },
-    { name: "Entrepreneurship", link: "/entrepreneurship" },
-    { name: "Team",             link: "/team" },
-    { name: "Attributions",     link: "/attributions" },
-    { name: "Contribution",     link: "/contribution" },
-    { name: "Finance",          link: "/finance" },
-    { name: "Outreach",         link: "/outreach" },
-    { name: "Web",              link: "/web" },
+    {
+      name: "Project",
+      subLinks: [
+        { name: "Description",      link: "/description" },
+        { name: "Applications",     link: "/applications" },
+        { name: "Wet Lab",          link: "/wet-lab" },
+        { name: "Model",            link: "/model" },
+        { name: "Software",         link: "/software" },
+        { name: "Hardware",         link: "/hardware" },
+        { name: "Engineering",      link: "/engineering" },
+      ],
+    },
+    {
+      name: "Support",
+      subLinks: [
+        { name: "Human Practices",  link: "/human-practices" },
+        { name: "Entrepreneurship", link: "/entrepreneurship" },
+      ],
+    },
+    {
+      name: "Team",
+      subLinks: [
+        { name: "Team",             link: "/team" },
+        { name: "Attributions",     link: "/attributions" },
+        { name: "Contribution",     link: "/contribution" },
+      ],
+    },
+    {
+      name: "Other",
+      subLinks: [
+        { name: "Finance",          link: "/finance" },
+        { name: "Outreach",         link: "/outreach" },
+        { name: "Web",              link: "/web" },
+      ],
+    },
+    
 ]
