@@ -1,0 +1,3 @@
+Name,role,description,imageSrc,linkedIn,email,website,photo
+Aayush Mengane,WetHard,"Placeholder bio commas in text must stay inside quotes like this, ..",/images/mapleleaf.jpeg,https://www.linkedin.com/in/aayush-mengane/,,https://example.org,
+Another Person,Human Practices Lead,"Second card. Replace image paths with /team/photos/your-file.jpg once assets live in static/team/photos/.",,,person@utoronto.ca,,

@@ -1,7 +1,6 @@
 import React from "react"
 import styled from "styled-components"
 import WikiLayout from "../components/layout.js"
-import Placeholder from "../components/placeholder-style.js"
 
 const SafetyPage = () => {
   return (
