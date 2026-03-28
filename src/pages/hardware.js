@@ -3,16 +3,16 @@ import styled from "styled-components"
 import WikiLayout from "../components/layout.js"
 import Placeholder from "../components/placeholder-style.js"
 
-const DryLabPage = () => {
+const HardwarePage = () => {
   return (
-    <WikiLayout pageTitle="Dry Lab">
+    <WikiLayout pageTitle="Hardware">
       <Placeholder>
-        <p>✏️ Content for <strong>Dry Lab</strong> goes here.</p>
+        <p>✏️ Content for <strong>Hardware</strong> goes here.</p>
       </Placeholder>
     </WikiLayout>
   )
 }
 
-export default DryLabPage
+export default HardwarePage
 
-export const Head = () => <title>Dry Lab — iGEM Toronto 2026</title>
+export const Head = () => <title>Hardware — iGEM Toronto 2026</title>

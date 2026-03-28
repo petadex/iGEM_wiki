@@ -2,6 +2,7 @@ import React from "react"
 import styled from "styled-components"
 import { Link } from "gatsby"
 import WikiLayout from "../components/layout.js"
+import Placeholder from "../components/placeholder-style.js"
 
 const HomePage = () => (
   <WikiLayout>

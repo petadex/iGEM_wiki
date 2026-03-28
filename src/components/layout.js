@@ -2,6 +2,7 @@ import React from "react"
 import { Link } from "gatsby"
 import styled from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
+import Header from "../components/header.js"
 import { SponsorCarousel } from "./SponsorCarousel.js"
 
 const nav = [
@@ -50,6 +51,10 @@ const WikiLayout = ({ children, pageTitle, sectionLabel }) => {
       <GlobalStyle />
 
       <SiteWrapper>
+        <Header
+          siteTitle="iGEM Toronto 2026"
+          menuLinks={navLinks}
+        />
 
         <TopBar>
           <NavInner>
@@ -388,6 +393,47 @@ const FooterConnect = styled.nav`
 
 const ConnectLink = styled.a`
   color: var(--color-muted);
+  font-size: 0.875rem;
+`
+
+const navLinks = [
+    {
+      name: "Project",
+      subLinks: [
+        { name: "Description",      link: "/description" },
+        { name: "Applications",     link: "/applications" },
+        { name: "Wet Lab",          link: "/wet-lab" },
+        { name: "Model",            link: "/model" },
+        { name: "Software",         link: "/software" },
+        { name: "Hardware",         link: "/hardware" },
+        { name: "Engineering",      link: "/engineering" },
+      ],
+    },
+    {
+      name: "Support",
+      subLinks: [
+        { name: "Human Practices",  link: "/human-practices" },
+        { name: "Entrepreneurship", link: "/entrepreneurship" },
+      ],
+    },
+    {
+      name: "Team",
+      subLinks: [
+        { name: "Team",             link: "/team" },
+        { name: "Attributions",     link: "/attributions" },
+        { name: "Contribution",     link: "/contribution" },
+      ],
+    },
+    {
+      name: "Other",
+      subLinks: [
+        { name: "Finance",          link: "/finance" },
+        { name: "Outreach",         link: "/outreach" },
+        { name: "Web",              link: "/web" },
+      ],
+    },
+    
+]
   text-decoration: none;
   border-bottom: 1px solid transparent;
   padding-bottom: 0.125rem;
