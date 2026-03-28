@@ -10,5 +10,13 @@ module.exports = {
   },
   plugins: [
     `gatsby-plugin-styled-components`,
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `team`,
+        path: `${__dirname}/src/data/team`,
+      },
+    },
+    `gatsby-transformer-csv`,
   ],
 }

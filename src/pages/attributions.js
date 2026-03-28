@@ -6,7 +6,7 @@ const AttributionsPage = () => {
   return (
     <WikiLayout pageTitle="Attributions">
       <Placeholder>
-        <p>✏️ Content for <strong>Attributions</strong> goes here.</p>
+        <p>Content for <strong>Attributions</strong> goes here.</p>
       </Placeholder>
     </WikiLayout>
   )
