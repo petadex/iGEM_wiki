@@ -8,11 +8,10 @@ import { WikiTopBar } from "./WikiTopBar.js"
  * (avoids webpack + long filenames with spaces, and respects pathPrefix via withPrefix).
  */
 const ASSETS = {
-  back: withPrefix("/wiki-mockup/wiki-front-back.jpg"),
-  front: withPrefix("/wiki-mockup/wiki-front-front.png"),
-  logo: withPrefix("/wiki-mockup/wiki-front-logo.png"),
+  background: withPrefix("/wiki-mockup/wiki-front-background.png"),
+  blur: withPrefix("/wiki-mockup/wiki-front-blur.png"),
   bottle: withPrefix("/wiki-mockup/wiki-front-bottle.png"),
-  water: withPrefix("/wiki-mockup/wiki-front-water.png"),
+  title: withPrefix("/wiki-mockup/wiki-front-title.png"),
 }
 
 /** Overlays above the in-flow back plate (water on top). */
@@ -27,9 +26,9 @@ const Z = {
  * Fraction of the bottle layer height: positive `translateY` moves the bottle layer down
  * (toward the waterfall base / yellow figure). Increase if it still sits too high.
  */
-const BOTTLE_SHIFT_FRAC = -0.25
+const BOTTLE_SHIFT_FRAC = -0.1
 
-/** Pixels scroll must move back above the captured TP1 scrollY before bottle unpins. */
+/** Pixels scroll must move back above the captured touchpoint before the bottle unpins. */
 const BOTTLE_PIN_SCROLL_UP_LEAVE = 40
 
 /** FLIP duration (ms) for bottle pick-up / put-down when toggling sticky. */
@@ -204,19 +203,18 @@ export function HomeScrollPrototype() {
     <WikiFrontRoot>
       <ScrollStack ref={stackRef}>
         <CompositionRoot>
-          <FlowSizer>
-            <RailImg src={ASSETS.back} alt="Wiki front — background scenery" />
-          </FlowSizer>
-          <OverlayStack aria-hidden>
-            <OverlaySlice $z={Z.front}>
-              <RailImg src={ASSETS.front} alt="" />
-            </OverlaySlice>
-            <OverlaySlice $z={Z.logo}>
+          <BlurFill aria-hidden>
+            <BlurImg src={ASSETS.blur} alt="background blur" />
+          </BlurFill>
+
+          <ArtRail>
+            <RailImg src={ASSETS.background} alt="front-page illustration - background scenery" />
+            <TitleLayer aria-hidden>
               <LogoFloatWrap>
-                <RailImg src={ASSETS.logo} alt="PETABITE" />
+                <RailImg src={ASSETS.title} alt="PETABITE" />
               </LogoFloatWrap>
-            </OverlaySlice>
-            <OverlaySlice $z={Z.bottle}>
+            </TitleLayer>
+            <BottleLayer aria-hidden>
               <BottlePinSpot ref={bottleTouchRef} $touchPinned={bottleTouchPinned}>
                 <BottleFlipSurface ref={bottleFlipRef}>
                   <BottleStickyRock $active={bottleTouchPinned}>
@@ -228,11 +226,11 @@ export function HomeScrollPrototype() {
                   </BottleStickyRock>
                 </BottleFlipSurface>
               </BottlePinSpot>
-            </OverlaySlice>
+            </BottleLayer>
             <OverlaySlice $z={Z.water}>
               <RailImg src={ASSETS.water} alt="" />
             </OverlaySlice>
-          </OverlayStack>
+          </ArtRail>
         </CompositionRoot>
 
         <HomeNavMount $pinned={navPinned}>
@@ -258,6 +256,18 @@ const ScrollStack = styled.div`
   min-width: 0;
 `
 
+
+const OverlaySlice = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: ${({ $z }) => $z};
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+`
+
+
 /** Absolute at rest; `fixed` while scrolling through mockup so nav stays reachable. */
 const HomeNavMount = styled.div`
   position: ${({ $pinned }) => ($pinned ? "fixed" : "absolute")};
@@ -271,30 +281,31 @@ const CompositionRoot = styled.div`
   position: relative;
   width: 100%;
   min-width: 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
 `
 
-const FlowSizer = styled.div`
-  width: 100%;
-  pointer-events: none;
-`
-
-const OverlayStack = styled.div`
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-`
-
-const OverlaySlice = styled.div`
+const BlurFill = styled.div`
   position: absolute;
   inset: 0;
-  z-index: ${({ $z }) => $z};
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   pointer-events: none;
+`
+
+const BlurImg = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+`
+
+const ArtRail = styled.div`
+  position: relative;
+  z-index: 1;
+  width: min(620px, 100vw);
+  flex: 0 1 620px;
 `
 
 const logoIdleFloat = keyframes`
@@ -317,7 +328,6 @@ const bottleIdleFloat = keyframes`
   }
 `
 
-/** Very slow, subtle sway only while the bottle is in touch “sticky” (fixed) mode. */
 const bottleStickyRock = keyframes`
   0%,
   100% {
@@ -328,7 +338,24 @@ const bottleStickyRock = keyframes`
   }
 `
 
-/** Subtle idle rotation while bottle is pinned (fixed); off during normal scroll. */
+
+const TitleLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+`
+
+const BottleLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+`
+
+
+
+
 const BottleStickyRock = styled.div`
   width: 100%;
   transform-origin: 50% 42%;
@@ -382,6 +409,7 @@ const BottlePinSpot = styled.div`
 `
 
 /** Nudges the bottle PNG down (see `BOTTLE_SHIFT_FRAC`); inner wrap adds idle float. */
+
 const BottleShiftWrap = styled.div`
   width: 100%;
   transform: translateY(${BOTTLE_SHIFT_FRAC * 100}%);
