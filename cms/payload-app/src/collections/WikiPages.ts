@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { wikiContentBlocks } from '../blocks/wikiContentBlocks'
 import { triggerWikiExportAfterChange, triggerWikiExportAfterDelete } from '../hooks/triggerWikiExport'
 
 export const WikiPages: CollectionConfig = {
@@ -106,98 +107,7 @@ export const WikiPages: CollectionConfig = {
                 singular: 'Page Block',
                 plural: 'Page Blocks',
               },
-              blocks: [
-                {
-                  slug: 'richText',
-                  labels: {
-                    singular: 'Rich Text',
-                    plural: 'Rich Text',
-                  },
-                  fields: [
-                    {
-                      name: 'body',
-                      type: 'richText',
-                      required: true,
-                    },
-                  ],
-                },
-                {
-                  slug: 'callout',
-                  labels: {
-                    singular: 'Callout',
-                    plural: 'Callouts',
-                  },
-                  fields: [
-                    {
-                      name: 'title',
-                      type: 'text',
-                    },
-                    {
-                      name: 'tone',
-                      type: 'select',
-                      defaultValue: 'note',
-                      options: ['note', 'success', 'warning'],
-                    },
-                    {
-                      name: 'body',
-                      type: 'textarea',
-                      required: true,
-                    },
-                  ],
-                },
-                {
-                  slug: 'figure',
-                  labels: {
-                    singular: 'Figure',
-                    plural: 'Figures',
-                  },
-                  fields: [
-                    {
-                      name: 'image',
-                      type: 'relationship',
-                      relationTo: 'media',
-                      admin: {
-                        description:
-                          'Upload or choose a Payload media item. Export will copy it into Gatsby static files.',
-                      },
-                    },
-                    {
-                      name: 'src',
-                      type: 'text',
-                      admin: {
-                        description:
-                          'Optional fallback for existing static paths such as /images/example.png. Prefer Media above.',
-                      },
-                    },
-                    {
-                      name: 'alt',
-                      type: 'text',
-                      required: true,
-                    },
-                    {
-                      name: 'caption',
-                      type: 'textarea',
-                    },
-                  ],
-                },
-                {
-                  slug: 'markdown',
-                  labels: {
-                    singular: 'Markdown / MDX',
-                    plural: 'Markdown / MDX',
-                  },
-                  fields: [
-                    {
-                      name: 'body',
-                      type: 'textarea',
-                      required: true,
-                      admin: {
-                        description: 'Escape hatch for approved MDX snippets when a visual block is not enough.',
-                      },
-                    },
-                  ],
-                },
-              ],
+              blocks: wikiContentBlocks,
             },
           ],
         },

@@ -214,7 +214,7 @@ export interface WikiPage {
       }
     | {
         /**
-         * Upload or choose a Payload media item. Export will copy it into Gatsby static files.
+         * Upload or choose a Payload media item. Export copies it into Gatsby static files.
          */
         image?: (number | null) | Media;
         /**
@@ -223,13 +223,52 @@ export interface WikiPage {
         src?: string | null;
         alt: string;
         caption?: string | null;
+        /**
+         * Optional photo credit shown below the caption.
+         */
+        credit?: string | null;
         id?: string | null;
         blockName?: string | null;
         blockType: 'figure';
       }
     | {
+        figures: {
+          /**
+           * Upload or choose a Payload media item. Export copies it into Gatsby static files.
+           */
+          image?: (number | null) | Media;
+          /**
+           * Optional fallback for existing static paths such as /images/example.png. Prefer Media above.
+           */
+          src?: string | null;
+          alt: string;
+          caption?: string | null;
+          /**
+           * Optional photo credit shown below the caption.
+           */
+          credit?: string | null;
+          id?: string | null;
+        }[];
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'imageGrid';
+      }
+    | {
+        caption?: string | null;
         /**
-         * Escape hatch for approved MDX snippets when a visual block is not enough.
+         * GitHub-flavored markdown table (header row, separator, data rows). Example:
+         * | Col A | Col B |
+         * | --- | --- |
+         * | a | b |
+         */
+        tableMarkdown: string;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'dataTable';
+      }
+    | {
+        /**
+         * Escape hatch for web members when a visual block is not enough. Prefer the blocks above.
          */
         body: string;
         id?: string | null;
@@ -403,6 +442,31 @@ export interface WikiPagesSelect<T extends boolean = true> {
               src?: T;
               alt?: T;
               caption?: T;
+              credit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGrid?:
+          | T
+          | {
+              figures?:
+                | T
+                | {
+                    image?: T;
+                    src?: T;
+                    alt?: T;
+                    caption?: T;
+                    credit?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        dataTable?:
+          | T
+          | {
+              caption?: T;
+              tableMarkdown?: T;
               id?: T;
               blockName?: T;
             };

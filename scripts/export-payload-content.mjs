@@ -2,6 +2,7 @@ import fs from "fs"
 import path from "path"
 import process from "process"
 import { pathToFileURL } from "url"
+import { quote, renderBlock } from "./lib/payload-mdx-render.mjs"
 
 const root = process.cwd()
 const outputRoot = path.join(root, "src", "content", "wiki", "_payload-export")
@@ -116,25 +117,45 @@ function validatePage(page) {
   }
 
   for (const block of page.content || []) {
-    if (block.blockType !== "figure") continue
-
-    const media = normalizeMedia(block.image)
-
-    if (!media && !block.src) {
-      errors.push(`${label} has a Figure block without Media or fallback src.`)
+    if (block.blockType === "figure") {
+      validateFigureItem(label, block)
     }
 
-    if (!block.alt && !media?.alt) {
-      errors.push(`${label} has a Figure block without alt text.`)
-    }
-
-    if (media) {
-      const filename = path.basename(media.filename)
-      const sourcePath = path.join(payloadMediaRoot, filename)
-
-      if (!fs.existsSync(sourcePath)) {
-        errors.push(`${label} references missing media file "${filename}" (not found locally or on ${payloadUrl}).`)
+    if (block.blockType === "imageGrid") {
+      const figures = Array.isArray(block.figures) ? block.figures : []
+      if (figures.length === 0) {
+        errors.push(`${label} has an ImageGrid block with no figures.`)
       }
+      for (const item of figures) validateFigureItem(label, item, "ImageGrid figure")
+    }
+
+    if (block.blockType === "dataTable") {
+      if (!String(block.tableMarkdown || "").trim()) {
+        errors.push(`${label} has a DataTable block without table markdown.`)
+      }
+    }
+  }
+}
+
+function validateFigureItem(pageLabel, item, context = "Figure block") {
+  const media = normalizeMedia(item.image)
+
+  if (!media && !item.src) {
+    errors.push(`${pageLabel} has a ${context} without Media or fallback src.`)
+  }
+
+  if (!item.alt && !media?.alt) {
+    errors.push(`${pageLabel} has a ${context} without alt text.`)
+  }
+
+  if (media) {
+    const filename = path.basename(media.filename)
+    const sourcePath = path.join(payloadMediaRoot, filename)
+
+    if (!fs.existsSync(sourcePath)) {
+      errors.push(
+        `${pageLabel} references missing media file "${filename}" (not found locally or on ${payloadUrl}).`
+      )
     }
   }
 }
@@ -147,32 +168,26 @@ function filePathForPage(page) {
 
 function renderPage(page) {
   const owners = page.owners.map((owner) => owner.name).filter(Boolean)
-  const body = page.content.map(renderBlock).filter(Boolean).join("\n\n")
+  const renderOptions = {
+    resolveFigureSrc: resolveFigureSrc,
+    onError: (message) => errors.push(`${page.title || page.id}: ${message}`),
+  }
+
+  const body = page.content
+    .map((block) => {
+      if (block.blockType === "richText") return renderRichText(block.body)
+      return renderBlock(block, renderOptions)
+    })
+    .filter(Boolean)
+    .join("\n\n")
 
   return `---\ntitle: ${quote(page.title)}\nsection: ${quote(page.section)}\npath: ${quote(page.path)}\nnavTitle: ${quote(page.navTitle)}\norder: ${Number(page.order)}\ndescription: ${quote(page.description)}\nowners: [${owners.map(quote).join(", ")}]\nupdated: ${quote(String(page.updated).slice(0, 10))}\nstatus: "published"\n---\n\n{/* Generated from Payload CMS. Edit in Payload, then re-run npm run payload:export. */}\n\n${body.trim()}\n`
 }
 
-function renderBlock(block) {
-  switch (block.blockType) {
-    case "richText":
-      return renderRichText(block.body)
-    case "callout":
-      return `<Callout${block.title ? ` title=${quote(block.title)}` : ""} tone=${quote(block.tone || "note")}>\n${block.body.trim()}\n</Callout>`
-    case "figure":
-      return renderFigure(block)
-    case "markdown":
-      return block.body.trim()
-    default:
-      return ""
-  }
-}
-
-function renderFigure(block) {
+function resolveFigureSrc(block) {
   const media = normalizeMedia(block.image)
-  const src = media ? exportMedia(media) : block.src
-  const alt = block.alt || media?.alt || ""
-
-  return `<Figure\n  src=${quote(src)}\n  alt=${quote(alt)}${block.caption ? `\n  caption=${quote(block.caption)}` : ""}\n/>`
+  if (media) return exportMedia(media)
+  return block.src || null
 }
 
 function normalizeMedia(media) {
@@ -199,14 +214,19 @@ function exportMedia(media) {
   return `/payload-media/${filename}`
 }
 
+function collectFigureItems(block) {
+  if (block.blockType === "figure") return [block]
+  if (block.blockType === "imageGrid" && Array.isArray(block.figures)) return block.figures
+  return []
+}
+
 async function ensureRemoteMedia(pages) {
   fs.mkdirSync(payloadMediaRoot, { recursive: true })
 
   for (const page of pages) {
     for (const block of page.content || []) {
-      if (block.blockType !== "figure") continue
-
-      const media = normalizeMedia(block.image)
+      for (const item of collectFigureItems(block)) {
+      const media = normalizeMedia(item.image)
       if (!media?.filename) continue
 
       const filename = path.basename(media.filename)
@@ -226,6 +246,7 @@ async function ensureRemoteMedia(pages) {
       }
 
       fs.writeFileSync(sourcePath, Buffer.from(await response.arrayBuffer()))
+      }
     }
   }
 }
@@ -276,10 +297,6 @@ function renderLexicalChildren(children = []) {
       return renderLexicalChildren(child.children)
     })
     .join("")
-}
-
-function quote(value) {
-  return JSON.stringify(String(value ?? ""))
 }
 
 function findMdxFiles(directory) {

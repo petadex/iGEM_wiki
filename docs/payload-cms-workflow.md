@@ -29,11 +29,15 @@ Once an imported page is published in Payload, its exported MDX becomes the Gats
 1. Go to **Wiki > Wiki Pages**.
 2. Create a new page.
 3. Fill the **Page** tab: title, section, path, nav title, order, description, owners, and updated date.
-4. Use the **Content** tab to add visual blocks:
+4. Use the **Content** tab to add visual blocks (each maps to an approved MDX component in `src/components/mdx/wikiComponents.js`):
    - **Rich Text** for headings, paragraphs, links, and lists.
-   - **Callout** for the existing wiki callout component.
-   - **Figure** for an image with alt text and caption. Prefer the **Media** picker in this block, or use fallback `src` only for existing static paths like `/images/example.png`.
+   - **Callout** → `<Callout>` (tones: note, success, warning).
+   - **Figure** → `<Figure>` (Media upload or static `src`, alt, caption, optional credit).
+   - **Image Grid** → `<ImageGrid>` with multiple figures side by side.
+   - **Data Table** → `<DataTable>` with a markdown table body.
    - **Markdown / MDX** only as an escape hatch for web members.
+
+   See `docs/content-authoring.md` for MDX examples subteams can mirror in Payload.
 5. Save draft while editing.
 6. Publish only when the page is ready to export.
 

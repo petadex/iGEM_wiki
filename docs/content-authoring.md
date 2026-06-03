@@ -101,6 +101,8 @@ Place public assets in `static/images` and reference them with `/images/file-nam
 - Claims that need scientific, safety, or stakeholder review are marked clearly.
 - The page looks good on desktop and mobile before merging.
 
-## Future CMS Compatibility
+## Payload CMS
 
-The frontmatter fields mirror a future Strapi `wikiPage` content type: title, path, section, status, owners, updated date, description, and body. Keeping these fields consistent will make a later Strapi migration much easier.
+The same components are available as visual blocks in **Payload** (Wiki → Wiki Pages → Content tab). Authors can use Callout, Figure, Image Grid, and Data Table without writing MDX. Publishing exports them to the same component tags above.
+
+Run `npm run test:payload-blocks` to verify block → MDX rendering offline.
