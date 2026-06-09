@@ -1,4 +1,6 @@
 import { GrowthCurveSimulator } from "./GrowthCurveSimulator.js"
+import { HardwareNotebookSandbox } from "../../hardwareNotebook/HardwareNotebookSandbox.js"
+import { ContributionTimeline } from "../../contributionCalendar/ContributionTimeline.js"
 
 /**
  * Approved interactive "gizmos" subteams can embed in wiki pages.
@@ -14,6 +16,8 @@ import { GrowthCurveSimulator } from "./GrowthCurveSimulator.js"
  */
 export const interactiveRegistry = {
   growthCurve: GrowthCurveSimulator,
+  hardwareNotebook: HardwareNotebookSandbox,
+  contributionTimeline: ContributionTimeline,
 }
 
 export const interactiveKeys = Object.keys(interactiveRegistry)

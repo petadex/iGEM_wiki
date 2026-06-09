@@ -270,7 +270,7 @@ export interface WikiPage {
         /**
          * Which approved interactive component to render.
          */
-        gizmo: 'growthCurve';
+        gizmo: 'growthCurve' | 'hardwareNotebook' | 'contributionTimeline';
         /**
          * Optional heading shown above the gizmo.
          */

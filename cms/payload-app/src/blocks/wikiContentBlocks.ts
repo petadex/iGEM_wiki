@@ -158,6 +158,8 @@ export const wikiContentBlocks: Block[] = [
         defaultValue: 'growthCurve',
         options: [
           { label: 'Growth Curve Simulator', value: 'growthCurve' },
+          { label: 'Hardware Notebook', value: 'hardwareNotebook' },
+          { label: 'Contribution Timeline', value: 'contributionTimeline' },
         ],
         admin: {
           description: 'Which approved interactive component to render.',
