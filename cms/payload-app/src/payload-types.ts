@@ -268,6 +268,35 @@ export interface WikiPage {
       }
     | {
         /**
+         * Which approved interactive component to render.
+         */
+        gizmo: 'growthCurve';
+        /**
+         * Optional heading shown above the gizmo.
+         */
+        title?: string | null;
+        /**
+         * Optional settings passed to the gizmo as props, e.g. { "growthRate": 0.5, "carryingCapacity": 200 }. Leave blank to use defaults.
+         */
+        config?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        /**
+         * Optional caption shown below the gizmo.
+         */
+        caption?: string | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'interactiveGizmo';
+      }
+    | {
+        /**
          * Escape hatch for web members when a visual block is not enough. Prefer the blocks above.
          */
         body: string;
@@ -467,6 +496,16 @@ export interface WikiPagesSelect<T extends boolean = true> {
           | {
               caption?: T;
               tableMarkdown?: T;
+              id?: T;
+              blockName?: T;
+            };
+        interactiveGizmo?:
+          | T
+          | {
+              gizmo?: T;
+              title?: T;
+              config?: T;
+              caption?: T;
               id?: T;
               blockName?: T;
             };

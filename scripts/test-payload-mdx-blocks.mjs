@@ -72,6 +72,59 @@ test("dataTable", () => {
   assert.match(out, /<\/DataTable>/)
 })
 
+test("interactiveGizmo with config emits a JSX expression", () => {
+  const out = renderBlock({
+    blockType: "interactiveGizmo",
+    gizmo: "growthCurve",
+    title: "Fluorescence Model",
+    config: { growthRate: 0.5, carryingCapacity: 200 },
+  })
+  assert.match(out, /<InteractiveGizmo/)
+  assert.match(out, /name="growthCurve"/)
+  assert.match(out, /title="Fluorescence Model"/)
+  // config must be an expression {{...}}, NOT a quoted string
+  assert.match(out, /config=\{\{"growthRate":0\.5,"carryingCapacity":200\}\}/)
+})
+
+test("interactiveGizmo accepts a JSON string config", () => {
+  const out = renderBlock({
+    blockType: "interactiveGizmo",
+    gizmo: "growthCurve",
+    config: '{"growthRate":0.8}',
+  })
+  assert.match(out, /config=\{\{"growthRate":0\.8\}\}/)
+})
+
+test("interactiveGizmo without config omits the prop", () => {
+  const out = renderBlock({ blockType: "interactiveGizmo", gizmo: "growthCurve" })
+  assert.match(out, /name="growthCurve"/)
+  assert.ok(!/config=/.test(out), "should not emit a config prop when empty")
+})
+
+test("interactiveGizmo with invalid JSON reports an error and renders nothing", () => {
+  let captured = null
+  const out = renderBlock(
+    { blockType: "interactiveGizmo", gizmo: "growthCurve", config: "{ not json }" },
+    { onError: (msg) => (captured = msg) }
+  )
+  assert.equal(out, "")
+  assert.match(captured, /invalid JSON/)
+})
+
+test("gizmo can sit between text blocks (mid-page)", () => {
+  const body = renderPageBody(
+    [
+      { blockType: "richText", body: "Intro paragraph." },
+      { blockType: "interactiveGizmo", gizmo: "growthCurve", title: "Try it" },
+      { blockType: "richText", body: "Closing paragraph." },
+    ],
+    { resolveFigureSrc: () => null }
+  )
+  const gizmoIndex = body.indexOf("<InteractiveGizmo")
+  assert.ok(body.indexOf("Intro paragraph.") < gizmoIndex)
+  assert.ok(gizmoIndex < body.indexOf("Closing paragraph."))
+})
+
 test("full page body", () => {
   const body = renderPageBody(
     [

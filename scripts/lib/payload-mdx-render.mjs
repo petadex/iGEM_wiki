@@ -21,6 +21,8 @@ export function renderBlock(block, { resolveFigureSrc, onError } = {}) {
       return renderImageGrid(block, { resolveFigureSrc, onError })
     case "dataTable":
       return renderDataTable(block)
+    case "interactiveGizmo":
+      return renderInteractiveGizmo(block, { onError })
     case "markdown":
       return String(block.body || "").trim()
     default:
@@ -77,4 +79,37 @@ function renderDataTable(block) {
 
   const captionAttr = block.caption ? ` caption=${quote(block.caption)}` : ""
   return `<DataTable${captionAttr}>\n\n${table}\n\n</DataTable>`
+}
+
+/** Normalizes a Payload `json` field that may arrive as an object or a string. */
+export function parseGizmoConfig(raw) {
+  if (raw == null || raw === "") return {}
+  if (typeof raw === "object") return raw
+  return JSON.parse(raw) // throws on invalid JSON; caller reports it
+}
+
+function renderInteractiveGizmo(block, options) {
+  const name = String(block.gizmo || "").trim()
+  if (!name) {
+    options.onError?.("Interactive Gizmo block is missing a gizmo selection.")
+    return ""
+  }
+
+  let config
+  try {
+    config = parseGizmoConfig(block.config)
+  } catch {
+    options.onError?.(`Interactive Gizmo "${name}" has invalid JSON config.`)
+    return ""
+  }
+
+  const attrs = [`name=${quote(name)}`]
+  if (block.title) attrs.push(`title=${quote(block.title)}`)
+  if (block.caption) attrs.push(`caption=${quote(block.caption)}`)
+  if (config && Object.keys(config).length > 0) {
+    // Emit a real JSX expression so props arrive as numbers/booleans, not strings.
+    attrs.push(`config={${JSON.stringify(config)}}`)
+  }
+
+  return `<InteractiveGizmo\n  ${attrs.join("\n  ")}\n/>`
 }

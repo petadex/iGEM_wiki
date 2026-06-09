@@ -141,6 +141,53 @@ export const wikiContentBlocks: Block[] = [
     ],
   },
   {
+    slug: 'interactiveGizmo',
+    labels: {
+      singular: 'Interactive Gizmo',
+      plural: 'Interactive Gizmos',
+    },
+    admin: {
+      description:
+        'Embed an approved interactive React component inline in the page — maps to <InteractiveGizmo>. Keep gizmo options in sync with src/components/mdx/interactive/registry.js.',
+    },
+    fields: [
+      {
+        name: 'gizmo',
+        type: 'select',
+        required: true,
+        defaultValue: 'growthCurve',
+        options: [
+          { label: 'Growth Curve Simulator', value: 'growthCurve' },
+        ],
+        admin: {
+          description: 'Which approved interactive component to render.',
+        },
+      },
+      {
+        name: 'title',
+        type: 'text',
+        admin: {
+          description: 'Optional heading shown above the gizmo.',
+        },
+      },
+      {
+        name: 'config',
+        type: 'json',
+        admin: {
+          description:
+            'Optional settings passed to the gizmo as props, e.g. { "growthRate": 0.5, "carryingCapacity": 200 }. Leave blank to use defaults.',
+        },
+      },
+      {
+        name: 'caption',
+        type: 'textarea',
+        admin: {
+          description: 'Optional caption shown below the gizmo.',
+        },
+      },
+    ],
+  },
+  {
     slug: 'markdown',
     labels: {
       singular: 'Markdown / MDX',

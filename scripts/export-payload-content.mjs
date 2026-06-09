@@ -2,7 +2,7 @@ import fs from "fs"
 import path from "path"
 import process from "process"
 import { pathToFileURL } from "url"
-import { quote, renderBlock } from "./lib/payload-mdx-render.mjs"
+import { parseGizmoConfig, quote, renderBlock } from "./lib/payload-mdx-render.mjs"
 
 const root = process.cwd()
 const outputRoot = path.join(root, "src", "content", "wiki", "_payload-export")
@@ -132,6 +132,17 @@ function validatePage(page) {
     if (block.blockType === "dataTable") {
       if (!String(block.tableMarkdown || "").trim()) {
         errors.push(`${label} has a DataTable block without table markdown.`)
+      }
+    }
+
+    if (block.blockType === "interactiveGizmo") {
+      if (!String(block.gizmo || "").trim()) {
+        errors.push(`${label} has an Interactive Gizmo block without a gizmo selection.`)
+      }
+      try {
+        parseGizmoConfig(block.config)
+      } catch {
+        errors.push(`${label} has an Interactive Gizmo block with invalid JSON config.`)
       }
     }
   }

@@ -101,8 +101,36 @@ Place public assets in `static/images` and reference them with `/images/file-nam
 - Claims that need scientific, safety, or stakeholder review are marked clearly.
 - The page looks good on desktop and mobile before merging.
 
+### Interactive Gizmos
+
+Approved interactive components (sliders, simulators, etc.) can be dropped **inline, in the middle of a page**:
+
+```mdx
+<InteractiveGizmo
+  name="growthCurve"
+  title="Logistic growth model"
+  config={{ "growthRate": 0.5, "carryingCapacity": 200 }}
+  caption="Drag the sliders to explore the model."
+/>
+```
+
+- `name` picks an approved gizmo from the registry (`src/components/mdx/interactive/registry.js`).
+- `config` is optional JSON passed to the gizmo as props; omit it to use defaults.
+- Unknown names render a visible notice instead of breaking the build.
+
+Available gizmos: `growthCurve` (logistic growth simulator). More can be added by the web team.
+
 ## Payload CMS
 
-The same components are available as visual blocks in **Payload** (Wiki → Wiki Pages → Content tab). Authors can use Callout, Figure, Image Grid, and Data Table without writing MDX. Publishing exports them to the same component tags above.
+The same components are available as visual blocks in **Payload** (Wiki → Wiki Pages → Content tab). Authors can use Callout, Figure, Image Grid, Data Table, and **Interactive Gizmo** without writing MDX. Because blocks render in order, an Interactive Gizmo block placed between two text blocks appears in the middle of the page. Publishing exports them to the same component tags above.
 
 Run `npm run test:payload-blocks` to verify block → MDX rendering offline.
+
+### Adding a new interactive gizmo (web team)
+
+1. Build an SSR-safe React component in `src/components/mdx/interactive/` (React state + SVG/canvas is fine; guard any `window`/`document` access so the Gatsby build can server-render it).
+2. Register it under a stable key in `src/components/mdx/interactive/registry.js`.
+3. Add the same key to the `gizmo` select options in `cms/payload-app/src/blocks/wikiContentBlocks.ts`.
+4. `npm run test:payload-blocks` and `npm run build:gatsby` to confirm it renders.
+
+The export pipeline and MDX wiring need no changes — gizmos flow through the single `<InteractiveGizmo>` component.

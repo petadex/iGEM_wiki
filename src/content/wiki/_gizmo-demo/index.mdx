@@ -1,0 +1,28 @@
+---
+title: "Interactive Gizmo Demo"
+section: "Wiki"
+path: "/gizmo-demo/"
+navTitle: "Gizmo Demo"
+order: 99
+description: "Demonstrates an interactive component embedded in the middle of an MDX page."
+owners: ["Web Team"]
+updated: "2026-06-09"
+status: "draft"
+---
+
+This page shows an approved interactive component embedded **in the middle of the article**, exactly how a subteam (e.g. Hardware) would let readers play with an experiment.
+
+## Background
+
+Some intro text before the interactive part. A reader scrolls down, reads context, then reaches the gizmo.
+
+<InteractiveGizmo
+  name="growthCurve"
+  title="Logistic growth model"
+  config={{ "growthRate": 0.5, "carryingCapacity": 200, "initialPopulation": 8 }}
+  caption="Drag the sliders to explore how growth rate and carrying capacity change the curve."
+/>
+
+## After the gizmo
+
+More text continues below the interactive component, so the page reads as one continuous article with the gizmo inline.
