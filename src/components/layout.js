@@ -52,83 +52,100 @@ const WikiLayout = ({
   hideTopBar = false,
   fullBleed = false,
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
-    <>
-      <GlobalStyle />
-      <SiteWrapper>
+  <>
+    <GlobalStyle />
+    <SiteWrapper>
 
-        {!hideSiteChrome && !hideTopBar && (
-          <TopBar>
-            <NavInner>
-              <LogoPlaceholder to="/" aria-label="iGEM Toronto 2026 — Home">
-                <LogoBox>LOGO</LogoBox>
-              </LogoPlaceholder>
-              <Nav aria-label="Wiki sections">
-                {nav.slice(1).map(({ label, children }) => (
-                  <NavItem key={label}>
-                    <NavParent>{label}</NavParent>
-                    <Dropdown>
-                      {children.map(({ to, label: childLabel }) => (
-                        <DropdownLink key={to} to={to}>{childLabel}</DropdownLink>
-                      ))}
-                    </Dropdown>
-                  </NavItem>
-                ))}
-              </Nav>
-            </NavInner>
-          </TopBar>
-        )}
+      {!hideSiteChrome && !hideTopBar && (
+        <TopBar>
+          <NavInner>
+            <LogoPlaceholder to="/" aria-label="iGEM Toronto 2026 — Home">
+              <LogoBox>LOGO</LogoBox>
+            </LogoPlaceholder>
+            <Nav aria-label="Wiki sections">
+              {nav.slice(1).map(({ label, children }) => (
+                <NavItem key={label}>
+                  <NavParent>{label}</NavParent>
+                  <Dropdown>
+                    {children.map(({ to, label: childLabel }) => (
+                      <DropdownLink key={to} to={to}>{childLabel}</DropdownLink>
+                    ))}
+                  </Dropdown>
+                </NavItem>
+              ))}
+            </Nav>
+            <Hamburger onClick={() => setMenuOpen(out => !out)} aria-label="Toggle navigation">
+              <span /><span /><span />
+            </Hamburger>
+          </NavInner>
+        </TopBar>
+      )}
 
-        {hideSiteChrome || fullBleed ? (
-          <MainFullBleed>{children}</MainFullBleed>
-        ) : (
-          <Main>
-            {pageTitle && (
-              <PageHeader>
-                {sectionLabel && <SectionLabel>{sectionLabel}</SectionLabel>}
-                <PageTitle>{pageTitle}</PageTitle>
-                <Divider />
-              </PageHeader>
-            )}
-            {children}
-          </Main>
-        )}
+      {!hideSiteChrome && !hideTopBar && (
+        <MobileDrawer $open={menuOpen}>
+          {nav.slice(1).map(({ label, children }) => (
+            <MobileSection key={label}>
+              <b>{label}</b>
+              {children.map(({ to, label: l }) => (
+                <MobileLink key={to} to={to} onClick={() => setMenuOpen(false)}>{l}</MobileLink>
+              ))}
+            </MobileSection>
+          ))}
+        </MobileDrawer>
+      )}
 
-        <Footer>
-            <FooterInner>
-              <FooterTop>
-                <FooterIntro>
-                  <FooterBrand>iGEM Toronto</FooterBrand>
-                  <FooterButton href="https://igem.skule.ca/" target="_blank" rel="noopener noreferrer">
-                    Visit iGEM Toronto
-                  </FooterButton>
-                </FooterIntro>
-                <FooterSponsorSlot>
-                  <SponsorCarousel />
-                </FooterSponsorSlot>
-                <FooterConnect aria-label="Contact and social">
-                  <ConnectLink href="https://www.instagram.com/igemtoronto" target="_blank" rel="noopener noreferrer">
-                    Instagram
-                  </ConnectLink>
-                  <ConnectLink href="mailto:igem@g.skule.ca">igem@g.skule.ca</ConnectLink>
-                </FooterConnect>
-              </FooterTop>
+      {hideSiteChrome || fullBleed ? (
+        <MainFullBleed>{children}</MainFullBleed>
+      ) : (
+        <Main>
+          {pageTitle && (
+            <PageHeader>
+              {sectionLabel && <SectionLabel>{sectionLabel}</SectionLabel>}
+              <PageTitle>{pageTitle}</PageTitle>
+              <Divider />
+            </PageHeader>
+          )}
+          {children}
+        </Main>
+      )}
 
-              <FooterRule />
+      <Footer>
+        <FooterInner>
+          <FooterTop>
+            <FooterIntro>
+              <FooterBrand>iGEM Toronto</FooterBrand>
+              <FooterButton href="https://igem.skule.ca/" target="_blank" rel="noopener noreferrer">
+                Visit iGEM Toronto
+              </FooterButton>
+            </FooterIntro>
+            <FooterSponsorSlot>
+              <SponsorCarousel />
+            </FooterSponsorSlot>
+            <FooterConnect aria-label="Contact and social">
+              <ConnectLink href="https://www.instagram.com/igemtoronto" target="_blank" rel="noopener noreferrer">
+                Instagram
+              </ConnectLink>
+              <ConnectLink href="mailto:igem@g.skule.ca">igem@g.skule.ca</ConnectLink>
+            </FooterConnect>
+          </FooterTop>
 
-              <FooterMeta>
-                <MetaLink href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">
-                  This work is licensed under CC BY 4.0
-                </MetaLink>
-                <MetaSep aria-hidden>·</MetaSep>
-                <MetaLink href="https://gitlab.com" target="_blank" rel="noopener noreferrer">
-                  Source on GitLab
-                </MetaLink>
-              </FooterMeta>
-            </FooterInner>
-        </Footer>
+          <FooterRule />
 
-      </SiteWrapper>
+          <FooterMeta>
+            <MetaLink href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">
+              This work is licensed under CC BY 4.0
+            </MetaLink>
+            <MetaSep aria-hidden>·</MetaSep>
+            <MetaLink href="https://gitlab.com" target="_blank" rel="noopener noreferrer">
+              Source on GitLab
+            </MetaLink>
+          </FooterMeta>
+        </FooterInner>
+      </Footer>
+
+    </SiteWrapper>
     </>
   )
 }
