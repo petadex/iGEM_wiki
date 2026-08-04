@@ -3,6 +3,8 @@ import path from "path"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeSlug from "rehype-slug"
 import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
+import rehypeKatex from "rehype-katex"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -38,8 +40,9 @@ const config = {
       options: {
         extensions: [`.mdx`, `.md`],
         mdxOptions: {
-          remarkPlugins: [remarkGfm],
+          remarkPlugins: [remarkGfm, remarkMath],
           rehypePlugins: [
+            rehypeKatex,
             rehypeSlug,
             [
               rehypeAutolinkHeadings,

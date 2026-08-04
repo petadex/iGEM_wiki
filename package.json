@@ -11,6 +11,7 @@
     "clean": "gatsby clean",
     "sync:igem": "node scripts/sync-igem.mjs",
     "validate:content": "node scripts/validate-content.mjs",
+    "fix:notebook-images": "node scripts/fix-notebook-images.mjs",
     "payload:develop": "npm --prefix cms/payload-app run dev -- --webpack",
     "payload:export": "node scripts/export-payload-content.mjs",
     "payload:import-mdx": "npm --prefix cms/payload-app run import:mdx",
@@ -29,12 +30,15 @@
     "gatsby-plugin-styled-components": "^6.13.0",
     "gatsby-source-filesystem": "^5.16.0",
     "gatsby-transformer-csv": "^5.16.0",
+    "katex": "^0.16.47",
     "page-flip": "^2.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rehype-autolink-headings": "^7.1.0",
+    "rehype-katex": "^6.0.3",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1",
     "styled-components": "^6.1.0"
   }
 }
