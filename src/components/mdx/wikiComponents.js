@@ -49,6 +49,16 @@ export const ContributionCalendar = ({ title, caption }) => (
   </ContributionCalendarWrap>
 )
 
+export const ButtonList = ({ items = [] }) => (
+  <ButtonListWrap>
+    {items.map(({ label, href }) => (
+      <ButtonLink key={href} href={href}>
+        {label}
+      </ButtonLink>
+    ))}
+  </ButtonListWrap>
+)
+
 export const mdxComponents = {
   Callout,
   Figure,
@@ -56,6 +66,7 @@ export const mdxComponents = {
   DataTable,
   ContributionCalendar,
   ContributionTimeline,
+  ButtonList,
   DesignSketchbook,
   HardwareNotebookSandbox,
   HardwareJournal,
@@ -178,4 +189,31 @@ const CalendarCaption = styled.p`
   margin-top: var(--space-sm);
   color: var(--color-muted);
   font-size: 0.875rem;
+`
+
+const ButtonListWrap = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  max-width: 54rem;
+  margin: var(--space-lg) 0;
+`
+
+const ButtonLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.24);
+  color: var(--color-text) !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: var(--color-accent);
+  }
 `
