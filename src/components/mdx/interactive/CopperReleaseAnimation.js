@@ -194,6 +194,10 @@ const Wrap = styled.div`
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.24);
+
+  @media (max-width: 520px) {
+    padding: var(--space-md) var(--space-sm);
+  }
 `
 
 /* Holds the stage plus its flanking prev/next arrows. */
@@ -201,6 +205,12 @@ const StageRow = styled.div`
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+
+  @media (max-width: 520px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
 `
 
 /* Single always-mounted stage — no scrolling/swiping, just one scene
@@ -212,6 +222,16 @@ const Stage = styled.div`
   min-width: 0;
   height: 260px;
   overflow: hidden;
+
+  @media (max-width: 520px) {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+  }
 `
 
 const ArrowButton = styled.button`
@@ -232,6 +252,18 @@ const ArrowButton = styled.button`
   &:hover {
     background: rgba(255, 255, 255, 0.9);
   }
+
+  @media (max-width: 520px) {
+    grid-row: 2;
+
+    &:first-child {
+      justify-self: end;
+    }
+
+    &:last-child {
+      justify-self: start;
+    }
+  }
 `
 
 /* Centers the scene inside the stage. */
@@ -242,6 +274,15 @@ const Scene = styled.div`
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
+
+  @media (max-width: 520px) {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    flex: none;
+    margin: 0 auto;
+  }
 `
 
 const PetFilm = styled.div`
