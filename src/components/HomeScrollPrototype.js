@@ -7,6 +7,7 @@ import Petadex from "./Petadex.js"
 import PetadexBottlePath from "./PetadexBottlePath.js"
 import { SwipeInBox } from "./SwipeInBox.js"
 import { ExplainTerm } from "./ExplainTermPopover.js"
+import EnzymeBattle from "./EnzymeBattle.js"
 
 /**
  * Homepage bottle stages (degradation journey).
@@ -216,6 +217,7 @@ export function HomeScrollPrototype() {
   const [navPinned, setNavPinned] = useState(false)
   const [bottleTouchPinned, setBottleTouchPinned] = useState(false)
   const [shoreBottlePlaying, setShoreBottlePlaying] = useState(false)
+  const [battleOpen, setBattleOpen] = useState(false)
   const reduceMotionParallaxRef = useRef(false)
   const petadexRef = useRef(null)
 
@@ -656,11 +658,13 @@ export function HomeScrollPrototype() {
         </HomeNavMount>
       </ScrollStack>
 
-      <PetadexBottlePath petadexRef={petadexRef}>
+      <PetadexBottlePath petadexRef={petadexRef} onBattle={() => setBattleOpen(true)}>
         <div ref={petadexRef}>
           <Petadex />
         </div>
       </PetadexBottlePath>
+
+      <EnzymeBattle isOpen={battleOpen} onClose={() => setBattleOpen(false)} />
 
     </WikiFrontRoot>
   )
