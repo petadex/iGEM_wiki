@@ -47,19 +47,23 @@ const ASSETS = {
 const LOGO_FRAME_COUNT = 9
 /** Base hold for frames 1–7. */
 const LOGO_FRAME_MS = 170
-/** Longer hold for the last two frames (8–9). */
-const LOGO_LAST_FRAME_MS = 450
+/** Longer hold for frame 8. */
+const LOGO_PENULTIMATE_FRAME_MS = 650
+/** Longest hold for the completed PETABITE title (frame 9). */
+const LOGO_LAST_FRAME_MS = 1300
 const LOGO_FRAMES = Array.from(
   { length: LOGO_FRAME_COUNT },
   (_, i) =>
     `https://static.igem.wiki/teams/6187/wiki/homepage-components/logo-animation-files/untitled-artwork-${i + 1}.avif`,
 )
 
-/** Per-frame visibility windows so the last two frames linger longer. */
+/** Per-frame visibility windows so the last two frames linger, last longest. */
 const LOGO_FRAME_TIMING = (() => {
-  const durations = Array.from({ length: LOGO_FRAME_COUNT }, (_, i) =>
-    i >= LOGO_FRAME_COUNT - 2 ? LOGO_LAST_FRAME_MS : LOGO_FRAME_MS,
-  )
+  const durations = Array.from({ length: LOGO_FRAME_COUNT }, (_, i) => {
+    if (i === LOGO_FRAME_COUNT - 1) return LOGO_LAST_FRAME_MS
+    if (i === LOGO_FRAME_COUNT - 2) return LOGO_PENULTIMATE_FRAME_MS
+    return LOGO_FRAME_MS
+  })
   const cycleMs = durations.reduce((sum, ms) => sum + ms, 0)
   let acc = 0
   const windows = durations.map(ms => {
@@ -475,6 +479,7 @@ const SECTION3_ANIMALS = [
     src: `${SECTION3_CDN}/section-3-background-axolotl.avif`,
     xPct: 0,
     yPct: 10,
+    revealOnArrive: true,
   },
   {
     id: "axolotl",
@@ -484,6 +489,7 @@ const SECTION3_ANIMALS = [
     yPct: 10,
     flapMs: 1100,
     delayMs: 80,
+    revealOnArrive: true,
   },
   {
     id: "bird-a",
@@ -521,6 +527,7 @@ const SECTION3_ANIMALS = [
     yPct: 25,
     flapMs: 820,
     delayMs: 0,
+    revealOnArrive: true,
   },
   {
     id: "crab-b",
@@ -530,6 +537,7 @@ const SECTION3_ANIMALS = [
     yPct: -8,
     flapMs: 700,
     delayMs: 220,
+    revealOnArrive: true,
   },
   {
     id: "crab-c",
@@ -539,6 +547,7 @@ const SECTION3_ANIMALS = [
     yPct: -10,
     flapMs: 940,
     delayMs: 360,
+    revealOnArrive: true,
   },
 ]
 
@@ -560,10 +569,54 @@ const HUMAN = {
 
 /** Extra in-flow scroll while the forest frame is sticky; maps to walk progress. */
 const WALK_TRACK_VH = 120
-/** Extra freeze after pose 2 + bang, so the arrived art can be seen before unpin. */
-const WALK_HOLD_VH = 55
+/**
+ * Freeze after pose 2 + bang. Long enough to read the RNAlab reveal and scrub
+ * the bird-steal beat before the forest unpins.
+ */
+const WALK_HOLD_VH = 190
 /** Keep the figure centroid at this viewport Y while the forest is frozen. */
 const HUMAN_PIN_VIEW_Y = 0.68
+/**
+ * Stop the figure centroid at this fraction of viewport width (was 0.5).
+ * Just left of center so the RNAlab copy has room on his right.
+ */
+const HUMAN_PIN_VIEW_X = 0.4
+
+/**
+ * Bird steal beat, scrubbed by scroll through the arrival hold (0–1):
+ * the rightmost forest bird swoops to the parked bottle, grabs it, and carries
+ * it off frame. Windows are fractions of the hold.
+ */
+const STEAL_BIRD_ID = "bird-a"
+const STEAL_APPROACH_START = 0.16
+const STEAL_GRAB_AT = 0.54
+const STEAL_EXIT_END = 0.97
+/**
+ * The bird's perch sits above the pinned viewport, so the flight starts just
+ * off the top-right edge instead (fractions of the viewport).
+ */
+const STEAL_ENTRY_X_FRAC = 0.92
+const STEAL_ENTRY_Y_FRAC = -0.12
+/**
+ * Dive bow (positive = dips below the straight line, so the bird drops into
+ * frame early instead of skimming above it) and exit vector, as fractions of
+ * the painting width. Exit runs up and to the left, away from the walker.
+ */
+const STEAL_ARC_FRAC = 0.07
+const STEAL_EXIT_DX_FRAC = -0.28
+const STEAL_EXIT_DY_FRAC = -0.22
+/** Bird rides this far above the bottle so it reads as carried, not covered. */
+const STEAL_GRAB_LIFT_FRAC = 0.05
+/** Fraction of the exit spent fading the bird + carried bottle out. */
+const STEAL_FADE_FROM = 0.72
+/** Hold fraction over which the "dataset of 200" line clears for the reveal. */
+const STEAL_DATASET_FADE = 0.12
+
+const STEAL_BIRD =
+  SECTION3_ANIMALS.find(animal => animal.id === STEAL_BIRD_ID) || null
+
+const clamp01 = v => Math.max(0, Math.min(1, v))
+const smoothstep = t => t * t * (3 - 2 * t)
 /** Human / animal overlay plates are 2238×3132. */
 const OVERLAY_PLATE_ASPECT = 3132 / 2238
 /** Head on the human plate (%), for placing the bang behind it. */
@@ -620,6 +673,9 @@ export function HomeScrollPrototype() {
   const humanWalkRef = useRef(null)
   const humanBobRef = useRef(null)
   const forestDatasetRef = useRef(null)
+  const birdStealRef = useRef(null)
+  /** Last steal progress (0–1); persists past unpin so the bottle stays stolen. */
+  const birdStealPRef = useRef(0)
   const walkArrivedRef = useRef(false)
   const walkLatchedRef = useRef(false)
   const walkReleasedRef = useRef(false)
@@ -760,6 +816,12 @@ export function HomeScrollPrototype() {
           : window.innerHeight * (WALK_HOLD_VH / 100)
       const freezePx = walkPx + holdPx
       let walkProgress = 0
+      /** Scroll through the arrival hold (0–1) — drives the bird steal. */
+      let stealProgress = 0
+      /** Offset + fade the bottle inherits once the bird has grabbed it. */
+      let stealCarryDx = 0
+      let stealCarryDy = 0
+      let stealCarryFade = 1
 
       if (painting) {
         const artH = painting.offsetHeight
@@ -783,6 +845,8 @@ export function HomeScrollPrototype() {
         } else if (track) {
           track.style.paddingBottom = "0px"
           if (walkReleasedRef.current) {
+            // Steal already ran to completion before unpin — keep it that way.
+            stealProgress = birdStealPRef.current
             track.style.height = `${artH}px`
             painting.style.position = "relative"
             painting.style.top = "0px"
@@ -797,6 +861,11 @@ export function HomeScrollPrototype() {
               Math.min(1, (y - pinAt) / Math.max(1, walkPx)),
             )
             if (walkProgress >= 0.995) walkLatchedRef.current = true
+            stealProgress =
+              holdPx > 0
+                ? clamp01((y - (pinAt + walkPx)) / holdPx)
+                : 0
+            birdStealPRef.current = stealProgress
             painting.style.left = "0px"
             painting.style.width = "100%"
             if (walkLatchedRef.current && y > pinAt + freezePx) {
@@ -829,7 +898,8 @@ export function HomeScrollPrototype() {
           const paintingLeft = painting.getBoundingClientRect().left
           const startX =
             ((HUMAN.originX + HUMAN.xPct) / 100) * painting.offsetWidth
-          const extraXMax = window.innerWidth / 2 - (paintingLeft + startX)
+          const extraXMax =
+            window.innerWidth * HUMAN_PIN_VIEW_X - (paintingLeft + startX)
           const extraX = extraXMax * p
           walker.style.transform = extraX
             ? `translate3d(${extraX}px, 0, 0)`
@@ -841,12 +911,87 @@ export function HomeScrollPrototype() {
               !latched && walkProgress > 0.02 && walkProgress < 0.995 ? "1" : ""
           }
           if (forestDatasetRef.current) {
-            forestDatasetRef.current.style.opacity =
-              reduceWalk || latched ? "1" : String(walkProgress)
+            // Clears as the bang lands so the RNAlab line can take its place.
+            const datasetFade = latched
+              ? 1 - clamp01(stealProgress / STEAL_DATASET_FADE)
+              : walkProgress
+            forestDatasetRef.current.style.opacity = reduceWalk
+              ? "1"
+              : String(datasetFade)
           }
           if (latched !== walkArrivedRef.current) {
             walkArrivedRef.current = latched
             setWalkArrived(latched)
+          }
+        }
+
+        // Bird steal: swoop from the perch to the parked bottle, then carry it
+        // off frame. Both paths are painting-local so they track any art width.
+        const stealBird = birdStealRef.current
+        if (stealBird && STEAL_BIRD) {
+          if (reduceWalk || stealProgress <= 0) {
+            stealBird.style.transform = ""
+            stealBird.style.opacity = ""
+            stealBird.style.willChange = "auto"
+          } else {
+            const birdX =
+              ((STEAL_BIRD.originX + STEAL_BIRD.xPct) / 100) * artW
+            const birdY =
+              FOREST_BAND_TOP * artH +
+              ((STEAL_BIRD.originY + STEAL_BIRD.yPct) / 100) * plateH
+            const bottleX = (MAP_BOTTLE_LEFT_REST / 100) * artW
+            const bottleY =
+              MAP_BOTTLE_BAND_TOP * artH +
+              (MAP_BOTTLE_TOP_HOLD / 100) * (MAP_BOTTLE_BAND_HEIGHT * artH)
+
+            const approach = smoothstep(
+              clamp01(
+                (stealProgress - STEAL_APPROACH_START) /
+                  Math.max(1e-6, STEAL_GRAB_AT - STEAL_APPROACH_START),
+              ),
+            )
+            const exit = smoothstep(
+              clamp01(
+                (stealProgress - STEAL_GRAB_AT) /
+                  Math.max(1e-6, STEAL_EXIT_END - STEAL_GRAB_AT),
+              ),
+            )
+            const exitDx = STEAL_EXIT_DX_FRAC * artW
+            const exitDy = STEAL_EXIT_DY_FRAC * artW
+            const fade =
+              1 -
+              clamp01(
+                (exit - STEAL_FADE_FROM) / Math.max(1e-6, 1 - STEAL_FADE_FROM),
+              )
+
+            // Screen-space path: off-frame top-right → bottle → off-frame again.
+            const paintRect = painting.getBoundingClientRect()
+            const restX = paintRect.left + birdX
+            const restY = paintRect.top + birdY
+            const entryX = window.innerWidth * STEAL_ENTRY_X_FRAC
+            const entryY = window.innerHeight * STEAL_ENTRY_Y_FRAC
+            const grabX = paintRect.left + bottleX
+            const grabY =
+              paintRect.top + bottleY - STEAL_GRAB_LIFT_FRAC * artW
+
+            const dx =
+              entryX + (grabX - entryX) * approach - restX + exitDx * exit
+            const dy =
+              entryY +
+              (grabY - entryY) * approach +
+              STEAL_ARC_FRAC * artW * Math.sin(Math.PI * approach) -
+              restY +
+              exitDy * exit
+
+            stealBird.style.transform = `translate3d(${dx}px, ${dy}px, 0)`
+            stealBird.style.opacity = String(fade)
+            stealBird.style.willChange =
+              exit < 1 ? "transform, opacity" : "auto"
+
+            // Bottle rides along only once grabbed (exit > 0).
+            stealCarryDx = exitDx * exit
+            stealCarryDy = exitDy * exit
+            stealCarryFade = fade
           }
         }
       }
@@ -1058,9 +1203,16 @@ export function HomeScrollPrototype() {
           }
         }
 
+        // Carried off by the bird once stolen; fades out with it.
+        const carried =
+          stealCarryDx !== 0 || stealCarryDy !== 0
+            ? ` translate3d(${stealCarryDx}px, ${stealCarryDy}px, 0)`
+            : ""
+        opacity *= stealCarryFade
+
         mapMount.style.left = `${left}%`
         mapMount.style.top = `${top}%`
-        mapMount.style.transform = `translate3d(-50%, -50%, 0) scale(${scale})`
+        mapMount.style.transform = `translate3d(-50%, -50%, 0)${carried} scale(${scale})`
         mapMount.style.opacity = String(opacity)
         mapMount.style.visibility = opacity > 0.02 ? "visible" : "hidden"
       }
@@ -1636,53 +1788,67 @@ export function HomeScrollPrototype() {
 
             <ArtBand $top={FOREST_BAND_TOP} $height={FOREST_BAND_HEIGHT} $z={3}>
               <ForestAnimalsStack aria-hidden="true">
-                {SECTION3_ANIMALS.map(animal =>
-                  animal.static ? (
-                    <CrabMount
-                      key={animal.id}
-                      $xPct={animal.xPct}
-                      $yPct={animal.yPct}
+                {SECTION3_ANIMALS.map(animal => {
+                  const plate = animal.static ? (
+                    <CrabFlapper>
+                      <StaticPlateImg src={animal.src} alt="" />
+                    </CrabFlapper>
+                  ) : (
+                    <AnimalMotion
+                      $scale={animal.scale || 1}
+                      $ox={animal.originX}
+                      $oy={animal.originY}
+                      $hover={animal.hover}
+                      $delayMs={animal.delayMs}
+                      $clipRightPct={animal.clipRightPct || 0}
                     >
                       <CrabFlapper>
-                        <StaticPlateImg src={animal.src} alt="" />
+                        <CrabFrame
+                          $phase="a"
+                          $durationMs={animal.flapMs}
+                          $delayMs={animal.delayMs}
+                          $hoverFlap={animal.hover}
+                          src={animal.a}
+                          alt=""
+                        />
+                        <CrabFrame
+                          $phase="b"
+                          $durationMs={animal.flapMs}
+                          $delayMs={animal.delayMs}
+                          $hoverFlap={animal.hover}
+                          src={animal.b}
+                          alt=""
+                        />
                       </CrabFlapper>
-                    </CrabMount>
-                  ) : (
+                    </AnimalMotion>
+                  )
+
+                  let body = plate
+                  if (animal.revealOnArrive) {
+                    body = (
+                      <PetamonReveal
+                        $show={walkArrived}
+                        $delayMs={animal.delayMs}
+                      >
+                        {plate}
+                      </PetamonReveal>
+                    )
+                  } else if (animal.id === STEAL_BIRD_ID) {
+                    body = (
+                      <BirdStealMount ref={birdStealRef}>{plate}</BirdStealMount>
+                    )
+                  }
+
+                  return (
                     <CrabMount
                       key={animal.id}
                       $xPct={animal.xPct}
                       $yPct={animal.yPct}
                     >
-                      <AnimalMotion
-                        $scale={animal.scale || 1}
-                        $ox={animal.originX}
-                        $oy={animal.originY}
-                        $hover={animal.hover}
-                        $delayMs={animal.delayMs}
-                        $clipRightPct={animal.clipRightPct || 0}
-                      >
-                        <CrabFlapper>
-                          <CrabFrame
-                            $phase="a"
-                            $durationMs={animal.flapMs}
-                            $delayMs={animal.delayMs}
-                            $hoverFlap={animal.hover}
-                            src={animal.a}
-                            alt=""
-                          />
-                          <CrabFrame
-                            $phase="b"
-                            $durationMs={animal.flapMs}
-                            $delayMs={animal.delayMs}
-                            $hoverFlap={animal.hover}
-                            src={animal.b}
-                            alt=""
-                          />
-                        </CrabFlapper>
-                      </AnimalMotion>
+                      {body}
                     </CrabMount>
-                  ),
-                )}
+                  )
+                })}
               </ForestAnimalsStack>
             </ArtBand>
 
@@ -1732,6 +1898,19 @@ export function HomeScrollPrototype() {
                   200.
                 </ForestDatasetBody>
               </ForestDatasetMount>
+              <ForestRnalabMount $show={walkArrived}>
+                <ForestDatasetBody>
+                  With our advisory lab, the{" "}
+                  <ExplainTerm
+                    term="RNAlab"
+                    explanation={RNALAB_EXPLANATION}
+                    imageSrc={RNALAB_TEXTBOX_IMG}
+                    imageAlt="RNAlab"
+                  />
+                  , the team uncovered 215.7 million high-quality
+                  plastic‑degrading enzymes.
+                </ForestDatasetBody>
+              </ForestRnalabMount>
             </ArtBand>
 
             <BushLayer>
@@ -1741,16 +1920,8 @@ export function HomeScrollPrototype() {
             <ArtBand $top={CREAM_PAD_TOP} $height={CREAM_PAD_HEIGHT} $z={4}>
               <CreamPadTextMount ref={creamPadTextRef}>
                 <CreamPadBody>
-                  With our advisory lab, the{" "}
-                  <ExplainTerm
-                    term="RNAlab"
-                    explanation={RNALAB_EXPLANATION}
-                    imageSrc={RNALAB_TEXTBOX_IMG}
-                    imageAlt="RNAlab"
-                  />
-                  , the team uncovered 215.7 million high-quality
-                  plastic‑degrading enzymes — a 1,000,000‑fold increase from the
-                  enzyme landscape previously known.
+                  A 1,000,000‑fold increase from the enzyme landscape previously
+                  known.
                 </CreamPadBody>
               </CreamPadTextMount>
             </ArtBand>
@@ -2235,6 +2406,44 @@ const ForestAnimalsStack = styled(CrabsStack)`
   pointer-events: auto;
 `
 
+const petamonPopIn = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(0, -5px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`
+
+/** Crabs + axolotls stay off the plate until the walker is surprised. */
+const PetamonReveal = styled.div`
+  width: 100%;
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+
+  ${({ $show, $delayMs }) =>
+    $show &&
+    css`
+      animation: ${petamonPopIn} 620ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+      animation-delay: ${$delayMs || 0}ms;
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transform: none;
+  }
+`
+
+/** Steal-flight transform target for the rightmost bird (driven by scroll). */
+const BirdStealMount = styled.div`
+  width: 100%;
+`
+
 const animalHoverBob = keyframes`
   0%,
   100% {
@@ -2433,8 +2642,9 @@ const ShoreBottleMount = styled.div`
   position: absolute;
   left: 104%;
   top: 10%;
-  width: 25%;
-  max-width: 12rem;
+  /* Same desktop max as the sky bottle; shrink with the window below ~1440px. */
+  width: min(12rem, 13.3vw);
+  max-width: 18%;
   transform: translate3d(-50%, -55%, 0);
   opacity: 0;
   visibility: hidden;
@@ -2659,6 +2869,17 @@ const ShoreCardsMount = styled.div`
     top: 70%;
   }
 
+  /* Track the shore/art width. 1100px is the current full-desktop size. */
+  & > div > div {
+    width: min(76.4%, 1100px);
+    box-sizing: border-box;
+    padding: clamp(0.4rem, 1.4vw, 1.25rem) clamp(0.45rem, 2vw, 1.75rem);
+  }
+
+  & h3 {
+    font-size: clamp(0.95rem, 2.4vw, 2.35rem);
+  }
+
   @media (max-width: 720px) {
     & > div {
       top: 67%;
@@ -2724,6 +2945,31 @@ const ForestDatasetBody = styled.p`
   overflow-wrap: break-word;
 `
 
+/** RNAlab payoff on the walker's right; swaps in when the bang pops. */
+const ForestRnalabMount = styled.div`
+  position: absolute;
+  top: 66%;
+  right: max(env(safe-area-inset-right, 0px), 9%);
+  width: min(36%, 30rem);
+  box-sizing: border-box;
+  text-align: left;
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+  transform: translate3d(${({ $show }) => ($show ? "0" : "20px")}, 0, 0);
+  transition:
+    opacity 520ms ease 180ms,
+    transform 560ms cubic-bezier(0.22, 1.2, 0.36, 1) 180ms;
+  pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
+
+  @media (max-width: 720px) {
+    top: 64%;
+    width: min(44%, 42vw);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`
+
 /** RNAlab copy on the cream pad below the bushes. */
 const CreamPadTextMount = styled.div`
   position: absolute;
@@ -2750,8 +2996,8 @@ const CreamPadBody = styled.p`
 const ConditionImageRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.55rem, 2.4vw, 1.75rem);
-  margin-top: clamp(0.7rem, 2.2vw, 1.75rem);
+  gap: clamp(0.35rem, 2.4vw, 1.75rem);
+  margin-top: clamp(0.45rem, 2.2vw, 1.75rem);
   align-items: start;
 `
 
@@ -2760,7 +3006,7 @@ const ConditionFigure = styled.figure`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.55rem;
+  gap: clamp(0.3rem, 0.8vw, 0.55rem);
   min-width: 0;
 `
 
@@ -2768,8 +3014,8 @@ const ConditionImage = styled.img`
   display: block;
   width: 100%;
   height: auto;
-  /* Same desktop max as before; drop the 14rem floor so narrow windows can shrink. */
-  max-height: clamp(6rem, 36vw, 24rem);
+  /* Desktop max stays 24rem; shrink with the window below ~1440px. */
+  max-height: min(24rem, 26.7vw);
   object-fit: contain;
   user-select: none;
   pointer-events: none;
@@ -2781,7 +3027,7 @@ const ConditionCaption = styled.figcaption`
   margin: 0;
   color: #fff;
   font-family: var(--font-body);
-  font-size: clamp(0.85rem, 2.8vw, 1.85rem);
+  font-size: clamp(0.65rem, 2.2vw, 1.85rem);
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
@@ -3142,9 +3388,9 @@ const BottleShiftWrap = styled.div`
 
 const BottleFloatWrap = styled.div`
   position: relative;
-  /* Desktop stays ~12rem; shrinks with the window below that. */
-  width: clamp(5.25rem, 18vw, 12rem);
-  max-width: 25%;
+  /* Desktop stays ~12rem; shrinks with the painting below ~1440px. */
+  width: min(12rem, 13.3vw);
+  max-width: 18%;
   animation: ${bottleIdleFloat} 1.5s ease-in-out infinite;
   animation-delay: -0.7s;
 
