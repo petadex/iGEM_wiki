@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import process from "process"
+import { STANDARD_ROUTE_ALIASES } from "../src/data/standardRoutes.mjs"
 
 const root = process.cwd()
 const contentRoot = path.join(root, "src", "content", "wiki")
@@ -182,6 +183,17 @@ const reactPageFiles = walk(
 )
 
 const reactRoutes = new Map(reactPageFiles.map((filePath) => [pageRouteFromFile(filePath), filePath]))
+const standardRoutes = new Set(Object.keys(STANDARD_ROUTE_ALIASES))
+
+for (const [aliasPath, sourcePath] of Object.entries(STANDARD_ROUTE_ALIASES)) {
+  if (mdxRoutes.has(aliasPath) || reactRoutes.has(aliasPath)) {
+    errors.push(`Standard iGEM path collides with an existing page: "${aliasPath}".`)
+  }
+
+  if (!mdxRoutes.has(sourcePath)) {
+    errors.push(`Standard iGEM path "${aliasPath}" has no MDX source page at "${sourcePath}".`)
+  }
+}
 
 for (const [route, mdxFile] of mdxRoutes) {
   if (reactRoutes.has(route)) {
@@ -196,7 +208,7 @@ if (fs.existsSync(navPath)) {
   const navRoutes = [...navSource.matchAll(/to:\s*["`]([^"`]+)["`]/g)].map((match) => match[1])
 
   for (const route of navRoutes) {
-    if (!reactRoutes.has(route) && !mdxRoutes.has(route)) {
+    if (!reactRoutes.has(route) && !mdxRoutes.has(route) && !standardRoutes.has(route)) {
       errors.push(`Navigation route "${route}" does not resolve to a React page or MDX page.`)
     }
   }
