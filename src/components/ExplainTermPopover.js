@@ -279,7 +279,7 @@ const TermButton = styled.button`
   border-radius: 2px;
 
   &:focus-visible {
-    outline: 2px solid var(--color-accent, #c8f050);
+    outline: 2px solid var(--color-accent, #c92f3b);
     outline-offset: 3px;
   }
 `

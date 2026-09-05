@@ -34,14 +34,14 @@ export const SUBTEAM_TRACKS = [
     label: "Hardware",
     color: "#C5EAFF",
     textColor: "#06202B",
-    href: "/hardware/overview/",
+    href: "/hardware/",
   },
   {
     id: "humanPractices",
     label: "Human Practices",
     color: "#2D9194",
     textColor: "#ffffff",
-    href: "/beyond-the-bench/human-practices/",
+    href: "/human-practices/",
   },
   {
     id: "outreach",
@@ -55,14 +55,14 @@ export const SUBTEAM_TRACKS = [
     label: "Venture",
     color: "#06202B",
     textColor: "#ffffff",
-    href: "/beyond-the-bench/entrepreneurship/",
+    href: "/entrepreneurship/",
   },
   {
     id: "web",
     label: "Web",
     color: "#D2F5E3",
     textColor: "#06202B",
-    href: "/dry-lab/software/",
+    href: "/software/",
   },
 ]
 

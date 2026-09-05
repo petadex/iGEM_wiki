@@ -8,7 +8,7 @@ import {
   getTocSections,
 } from "../../data/designSketchbookPages.js"
 
-import "page-flip/src/Style/stPageFlip.css"
+// import "page-flip/src/Style/stPageFlip.css"
 
 const FLIP_SETTINGS = {
   // Tall page aspect: stretch sizes by width first, then height = width / (w/h).

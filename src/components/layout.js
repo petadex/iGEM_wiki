@@ -9,8 +9,9 @@ const nav = [
   { label: "Project", children: [
     { to: "/project/description/", label: "Project Description" },
     { to: "/project/applications/", label: "Applications" },
-    { to: "/project/contribution/", label: "Contribution" },
-    { to: "/project/engineering/", label: "Engineering" },
+    { to: "/contribution/", label: "Contribution" },
+    { to: "/engineering/", label: "Engineering" },
+    { to: "/finance/", label: "Finance" },
   ]},
   { label: "Wet Lab", children: [
     { to: "/wet-lab/overview/", label: "Experimental Overview" },
@@ -21,27 +22,28 @@ const nav = [
   ]},
   { label: "Dry Lab", children: [
     { to: "/dry-lab/overview/", label: "Overview" },
-    { to: "/dry-lab/model/", label: "Generalized Model" },
-    { to: "/dry-lab/software/", label: "Software" },
+    { to: "/model/", label: "Generalized Model" },
+    { to: "/software/", label: "Software" },
     { to: "/dry-lab/software-specs/", label: "Software Specs" },
   ]},
   { label: "Hardware", children: [
-    { to: "/hardware/overview/", label: "Overview" },
+    { to: "/hardware/", label: "Overview" },
     { to: "/hardware/parts/", label: "Parts" },
     { to: "/hardware/notebook/", label: "Notebook" },
     { to: "/hardware/results/", label: "Results" },
   ]},
   { label: "Beyond the Bench", children: [
-    { to: "/beyond-the-bench/education-toolkit/", label: "Education Toolkit" },
-    { to: "/beyond-the-bench/human-practices/", label: "Human Practices" },
+    { to: "/education/", label: "Education Toolkit" },
+    { to: "/human-practices/", label: "Human Practices" },
     { to: "/beyond-the-bench/outreach/", label: "Outreach" },
-    { to: "/beyond-the-bench/entrepreneurship/", label: "Entrepreneurship" },
-    { to: "/beyond-the-bench/safety/", label: "Safety" },
+    { to: "/entrepreneurship/", label: "Entrepreneurship" },
+    { to: "/safety-and-security/", label: "Safety" },
   ]},
   { label: "Team", children: [
     { to: "/team/", label: "Meet the Team" },
     { to: "/team/attributions/", label: "Attributions" },
     { to: "/team/collaborations/", label: "Collaborations" },
+    { to: "/wiki/", label: "Wiki" },
   ]},
 ]
 

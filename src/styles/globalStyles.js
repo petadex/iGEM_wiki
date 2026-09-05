@@ -4,12 +4,12 @@ export const GlobalStyle = createGlobalStyle`
   /* ── Design tokens ── */
   :root {
     /* Colors */
-    --color-bg:         #f0ede6;
-    --color-surface:    #111111;
-    --color-border:     #222222;
-    --color-text:       #0a0a0a;
-    --color-muted:      #888880;
-    --color-accent:     #c8f050;   /* electric lime — swap this for your brand color */
+    --color-bg:         #f7fbff;
+    --color-surface:    #ffffff;
+    --color-border:     #9bb8c5;
+    --color-text:       #06202b;
+    --color-muted:      #58717b;
+    --color-accent:     #c92f3b;
 
     /* Typography */
     --font-display: 'DM Serif Display', Georgia, serif;

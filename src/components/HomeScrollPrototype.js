@@ -11,6 +11,9 @@ import { WikiTopBar, WIKI_TOP_BAR_Z_INDEX } from "./WikiTopBar.js"
 import { WaterfallSideText, PETASE_EXPLANATION } from "./WaterfallSideText.js"
 import { SwipeInBox } from "./SwipeInBox.js"
 import { ExplainTerm } from "./ExplainTermPopover.js"
+import EnzymeBattle from "./EnzymeBattle.js"
+import Petadex from "./Petadex.js"
+import PetadexBottlePath from "./PetadexBottlePath.js"
 
 /**
  * Homepage bottle stages (degradation journey).
@@ -700,6 +703,7 @@ export function HomeScrollPrototype() {
   const compositionRef = useRef(null)
   const humanWalkRef = useRef(null)
   const humanBobRef = useRef(null)
+  const petadexRef = useRef(null)
   const forestDatasetRef = useRef(null)
   const birdStealRef = useRef(null)
   /** Last steal progress (0–1); persists past unpin so the bottle stays stolen. */
@@ -721,6 +725,7 @@ export function HomeScrollPrototype() {
   const [shoreBottlePlaying, setShoreBottlePlaying] = useState(false)
   const [splashPlaying, setSplashPlaying] = useState(false)
   const [walkArrived, setWalkArrived] = useState(false)
+  const [battleOpen, setBattleOpen] = useState(false)
   const reduceMotionParallaxRef = useRef(false)
 
   bottleTouchPinnedRef.current = bottleTouchPinned
@@ -2045,6 +2050,14 @@ export function HomeScrollPrototype() {
           <WikiTopBar />
         </HomeNavMount>
       </ScrollStack>
+
+      <PetadexBottlePath petadexRef={petadexRef} onBattle={() => setBattleOpen(true)}>
+        <div ref={petadexRef}>
+          <Petadex />
+        </div>
+      </PetadexBottlePath>
+
+      <EnzymeBattle isOpen={battleOpen} onClose={() => setBattleOpen(false)} />
     </WikiFrontRoot>
   )
 }
