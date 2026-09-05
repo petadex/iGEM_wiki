@@ -421,18 +421,53 @@ const PUDDLE_SHIFT_Y_PCT =
 const PUDDLE_UNDER_SHIFT_PCT = 4.5
 
 /**
- * Autonomous shore-bottle rematch (section1).
- * Triggers once when the river/sand band crosses an early viewport threshold after the sky
- * bottle sinks; then slowly drifts down and exits left on its own.
+ * Shore-bottle rematch (section1). Same river path as before, but the drift
+ * pauses at three evenly spaced checkpoints until the bottle sits above the
+ * viewport midpoint — so it cannot float past the reader on its own.
  */
 /** Shore top below this fraction of vh → start the drift (appear as shore peeks in). */
 const SHORE_BOTTLE_TRIGGER_FRAC = 1.02
 /** Shore top above this → reset so the drift can replay on the next pass. */
 const SHORE_BOTTLE_RESET_FRAC = 1.08
-/** Total drift duration (continuous path travel). */
-const SHORE_BOTTLE_DRIFT_MS = 15000
+/** Travel time (ms) for the path itself; pauses at gates are extra. */
+const SHORE_BOTTLE_DRIFT_MS = 8000
 /** Sky bottle treated as sunk once fade opacity drops below this. */
 const SHORE_BOTTLE_SUNK_OPACITY = 0.2
+/**
+ * Waypoints as fractions of the drift (left/top % of the shore band).
+ * Matches the old CSS keyframe path.
+ */
+const SHORE_BOTTLE_PATH = [
+  { t: 0, left: 104, top: 10, opacity: 0 },
+  { t: 0.04, left: 102, top: 14, opacity: 1 },
+  { t: 0.45, left: 96, top: 42, opacity: 1 },
+  { t: 0.68, left: 90, top: 64, opacity: 1 },
+  { t: 0.82, left: 58, top: 74, opacity: 1 },
+  { t: 1, left: -16, top: 82, opacity: 1 },
+]
+/** Pause the drift here until the bottle is above the viewport midpoint. */
+const SHORE_BOTTLE_GATES = [0.25, 0.5, 0.75]
+/** Bottle centroid must be above this fraction of the viewport to clear a gate. */
+const SHORE_BOTTLE_GATE_VIEW_Y = 0.5
+
+function shoreBottlePoseAt(progress) {
+  const t = clamp01(progress)
+  const path = SHORE_BOTTLE_PATH
+  if (t <= path[0].t) return path[0]
+  for (let i = 1; i < path.length; i++) {
+    if (t <= path[i].t) {
+      const a = path[i - 1]
+      const b = path[i]
+      const u = (t - a.t) / Math.max(1e-6, b.t - a.t)
+      return {
+        left: a.left + (b.left - a.left) * u,
+        top: a.top + (b.top - a.top) * u,
+        opacity: a.opacity + (b.opacity - a.opacity) * u,
+      }
+    }
+  }
+  return path[path.length - 1]
+}
 
 const CRAB_CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/section-2-animals"
@@ -712,6 +747,9 @@ export function HomeScrollPrototype() {
   const walkLatchedRef = useRef(false)
   const walkReleasedRef = useRef(false)
   const shoreBottlePlayedRef = useRef(false)
+  const shoreBottleMountRef = useRef(null)
+  const shoreBottleProgressRef = useRef(0)
+  const shoreBottleGateRef = useRef(0)
   /** True after the sky bottle finishes its waterfall sink (near-bottom unpin). */
   const skyBottleHasSunkRef = useRef(false)
   /** Keep the overlay bottle hidden after sink so it cannot reappear through the fall. */
@@ -1504,15 +1542,92 @@ export function HomeScrollPrototype() {
     triggerBottleSplash,
   ])
 
-  // Reduced-motion path has no CSS animationend — clear the quiet mid-pose after a beat.
+  // River bottle: time-based drift along SHORE_BOTTLE_PATH, pausing at each
+  // gate until the bottle centroid is above the viewport midpoint.
   useEffect(() => {
     if (!shoreBottlePlaying || typeof window === "undefined") return undefined
     const reduce =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (!reduce) return undefined
-    const t = window.setTimeout(() => setShoreBottlePlaying(false), 2200)
-    return () => window.clearTimeout(t)
+    if (reduce) {
+      const t = window.setTimeout(() => setShoreBottlePlaying(false), 2200)
+      return () => window.clearTimeout(t)
+    }
+
+    shoreBottleProgressRef.current = 0
+    shoreBottleGateRef.current = 0
+    const mount = shoreBottleMountRef.current
+    if (!mount) return undefined
+
+    const applyPose = p => {
+      const pose = shoreBottlePoseAt(p)
+      mount.style.left = `${pose.left}%`
+      mount.style.top = `${pose.top}%`
+      mount.style.opacity = String(pose.opacity)
+      mount.style.visibility = pose.opacity > 0.02 ? "visible" : "hidden"
+    }
+
+    const bottleAboveMid = () => {
+      const r = mount.getBoundingClientRect()
+      const midY = r.top + r.height * 0.5
+      return midY <= window.innerHeight * SHORE_BOTTLE_GATE_VIEW_Y
+    }
+
+    applyPose(0)
+    let last = performance.now()
+    let raf = 0
+    let finished = false
+
+    const step = now => {
+      if (finished) return
+      const dt = Math.max(0, Math.min(64, now - last))
+      last = now
+      let p = shoreBottleProgressRef.current
+      let gate = shoreBottleGateRef.current
+
+      // Clear any gates already in front of the reader (or just reached).
+      while (gate < SHORE_BOTTLE_GATES.length && p >= SHORE_BOTTLE_GATES[gate]) {
+        if (bottleAboveMid()) {
+          gate += 1
+        } else {
+          p = SHORE_BOTTLE_GATES[gate]
+          break
+        }
+      }
+
+      const blocked =
+        gate < SHORE_BOTTLE_GATES.length && p >= SHORE_BOTTLE_GATES[gate]
+      if (!blocked) {
+        p = Math.min(1, p + dt / SHORE_BOTTLE_DRIFT_MS)
+        // Don't skip through a gate on this frame — land on it and wait.
+        if (
+          gate < SHORE_BOTTLE_GATES.length &&
+          p >= SHORE_BOTTLE_GATES[gate]
+        ) {
+          p = SHORE_BOTTLE_GATES[gate]
+        }
+      }
+
+      shoreBottleProgressRef.current = p
+      shoreBottleGateRef.current = gate
+      applyPose(p)
+
+      if (p >= 1) {
+        finished = true
+        setShoreBottlePlaying(false)
+        return
+      }
+      raf = window.requestAnimationFrame(step)
+    }
+
+    raf = window.requestAnimationFrame(step)
+    return () => {
+      window.cancelAnimationFrame(raf)
+      mount.style.left = ""
+      mount.style.top = ""
+      mount.style.opacity = ""
+      mount.style.visibility = ""
+    }
   }, [shoreBottlePlaying])
 
   useLayoutEffect(() => {
@@ -1770,11 +1885,8 @@ export function HomeScrollPrototype() {
                 </CrabsStack>
                 <ShoreBottleLayer $z={3}>
                   <ShoreBottleMount
+                    ref={shoreBottleMountRef}
                     $playing={shoreBottlePlaying}
-                    onAnimationEnd={e => {
-                      if (e.target !== e.currentTarget) return
-                      setShoreBottlePlaying(false)
-                    }}
                   >
                     <ShoreBottleSize>
                       <ShoreBottleRock $playing={shoreBottlePlaying}>
@@ -2677,43 +2789,9 @@ const ShoreBottleLayer = styled.div`
 `
 
 /**
- * Path: appear high on the right early, drift mostly downward for a long stretch,
- * then sweep left to exit near the end.
- * Linear timing so it does not ease/idle at each waypoint.
+ * Path: appear high on the right, drift mostly downward, then sweep left.
+ * Progress and the three scroll-gates are driven in JS (see SHORE_BOTTLE_PATH).
  */
-const shoreBottleDrift = keyframes`
-  0% {
-    left: 104%;
-    top: 10%;
-    opacity: 0;
-  }
-  4% {
-    left: 102%;
-    top: 14%;
-    opacity: 1;
-  }
-  45% {
-    left: 96%;
-    top: 42%;
-    opacity: 1;
-  }
-  68% {
-    left: 90%;
-    top: 64%;
-    opacity: 1;
-  }
-  82% {
-    left: 58%;
-    top: 74%;
-    opacity: 1;
-  }
-  100% {
-    left: -16%;
-    top: 82%;
-    opacity: 1;
-  }
-`
-
 const ShoreBottleMount = styled.div`
   position: absolute;
   left: 104%;
@@ -2730,11 +2808,10 @@ const ShoreBottleMount = styled.div`
     $playing
       ? css`
           visibility: visible;
-          animation: ${shoreBottleDrift} ${SHORE_BOTTLE_DRIFT_MS}ms linear
-            forwards;
         `
       : css`
-          animation: none;
+          opacity: 0;
+          visibility: hidden;
         `}
 
   @media (prefers-reduced-motion: reduce) {
@@ -2743,13 +2820,13 @@ const ShoreBottleMount = styled.div`
         ? css`
             /* Keep a quiet mid-path pose; no long drift. */
             visibility: visible;
-            animation: none;
             left: 92%;
             top: 48%;
             opacity: 0.9;
           `
         : css`
-            animation: none;
+            visibility: hidden;
+            opacity: 0;
           `}
   }
 `
