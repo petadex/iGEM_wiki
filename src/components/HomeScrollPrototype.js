@@ -50,19 +50,23 @@ const ASSETS = {
 const LOGO_FRAME_COUNT = 9
 /** Base hold for frames 1–7. */
 const LOGO_FRAME_MS = 170
-/** Longer hold for the last two frames (8–9). */
-const LOGO_LAST_FRAME_MS = 450
+/** Longer hold for frame 8. */
+const LOGO_PENULTIMATE_FRAME_MS = 650
+/** Longest hold for the completed PETABITE title (frame 9). */
+const LOGO_LAST_FRAME_MS = 1300
 const LOGO_FRAMES = Array.from(
   { length: LOGO_FRAME_COUNT },
   (_, i) =>
     `https://static.igem.wiki/teams/6187/wiki/homepage-components/logo-animation-files/untitled-artwork-${i + 1}.avif`,
 )
 
-/** Per-frame visibility windows so the last two frames linger longer. */
+/** Per-frame visibility windows so the last two frames linger, last longest. */
 const LOGO_FRAME_TIMING = (() => {
-  const durations = Array.from({ length: LOGO_FRAME_COUNT }, (_, i) =>
-    i >= LOGO_FRAME_COUNT - 2 ? LOGO_LAST_FRAME_MS : LOGO_FRAME_MS,
-  )
+  const durations = Array.from({ length: LOGO_FRAME_COUNT }, (_, i) => {
+    if (i === LOGO_FRAME_COUNT - 1) return LOGO_LAST_FRAME_MS
+    if (i === LOGO_FRAME_COUNT - 2) return LOGO_PENULTIMATE_FRAME_MS
+    return LOGO_FRAME_MS
+  })
   const cycleMs = durations.reduce((sum, ms) => sum + ms, 0)
   let acc = 0
   const windows = durations.map(ms => {
@@ -150,9 +154,16 @@ const MAP_BOTTLE_ENTER_END = 0.12
 const MAP_BOTTLE_TOP_START = 8
 /** Same Y as topmost section-3 bird — swap to section3 + begin shrink here. */
 const MAP_BOTTLE_TOP_SWAP = 49.5
-/** Park during walk-sticky (higher = smaller %). Above industry copy. */
+/** Reached as the walk begins (higher = smaller %). Above industry copy. */
 const MAP_BOTTLE_TOP_HOLD = 73
-/** Tuck behind bushes after walk sticky releases. */
+/**
+ * Comes to rest here, down in the bush line. Measured on the bush plate, its
+ * leaves start at 82% of this band and are solid by 86.5%, so this drops the
+ * bottle well inside them — only the cap shows through the thinning top edge,
+ * and the bird has to dive in after the rest of it.
+ */
+const MAP_BOTTLE_TOP_BUSH = 86
+/** Tuck fully behind bushes after walk sticky releases. */
 const MAP_BOTTLE_TOP_EXIT = 98
 /** Final scale once fully into the section3 stage (lerps SWAP → HOLD). */
 const MAP_BOTTLE_FOREST_SCALE = 0.62
@@ -165,7 +176,18 @@ function mapBottleProgressForTop(topPct) {
   )
 }
 const MAP_BOTTLE_HOLD_P = mapBottleProgressForTop(MAP_BOTTLE_TOP_HOLD)
-const MAP_BOTTLE_FADE_P = mapBottleProgressForTop(92)
+const MAP_BOTTLE_BUSH_P = mapBottleProgressForTop(MAP_BOTTLE_TOP_BUSH)
+const MAP_BOTTLE_FADE_P = mapBottleProgressForTop(96)
+/** Share of the drop into the bushes that happens while he is still walking. */
+const MAP_BOTTLE_WALK_FALL_SHARE = 0.85
+/**
+ * Walk progress by which that share is spent. The drop starts out in the
+ * industry line's column, so it clears it in the first stretch of the walk
+ * rather than creeping down behind the words.
+ */
+const MAP_BOTTLE_WALK_FALL_END = 0.4
+/** Steal progress by which the bottle has finished settling in the leaves. */
+const MAP_BOTTLE_SETTLE_END = 0.17
 
 /**
  * Section4 bottle (after bushes): barrel-rolls in from the right as the cream-pad
@@ -213,20 +235,22 @@ const CREAM_BOTTLE_RAMP_Y_NUDGE_PX = -56
 const CREAM_BOTTLE_UNPARK_VH = 0.2
 
 /**
- * Second section4 bottle: starts when the first finishes the WWTP exit, enters
- * from the right and rolls down the next ramp. Progress is pure scroll delta
- * (not element location) mapped onto a path in % of the section-5 plate.
+ * Second WWTP bottle path, in % of the section-5 plate.
+ *   X: 0 = left edge, 100 = right edge. >100 is off-right, <0 is off-left.
+ *   Y: 0 = top of the plate, 100 = bottom. Higher = lower on the page.
+ * Slope is the line between these two points — no separate angle to set.
  */
-const RAMP2_SLIDE_VH = 1.15
-/** Path on the section-5 plate (%). Tune to sit on the second WWTP ramp. */
-const RAMP2_START_X_PCT = 108
-const RAMP2_START_Y_PCT = 11
-const RAMP2_END_X_PCT = -12
-const RAMP2_END_Y_PCT = 26
-/** Barrel rolls over the full ramp-2 traversal. */
-const RAMP2_ROLLS = 2.5
-/** Resting lean while on the ramp (deg). */
-const RAMP2_TILT_DEG = -38
+const RAMP2_START_X_PCT = 112
+const RAMP2_START_Y_PCT = 15
+const RAMP2_END_X_PCT = -14
+const RAMP2_END_Y_PCT = 28.5
+/**
+ * When ramp 2 starts, as a fraction of bottle 1's slide (0 = bottle 1 just
+ * leaves the park, 1 = bottle 1 is fully off the left edge).
+ */
+const RAMP2_ARM_AT = 0.28
+/** Scroll span (vh) for the start → end traversal. */
+const RAMP2_SLIDE_VH = CREAM_BOTTLE_RAMP_SLIDE_VH
 
 const SECTION5_CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/noorine-section-5-layers"
@@ -397,18 +421,53 @@ const PUDDLE_SHIFT_Y_PCT =
 const PUDDLE_UNDER_SHIFT_PCT = 4.5
 
 /**
- * Autonomous shore-bottle rematch (section1).
- * Triggers once when the river/sand band crosses an early viewport threshold after the sky
- * bottle sinks; then slowly drifts down and exits left on its own.
+ * Shore-bottle rematch (section1). Same river path as before, but the drift
+ * pauses at three evenly spaced checkpoints until the bottle sits above the
+ * viewport midpoint — so it cannot float past the reader on its own.
  */
 /** Shore top below this fraction of vh → start the drift (appear as shore peeks in). */
 const SHORE_BOTTLE_TRIGGER_FRAC = 1.02
 /** Shore top above this → reset so the drift can replay on the next pass. */
 const SHORE_BOTTLE_RESET_FRAC = 1.08
-/** Total drift duration (continuous path travel). */
-const SHORE_BOTTLE_DRIFT_MS = 15000
+/** Travel time (ms) for the path itself; pauses at gates are extra. */
+const SHORE_BOTTLE_DRIFT_MS = 8000
 /** Sky bottle treated as sunk once fade opacity drops below this. */
 const SHORE_BOTTLE_SUNK_OPACITY = 0.2
+/**
+ * Waypoints as fractions of the drift (left/top % of the shore band).
+ * Matches the old CSS keyframe path.
+ */
+const SHORE_BOTTLE_PATH = [
+  { t: 0, left: 104, top: 10, opacity: 0 },
+  { t: 0.04, left: 102, top: 14, opacity: 1 },
+  { t: 0.45, left: 96, top: 42, opacity: 1 },
+  { t: 0.68, left: 90, top: 64, opacity: 1 },
+  { t: 0.82, left: 58, top: 74, opacity: 1 },
+  { t: 1, left: -16, top: 82, opacity: 1 },
+]
+/** Pause the drift here until the bottle is above the viewport midpoint. */
+const SHORE_BOTTLE_GATES = [0.25, 0.5, 0.75]
+/** Bottle centroid must be above this fraction of the viewport to clear a gate. */
+const SHORE_BOTTLE_GATE_VIEW_Y = 0.5
+
+function shoreBottlePoseAt(progress) {
+  const t = clamp01(progress)
+  const path = SHORE_BOTTLE_PATH
+  if (t <= path[0].t) return path[0]
+  for (let i = 1; i < path.length; i++) {
+    if (t <= path[i].t) {
+      const a = path[i - 1]
+      const b = path[i]
+      const u = (t - a.t) / Math.max(1e-6, b.t - a.t)
+      return {
+        left: a.left + (b.left - a.left) * u,
+        top: a.top + (b.top - a.top) * u,
+        opacity: a.opacity + (b.opacity - a.opacity) * u,
+      }
+    }
+  }
+  return path[path.length - 1]
+}
 
 const CRAB_CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/section-2-animals"
@@ -478,6 +537,7 @@ const SECTION3_ANIMALS = [
     src: `${SECTION3_CDN}/section-3-background-axolotl.avif`,
     xPct: 0,
     yPct: 10,
+    revealOnArrive: true,
   },
   {
     id: "axolotl",
@@ -487,6 +547,7 @@ const SECTION3_ANIMALS = [
     yPct: 10,
     flapMs: 1100,
     delayMs: 80,
+    revealOnArrive: true,
   },
   {
     id: "bird-a",
@@ -524,6 +585,7 @@ const SECTION3_ANIMALS = [
     yPct: 25,
     flapMs: 820,
     delayMs: 0,
+    revealOnArrive: true,
   },
   {
     id: "crab-b",
@@ -533,6 +595,7 @@ const SECTION3_ANIMALS = [
     yPct: -8,
     flapMs: 700,
     delayMs: 220,
+    revealOnArrive: true,
   },
   {
     id: "crab-c",
@@ -542,6 +605,7 @@ const SECTION3_ANIMALS = [
     yPct: -10,
     flapMs: 940,
     delayMs: 360,
+    revealOnArrive: true,
   },
 ]
 
@@ -563,10 +627,62 @@ const HUMAN = {
 
 /** Extra in-flow scroll while the forest frame is sticky; maps to walk progress. */
 const WALK_TRACK_VH = 120
-/** Extra freeze after pose 2 + bang, so the arrived art can be seen before unpin. */
-const WALK_HOLD_VH = 55
+/**
+ * Freeze after pose 2 + bang. Long enough to read the RNAlab reveal and scrub
+ * the bird-steal beat before the forest unpins.
+ */
+const WALK_HOLD_VH = 300
 /** Keep the figure centroid at this viewport Y while the forest is frozen. */
 const HUMAN_PIN_VIEW_Y = 0.68
+/**
+ * Stop the figure centroid at this fraction of viewport width (was 0.5).
+ * Just left of center so the RNAlab copy has room on his right.
+ */
+const HUMAN_PIN_VIEW_X = 0.43
+
+/**
+ * Bird steal beat, scrubbed by scroll through the arrival hold (0–1):
+ * the rightmost forest bird swoops to the parked bottle, grabs it, and carries
+ * it off frame. Windows are fractions of the hold.
+ */
+const STEAL_BIRD_ID = "bird-a"
+const STEAL_APPROACH_START = 0.12
+const STEAL_GRAB_AT = 0.54
+const STEAL_EXIT_END = 0.97
+/**
+ * The bird's perch sits above the pinned viewport, so the flight starts just
+ * off the top-right edge instead (fractions of the viewport).
+ */
+const STEAL_ENTRY_X_FRAC = 0.92
+const STEAL_ENTRY_Y_FRAC = -0.12
+/**
+ * Dive bow (positive = dips below the straight line, so the bird drops into
+ * frame early instead of skimming above it) and exit vector, as fractions of
+ * the painting width. Exit runs up and to the left, away from the walker.
+ */
+const STEAL_ARC_FRAC = 0.07
+const STEAL_EXIT_DX_FRAC = -0.28
+const STEAL_EXIT_DY_FRAC = -0.38
+/**
+ * The bird dives all the way onto the bottle now that it lies in the leaves,
+ * so it only rides a hair above the bottle at the grab.
+ */
+const STEAL_GRAB_LIFT_FRAC = 0.015
+/**
+ * The bottle trails this far behind the bird along the exit path, so the bird
+ * climbs out of the bushes first and the bottle swings up after it.
+ */
+const STEAL_CARRY_LAG = 0.16
+/** Fraction of the exit spent fading the bird + carried bottle out. */
+const STEAL_FADE_FROM = 0.72
+/** Hold fraction over which the "dataset of 200" line clears for the reveal. */
+const STEAL_DATASET_FADE = 0.09
+
+const STEAL_BIRD =
+  SECTION3_ANIMALS.find(animal => animal.id === STEAL_BIRD_ID) || null
+
+const clamp01 = v => Math.max(0, Math.min(1, v))
+const smoothstep = t => t * t * (3 - 2 * t)
 /** Human / animal overlay plates are 2238×3132. */
 const OVERLAY_PLATE_ASPECT = 3132 / 2238
 /** Head on the human plate (%), for placing the bang behind it. */
@@ -624,10 +740,16 @@ export function HomeScrollPrototype() {
   const humanBobRef = useRef(null)
   const petadexRef = useRef(null)
   const forestDatasetRef = useRef(null)
+  const birdStealRef = useRef(null)
+  /** Last steal progress (0–1); persists past unpin so the bottle stays stolen. */
+  const birdStealPRef = useRef(0)
   const walkArrivedRef = useRef(false)
   const walkLatchedRef = useRef(false)
   const walkReleasedRef = useRef(false)
   const shoreBottlePlayedRef = useRef(false)
+  const shoreBottleMountRef = useRef(null)
+  const shoreBottleProgressRef = useRef(0)
+  const shoreBottleGateRef = useRef(0)
   /** True after the sky bottle finishes its waterfall sink (near-bottom unpin). */
   const skyBottleHasSunkRef = useRef(false)
   /** Keep the overlay bottle hidden after sink so it cannot reappear through the fall. */
@@ -765,6 +887,12 @@ export function HomeScrollPrototype() {
           : window.innerHeight * (WALK_HOLD_VH / 100)
       const freezePx = walkPx + holdPx
       let walkProgress = 0
+      /** Scroll through the arrival hold (0–1) — drives the bird steal. */
+      let stealProgress = 0
+      /** Offset + fade the bottle inherits once the bird has grabbed it. */
+      let stealCarryDx = 0
+      let stealCarryDy = 0
+      let stealCarryFade = 1
 
       if (painting) {
         const artH = painting.offsetHeight
@@ -788,6 +916,11 @@ export function HomeScrollPrototype() {
         } else if (track) {
           track.style.paddingBottom = "0px"
           if (walkReleasedRef.current) {
+            // The whole beat ran to completion before unpin — keep it that way,
+            // so scrolling back up here is just an ordinary scroll.
+            walkProgress = 1
+            walkLatchedRef.current = true
+            stealProgress = birdStealPRef.current
             track.style.height = `${artH}px`
             painting.style.position = "relative"
             painting.style.top = "0px"
@@ -801,7 +934,15 @@ export function HomeScrollPrototype() {
               0,
               Math.min(1, (y - pinAt) / Math.max(1, walkPx)),
             )
-            if (walkProgress >= 0.995) walkLatchedRef.current = true
+            // Tracks the scroll in both directions: backing out of the pin
+            // before the beat is spent rewinds the walk, the reveal, and the
+            // steal. Only clearing the pin entirely (below) locks it in.
+            walkLatchedRef.current = walkProgress >= 0.995
+            stealProgress =
+              holdPx > 0
+                ? clamp01((y - (pinAt + walkPx)) / holdPx)
+                : 0
+            birdStealPRef.current = stealProgress
             painting.style.left = "0px"
             painting.style.width = "100%"
             if (walkLatchedRef.current && y > pinAt + freezePx) {
@@ -834,7 +975,8 @@ export function HomeScrollPrototype() {
           const paintingLeft = painting.getBoundingClientRect().left
           const startX =
             ((HUMAN.originX + HUMAN.xPct) / 100) * painting.offsetWidth
-          const extraXMax = window.innerWidth / 2 - (paintingLeft + startX)
+          const extraXMax =
+            window.innerWidth * HUMAN_PIN_VIEW_X - (paintingLeft + startX)
           const extraX = extraXMax * p
           walker.style.transform = extraX
             ? `translate3d(${extraX}px, 0, 0)`
@@ -846,12 +988,93 @@ export function HomeScrollPrototype() {
               !latched && walkProgress > 0.02 && walkProgress < 0.995 ? "1" : ""
           }
           if (forestDatasetRef.current) {
-            forestDatasetRef.current.style.opacity =
-              reduceWalk || latched ? "1" : String(walkProgress)
+            // Clears as the bang lands so the RNAlab line can take its place.
+            const datasetFade = latched
+              ? 1 - clamp01(stealProgress / STEAL_DATASET_FADE)
+              : walkProgress
+            forestDatasetRef.current.style.opacity = reduceWalk
+              ? "1"
+              : String(datasetFade)
           }
           if (latched !== walkArrivedRef.current) {
             walkArrivedRef.current = latched
             setWalkArrived(latched)
+          }
+        }
+
+        // Bird steal: swoop from the perch to the parked bottle, then carry it
+        // off frame. Both paths are painting-local so they track any art width.
+        const stealBird = birdStealRef.current
+        if (stealBird && STEAL_BIRD) {
+          if (reduceWalk || stealProgress <= 0) {
+            stealBird.style.transform = ""
+            stealBird.style.opacity = ""
+            stealBird.style.willChange = "auto"
+          } else {
+            const birdX =
+              ((STEAL_BIRD.originX + STEAL_BIRD.xPct) / 100) * artW
+            const birdY =
+              FOREST_BAND_TOP * artH +
+              ((STEAL_BIRD.originY + STEAL_BIRD.yPct) / 100) * plateH
+            const bottleX = (MAP_BOTTLE_LEFT_REST / 100) * artW
+            const bottleY =
+              MAP_BOTTLE_BAND_TOP * artH +
+              (MAP_BOTTLE_TOP_BUSH / 100) * (MAP_BOTTLE_BAND_HEIGHT * artH)
+
+            const approach = smoothstep(
+              clamp01(
+                (stealProgress - STEAL_APPROACH_START) /
+                  Math.max(1e-6, STEAL_GRAB_AT - STEAL_APPROACH_START),
+              ),
+            )
+            const rawExit = clamp01(
+              (stealProgress - STEAL_GRAB_AT) /
+                Math.max(1e-6, STEAL_EXIT_END - STEAL_GRAB_AT),
+            )
+            const exit = smoothstep(rawExit)
+            const carryExit = smoothstep(
+              clamp01(
+                (rawExit - STEAL_CARRY_LAG) /
+                  Math.max(1e-6, 1 - STEAL_CARRY_LAG),
+              ),
+            )
+            const exitDx = STEAL_EXIT_DX_FRAC * artW
+            const exitDy = STEAL_EXIT_DY_FRAC * artW
+            const fadeFor = e =>
+              1 -
+              clamp01(
+                (e - STEAL_FADE_FROM) / Math.max(1e-6, 1 - STEAL_FADE_FROM),
+              )
+            const fade = fadeFor(exit)
+
+            // Screen-space path: off-frame top-right → bottle → off-frame again.
+            const paintRect = painting.getBoundingClientRect()
+            const restX = paintRect.left + birdX
+            const restY = paintRect.top + birdY
+            const entryX = window.innerWidth * STEAL_ENTRY_X_FRAC
+            const entryY = window.innerHeight * STEAL_ENTRY_Y_FRAC
+            const grabX = paintRect.left + bottleX
+            const grabY =
+              paintRect.top + bottleY - STEAL_GRAB_LIFT_FRAC * artW
+
+            const dx =
+              entryX + (grabX - entryX) * approach - restX + exitDx * exit
+            const dy =
+              entryY +
+              (grabY - entryY) * approach +
+              STEAL_ARC_FRAC * artW * Math.sin(Math.PI * approach) -
+              restY +
+              exitDy * exit
+
+            stealBird.style.transform = `translate3d(${dx}px, ${dy}px, 0)`
+            stealBird.style.opacity = String(fade)
+            stealBird.style.willChange =
+              exit < 1 ? "transform, opacity" : "auto"
+
+            // Bottle rides along only once grabbed, trailing the bird.
+            stealCarryDx = exitDx * carryExit
+            stealCarryDy = exitDy * carryExit
+            stealCarryFade = fadeFor(carryExit)
           }
         }
       }
@@ -1001,17 +1224,35 @@ export function HomeScrollPrototype() {
         const span = Math.max(1, rect.height * 0.92)
         let p = Math.max(0, Math.min(1, (vh * 0.5 - rect.top) / span))
 
-        // Until walk sticky releases: cap at the crab/industry hold. While the
-        // walk runs, ease from the frozen band progress up to that hold (and
-        // ease back if the user scrolls up), then stay parked until unpin.
+        // Until walk sticky releases: cap at the crab/industry hold. The band
+        // itself stops advancing once the painting pins, so the walk and the
+        // arrival hold drive the rest of the drop — it keeps falling while he
+        // walks and settles into the leaves early in the hold. Scrolling back
+        // up rewinds the same path.
         if (!walkReleasedRef.current) {
           if (walkProgress > 0.02) {
             if (mapBottleWalkStartPRef.current == null) {
               mapBottleWalkStartPRef.current = Math.min(p, MAP_BOTTLE_HOLD_P)
             }
             const startP = mapBottleWalkStartPRef.current
-            const walkT = Math.min(1, Math.max(0, (walkProgress - 0.02) / 0.28))
-            p = startP + (MAP_BOTTLE_HOLD_P - startP) * walkT
+            // Front-loaded so it falls past the industry line at roughly the
+            // pace of the scroll, then eases the last bit into the leaves.
+            const walkFall =
+              1 -
+              Math.pow(
+                1 -
+                  clamp01(
+                    (walkProgress - 0.02) /
+                      Math.max(1e-6, MAP_BOTTLE_WALK_FALL_END - 0.02),
+                  ),
+                2.2,
+              )
+            const fallT = walkLatchedRef.current
+              ? MAP_BOTTLE_WALK_FALL_SHARE +
+                (1 - MAP_BOTTLE_WALK_FALL_SHARE) *
+                  smoothstep(clamp01(stealProgress / MAP_BOTTLE_SETTLE_END))
+              : MAP_BOTTLE_WALK_FALL_SHARE * walkFall
+            p = startP + (MAP_BOTTLE_BUSH_P - startP) * fallT
           } else {
             mapBottleWalkStartPRef.current = null
             p = Math.min(p, MAP_BOTTLE_HOLD_P)
@@ -1063,9 +1304,16 @@ export function HomeScrollPrototype() {
           }
         }
 
+        // Carried off by the bird once stolen; fades out with it.
+        const carried =
+          stealCarryDx !== 0 || stealCarryDy !== 0
+            ? ` translate3d(${stealCarryDx}px, ${stealCarryDy}px, 0)`
+            : ""
+        opacity *= stealCarryFade
+
         mapMount.style.left = `${left}%`
         mapMount.style.top = `${top}%`
-        mapMount.style.transform = `translate3d(-50%, -50%, 0) scale(${scale})`
+        mapMount.style.transform = `translate3d(-50%, -50%, 0)${carried} scale(${scale})`
         mapMount.style.opacity = String(opacity)
         mapMount.style.visibility = opacity > 0.02 ? "visible" : "hidden"
       }
@@ -1208,65 +1456,64 @@ export function HomeScrollPrototype() {
         creamBottle.style.visibility = opacity > 0.02 ? "visible" : "hidden"
         creamBottle.style.transformOrigin = transformOrigin
 
-        // Ramp-2 bottle: same stage, starts when bottle 1 is gone. Progress =
-        // scroll delta only; path is % of the section-5 plate (stays on the ramp).
+        // Ramp-2 bottle: same stage + slope as ramp 1. Arms the frame bottle 1
+        // has left the screen; scrolling back rewinds it off the right, then
+        // hands off to bottle 1 coming back from the left.
         const ramp2 = ramp2BottleMountRef.current
         const section5 = section5RootRef.current
         if (ramp2 && section5) {
           if (
             creamBottleParkedRef.current &&
-            firstExitP >= 1 &&
+            firstExitP >= RAMP2_ARM_AT &&
             ramp2StartScrollYRef.current == null
           ) {
             ramp2StartScrollYRef.current = y
           }
-          if (
-            !creamBottleParkedRef.current ||
-            (creamBottleParkedRef.current && firstExitP < 0.98)
-          ) {
-            // First bottle still visible / reversed — keep ramp-2 dormant unless
-            // we already started and are only scrubbing mid-path on scroll-up.
-            if (
-              ramp2StartScrollYRef.current != null &&
-              !(creamBottleParkedRef.current && firstExitP >= 1)
-            ) {
-              // Allow reverse: if first bottle comes back, clear ramp-2.
-              if (firstExitP < 0.98) ramp2StartScrollYRef.current = null
-            }
-          }
 
           const ramp2Start = ramp2StartScrollYRef.current
-          if (ramp2Start == null) {
+          const ramp2Span = Math.max(1, vh * RAMP2_SLIDE_VH)
+          const ramp2P =
+            ramp2Start == null ? 0 : (y - ramp2Start) / ramp2Span
+
+          if (ramp2P <= 0 && firstExitP < RAMP2_ARM_AT) {
+            ramp2StartScrollYRef.current = null
+          }
+
+          if (ramp2Start == null || ramp2P <= 0) {
             ramp2.style.opacity = "0"
             ramp2.style.visibility = "hidden"
           } else {
-            const ramp2Span = Math.max(1, vh * RAMP2_SLIDE_VH)
-            let ramp2P = (y - ramp2Start) / ramp2Span
-            ramp2P = Math.max(0, Math.min(1, ramp2P))
-            const ease =
-              ramp2P * ramp2P * (3 - 2 * ramp2P)
+            const p = Math.max(0, Math.min(1, ramp2P))
+            const slideEase = p * p * (3 - 2 * p)
+            const tiltP = Math.max(
+              0,
+              Math.min(
+                1,
+                p / Math.max(1e-6, CREAM_BOTTLE_RAMP_TILT_FRAC),
+              ),
+            )
+            const tiltEase = tiltP * tiltP * (3 - 2 * tiltP)
             const s5 = section5.getBoundingClientRect()
             const xPct =
               RAMP2_START_X_PCT +
-              (RAMP2_END_X_PCT - RAMP2_START_X_PCT) * ease
+              (RAMP2_END_X_PCT - RAMP2_START_X_PCT) * slideEase
             const yPct =
               RAMP2_START_Y_PCT +
-              (RAMP2_END_Y_PCT - RAMP2_START_Y_PCT) * ease
+              (RAMP2_END_Y_PCT - RAMP2_START_Y_PCT) * slideEase
             const r2Left = s5.left + (xPct / 100) * s5.width
             const r2Top = s5.top + (yPct / 100) * s5.height
-            const r2Rot =
-              RAMP2_TILT_DEG * Math.min(1, ramp2P / 0.18) +
-              ramp2P * RAMP2_ROLLS * 360
+            const r2Rot = CREAM_BOTTLE_RAMP_TILT_DEG * tiltEase
             let r2Op = 1
-            if (ramp2P <= 0.04) r2Op = ramp2P / 0.04
-            else if (ramp2P >= 0.92) r2Op = Math.max(0, (1 - ramp2P) / 0.08)
+            if (p <= 0.06) r2Op = p / 0.06
+            else if (p >= 0.88)
+              r2Op = Math.max(0, 1 - (p - 0.88) / 0.12)
 
             ramp2.style.left = `${r2Left}px`
             ramp2.style.top = `${r2Top}px`
             ramp2.style.transform = `translate3d(-50%, -50%, 0) rotate(${r2Rot}deg)`
             ramp2.style.opacity = String(r2Op)
             ramp2.style.visibility = r2Op > 0.02 ? "visible" : "hidden"
-            ramp2.style.transformOrigin = "50% 50%"
+            ramp2.style.transformOrigin = "50% 40%"
           }
         }
       }
@@ -1295,15 +1542,92 @@ export function HomeScrollPrototype() {
     triggerBottleSplash,
   ])
 
-  // Reduced-motion path has no CSS animationend — clear the quiet mid-pose after a beat.
+  // River bottle: time-based drift along SHORE_BOTTLE_PATH, pausing at each
+  // gate until the bottle centroid is above the viewport midpoint.
   useEffect(() => {
     if (!shoreBottlePlaying || typeof window === "undefined") return undefined
     const reduce =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (!reduce) return undefined
-    const t = window.setTimeout(() => setShoreBottlePlaying(false), 2200)
-    return () => window.clearTimeout(t)
+    if (reduce) {
+      const t = window.setTimeout(() => setShoreBottlePlaying(false), 2200)
+      return () => window.clearTimeout(t)
+    }
+
+    shoreBottleProgressRef.current = 0
+    shoreBottleGateRef.current = 0
+    const mount = shoreBottleMountRef.current
+    if (!mount) return undefined
+
+    const applyPose = p => {
+      const pose = shoreBottlePoseAt(p)
+      mount.style.left = `${pose.left}%`
+      mount.style.top = `${pose.top}%`
+      mount.style.opacity = String(pose.opacity)
+      mount.style.visibility = pose.opacity > 0.02 ? "visible" : "hidden"
+    }
+
+    const bottleAboveMid = () => {
+      const r = mount.getBoundingClientRect()
+      const midY = r.top + r.height * 0.5
+      return midY <= window.innerHeight * SHORE_BOTTLE_GATE_VIEW_Y
+    }
+
+    applyPose(0)
+    let last = performance.now()
+    let raf = 0
+    let finished = false
+
+    const step = now => {
+      if (finished) return
+      const dt = Math.max(0, Math.min(64, now - last))
+      last = now
+      let p = shoreBottleProgressRef.current
+      let gate = shoreBottleGateRef.current
+
+      // Clear any gates already in front of the reader (or just reached).
+      while (gate < SHORE_BOTTLE_GATES.length && p >= SHORE_BOTTLE_GATES[gate]) {
+        if (bottleAboveMid()) {
+          gate += 1
+        } else {
+          p = SHORE_BOTTLE_GATES[gate]
+          break
+        }
+      }
+
+      const blocked =
+        gate < SHORE_BOTTLE_GATES.length && p >= SHORE_BOTTLE_GATES[gate]
+      if (!blocked) {
+        p = Math.min(1, p + dt / SHORE_BOTTLE_DRIFT_MS)
+        // Don't skip through a gate on this frame — land on it and wait.
+        if (
+          gate < SHORE_BOTTLE_GATES.length &&
+          p >= SHORE_BOTTLE_GATES[gate]
+        ) {
+          p = SHORE_BOTTLE_GATES[gate]
+        }
+      }
+
+      shoreBottleProgressRef.current = p
+      shoreBottleGateRef.current = gate
+      applyPose(p)
+
+      if (p >= 1) {
+        finished = true
+        setShoreBottlePlaying(false)
+        return
+      }
+      raf = window.requestAnimationFrame(step)
+    }
+
+    raf = window.requestAnimationFrame(step)
+    return () => {
+      window.cancelAnimationFrame(raf)
+      mount.style.left = ""
+      mount.style.top = ""
+      mount.style.opacity = ""
+      mount.style.visibility = ""
+    }
   }, [shoreBottlePlaying])
 
   useLayoutEffect(() => {
@@ -1561,11 +1885,8 @@ export function HomeScrollPrototype() {
                 </CrabsStack>
                 <ShoreBottleLayer $z={3}>
                   <ShoreBottleMount
+                    ref={shoreBottleMountRef}
                     $playing={shoreBottlePlaying}
-                    onAnimationEnd={e => {
-                      if (e.target !== e.currentTarget) return
-                      setShoreBottlePlaying(false)
-                    }}
                   >
                     <ShoreBottleSize>
                       <ShoreBottleRock $playing={shoreBottlePlaying}>
@@ -1641,53 +1962,67 @@ export function HomeScrollPrototype() {
 
             <ArtBand $top={FOREST_BAND_TOP} $height={FOREST_BAND_HEIGHT} $z={3}>
               <ForestAnimalsStack aria-hidden="true">
-                {SECTION3_ANIMALS.map(animal =>
-                  animal.static ? (
-                    <CrabMount
-                      key={animal.id}
-                      $xPct={animal.xPct}
-                      $yPct={animal.yPct}
+                {SECTION3_ANIMALS.map(animal => {
+                  const plate = animal.static ? (
+                    <CrabFlapper>
+                      <StaticPlateImg src={animal.src} alt="" />
+                    </CrabFlapper>
+                  ) : (
+                    <AnimalMotion
+                      $scale={animal.scale || 1}
+                      $ox={animal.originX}
+                      $oy={animal.originY}
+                      $hover={animal.hover}
+                      $delayMs={animal.delayMs}
+                      $clipRightPct={animal.clipRightPct || 0}
                     >
                       <CrabFlapper>
-                        <StaticPlateImg src={animal.src} alt="" />
+                        <CrabFrame
+                          $phase="a"
+                          $durationMs={animal.flapMs}
+                          $delayMs={animal.delayMs}
+                          $hoverFlap={animal.hover}
+                          src={animal.a}
+                          alt=""
+                        />
+                        <CrabFrame
+                          $phase="b"
+                          $durationMs={animal.flapMs}
+                          $delayMs={animal.delayMs}
+                          $hoverFlap={animal.hover}
+                          src={animal.b}
+                          alt=""
+                        />
                       </CrabFlapper>
-                    </CrabMount>
-                  ) : (
+                    </AnimalMotion>
+                  )
+
+                  let body = plate
+                  if (animal.revealOnArrive) {
+                    body = (
+                      <PetamonReveal
+                        $show={walkArrived}
+                        $delayMs={animal.delayMs}
+                      >
+                        {plate}
+                      </PetamonReveal>
+                    )
+                  } else if (animal.id === STEAL_BIRD_ID) {
+                    body = (
+                      <BirdStealMount ref={birdStealRef}>{plate}</BirdStealMount>
+                    )
+                  }
+
+                  return (
                     <CrabMount
                       key={animal.id}
                       $xPct={animal.xPct}
                       $yPct={animal.yPct}
                     >
-                      <AnimalMotion
-                        $scale={animal.scale || 1}
-                        $ox={animal.originX}
-                        $oy={animal.originY}
-                        $hover={animal.hover}
-                        $delayMs={animal.delayMs}
-                        $clipRightPct={animal.clipRightPct || 0}
-                      >
-                        <CrabFlapper>
-                          <CrabFrame
-                            $phase="a"
-                            $durationMs={animal.flapMs}
-                            $delayMs={animal.delayMs}
-                            $hoverFlap={animal.hover}
-                            src={animal.a}
-                            alt=""
-                          />
-                          <CrabFrame
-                            $phase="b"
-                            $durationMs={animal.flapMs}
-                            $delayMs={animal.delayMs}
-                            $hoverFlap={animal.hover}
-                            src={animal.b}
-                            alt=""
-                          />
-                        </CrabFlapper>
-                      </AnimalMotion>
+                      {body}
                     </CrabMount>
-                  ),
-                )}
+                  )
+                })}
               </ForestAnimalsStack>
             </ArtBand>
 
@@ -1737,6 +2072,19 @@ export function HomeScrollPrototype() {
                   200.
                 </ForestDatasetBody>
               </ForestDatasetMount>
+              <ForestRnalabMount $show={walkArrived}>
+                <ForestDatasetBody>
+                  With our advisory lab, the{" "}
+                  <ExplainTerm
+                    term="RNAlab"
+                    explanation={RNALAB_EXPLANATION}
+                    imageSrc={RNALAB_TEXTBOX_IMG}
+                    imageAlt="RNAlab"
+                  />
+                  , the team uncovered 215.7 million high-quality
+                  plastic‑degrading enzymes.
+                </ForestDatasetBody>
+              </ForestRnalabMount>
             </ArtBand>
 
             <BushLayer>
@@ -1746,16 +2094,8 @@ export function HomeScrollPrototype() {
             <ArtBand $top={CREAM_PAD_TOP} $height={CREAM_PAD_HEIGHT} $z={4}>
               <CreamPadTextMount ref={creamPadTextRef}>
                 <CreamPadBody>
-                  With our advisory lab, the{" "}
-                  <ExplainTerm
-                    term="RNAlab"
-                    explanation={RNALAB_EXPLANATION}
-                    imageSrc={RNALAB_TEXTBOX_IMG}
-                    imageAlt="RNAlab"
-                  />
-                  , the team uncovered 215.7 million high-quality
-                  plastic‑degrading enzymes — a 1,000,000‑fold increase from the
-                  enzyme landscape previously known.
+                  A 1,000,000‑fold increase from the enzyme landscape previously
+                  known.
                 </CreamPadBody>
               </CreamPadTextMount>
             </ArtBand>
@@ -2167,6 +2507,8 @@ const ExclamationPop = styled.div`
   width: 100%;
   transform-origin: ${EXCLAMATION_MARK_X}% ${EXCLAMATION_MARK_Y}%;
   opacity: ${({ $show }) => ($show ? 1 : 0)};
+  /* Only bites on the way out — the pop-in keyframes own the entry. */
+  transition: opacity 200ms ease;
 
   ${({ $show }) =>
     $show
@@ -2183,6 +2525,7 @@ const ExclamationPop = styled.div`
     animation: none;
     opacity: ${({ $show }) => ($show ? 1 : 0)};
     transform: none;
+    transition: none;
   }
 `
 
@@ -2246,6 +2589,47 @@ const CrabsStack = styled.div`
 
 const ForestAnimalsStack = styled(CrabsStack)`
   pointer-events: auto;
+`
+
+const petamonPopIn = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(0, -5px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+`
+
+/** Crabs + axolotls stay off the plate until the walker is surprised. */
+const PetamonReveal = styled.div`
+  width: 100%;
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+  /* Only bites on the way out — the pop-in keyframes own the entry. */
+  transition: opacity 240ms ease;
+
+  ${({ $show, $delayMs }) =>
+    $show &&
+    css`
+      animation: ${petamonPopIn} 620ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+      animation-delay: ${$delayMs || 0}ms;
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transform: none;
+    transition: none;
+  }
+`
+
+/** Steal-flight transform target for the rightmost bird (driven by scroll). */
+const BirdStealMount = styled.div`
+  width: 100%;
 `
 
 const animalHoverBob = keyframes`
@@ -2405,49 +2789,16 @@ const ShoreBottleLayer = styled.div`
 `
 
 /**
- * Path: appear high on the right early, drift mostly downward for a long stretch,
- * then sweep left to exit near the end.
- * Linear timing so it does not ease/idle at each waypoint.
+ * Path: appear high on the right, drift mostly downward, then sweep left.
+ * Progress and the three scroll-gates are driven in JS (see SHORE_BOTTLE_PATH).
  */
-const shoreBottleDrift = keyframes`
-  0% {
-    left: 104%;
-    top: 10%;
-    opacity: 0;
-  }
-  4% {
-    left: 102%;
-    top: 14%;
-    opacity: 1;
-  }
-  45% {
-    left: 96%;
-    top: 42%;
-    opacity: 1;
-  }
-  68% {
-    left: 90%;
-    top: 64%;
-    opacity: 1;
-  }
-  82% {
-    left: 58%;
-    top: 74%;
-    opacity: 1;
-  }
-  100% {
-    left: -16%;
-    top: 82%;
-    opacity: 1;
-  }
-`
-
 const ShoreBottleMount = styled.div`
   position: absolute;
   left: 104%;
   top: 10%;
-  width: 25%;
-  max-width: 12rem;
+  /* Same desktop max as the sky bottle; shrink with the window below ~1440px. */
+  width: min(12rem, 13.3vw);
+  max-width: 18%;
   transform: translate3d(-50%, -55%, 0);
   opacity: 0;
   visibility: hidden;
@@ -2457,11 +2808,10 @@ const ShoreBottleMount = styled.div`
     $playing
       ? css`
           visibility: visible;
-          animation: ${shoreBottleDrift} ${SHORE_BOTTLE_DRIFT_MS}ms linear
-            forwards;
         `
       : css`
-          animation: none;
+          opacity: 0;
+          visibility: hidden;
         `}
 
   @media (prefers-reduced-motion: reduce) {
@@ -2470,13 +2820,13 @@ const ShoreBottleMount = styled.div`
         ? css`
             /* Keep a quiet mid-path pose; no long drift. */
             visibility: visible;
-            animation: none;
             left: 92%;
             top: 48%;
             opacity: 0.9;
           `
         : css`
-            animation: none;
+            visibility: hidden;
+            opacity: 0;
           `}
   }
 `
@@ -2672,6 +3022,17 @@ const ShoreCardsMount = styled.div`
     top: 70%;
   }
 
+  /* Track the shore/art width. 1100px is the current full-desktop size. */
+  & > div > div {
+    width: min(76.4%, 1100px);
+    box-sizing: border-box;
+    padding: clamp(0.4rem, 1.4vw, 1.25rem) clamp(0.45rem, 2vw, 1.75rem);
+  }
+
+  & h3 {
+    font-size: clamp(0.95rem, 2.4vw, 2.35rem);
+  }
+
   @media (max-width: 720px) {
     & > div {
       top: 67%;
@@ -2711,9 +3072,9 @@ const ShoreLoganBody = styled.p`
 /** Dataset line left of the walker; opacity driven by walk progress. */
 const ForestDatasetMount = styled.div`
   position: absolute;
-  top: 70%;
-  left: max(env(safe-area-inset-left, 0px), 11%);
-  width: min(28%, 20rem);
+  top: 66%;
+  left: max(env(safe-area-inset-left, 0px), 8%);
+  width: min(22%, 16.5rem);
   max-width: calc(42% - 8%);
   box-sizing: border-box;
   pointer-events: none;
@@ -2721,9 +3082,9 @@ const ForestDatasetMount = styled.div`
   opacity: 0;
 
   @media (max-width: 720px) {
-    top: 68%;
-    left: max(env(safe-area-inset-left, 0px), 8%);
-    width: min(38%, 34vw);
+    top: 63%;
+    left: max(env(safe-area-inset-left, 0px), 6%);
+    width: min(32%, 30vw);
   }
 `
 
@@ -2735,6 +3096,31 @@ const ForestDatasetBody = styled.p`
   font-weight: 600;
   line-height: 1.4;
   overflow-wrap: break-word;
+`
+
+/** RNAlab payoff on the walker's right; swaps in when the bang pops. */
+const ForestRnalabMount = styled.div`
+  position: absolute;
+  top: 66%;
+  right: max(env(safe-area-inset-right, 0px), 9%);
+  width: min(36%, 30rem);
+  box-sizing: border-box;
+  text-align: left;
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+  transform: translate3d(${({ $show }) => ($show ? "0" : "20px")}, 0, 0);
+  transition:
+    opacity 520ms ease 180ms,
+    transform 560ms cubic-bezier(0.22, 1.2, 0.36, 1) 180ms;
+  pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
+
+  @media (max-width: 720px) {
+    top: 64%;
+    width: min(44%, 42vw);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `
 
 /** RNAlab copy on the cream pad below the bushes. */
@@ -2763,8 +3149,8 @@ const CreamPadBody = styled.p`
 const ConditionImageRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.55rem, 2.4vw, 1.75rem);
-  margin-top: clamp(0.7rem, 2.2vw, 1.75rem);
+  gap: clamp(0.35rem, 2.4vw, 1.75rem);
+  margin-top: clamp(0.45rem, 2.2vw, 1.75rem);
   align-items: start;
 `
 
@@ -2773,7 +3159,7 @@ const ConditionFigure = styled.figure`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.55rem;
+  gap: clamp(0.3rem, 0.8vw, 0.55rem);
   min-width: 0;
 `
 
@@ -2781,8 +3167,8 @@ const ConditionImage = styled.img`
   display: block;
   width: 100%;
   height: auto;
-  /* Same desktop max as before; drop the 14rem floor so narrow windows can shrink. */
-  max-height: clamp(6rem, 36vw, 24rem);
+  /* Desktop max stays 24rem; shrink with the window below ~1440px. */
+  max-height: min(24rem, 26.7vw);
   object-fit: contain;
   user-select: none;
   pointer-events: none;
@@ -2794,7 +3180,7 @@ const ConditionCaption = styled.figcaption`
   margin: 0;
   color: #fff;
   font-family: var(--font-body);
-  font-size: clamp(0.85rem, 2.8vw, 1.85rem);
+  font-size: clamp(0.65rem, 2.2vw, 1.85rem);
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
@@ -3155,9 +3541,9 @@ const BottleShiftWrap = styled.div`
 
 const BottleFloatWrap = styled.div`
   position: relative;
-  /* Desktop stays ~12rem; shrinks with the window below that. */
-  width: clamp(5.25rem, 18vw, 12rem);
-  max-width: 25%;
+  /* Desktop stays ~12rem; shrinks with the painting below ~1440px. */
+  width: min(12rem, 13.3vw);
+  max-width: 18%;
   animation: ${bottleIdleFloat} 1.5s ease-in-out infinite;
   animation-delay: -0.7s;
 
