@@ -267,6 +267,8 @@ const CHUTE_STAGE6_Y_PCT = 76.5
 /** Foam bob as the bottle squash hits the splash. */
 const CHUTE_FOAM_BOB_AT = 0.74
 const CHUTE_FOAM_BOB_RESET = 0.6
+/** Launch splash droplets as the foam compresses, just before the rebound. */
+const CHUTE_SPLASH_LAUNCH_DELAY_MS = 110
 const CHUTE_KEYS = [
   { t: 0, x: 40.5, y: 41.2, r: -36, sx: 1, sy: 1 },
   { t: 0.1, x: 43.5, y: 42.4, r: -18, sx: 1, sy: 1 },
@@ -345,6 +347,35 @@ const SECTION5_FOAM_Z = 11
 const BUBBLE_CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/bubbles"
 const FOAM_BARRIER_Y_PCT = 51.2
+/** Painted splash blobs on the same 946×4000 plate as the foam. */
+const SPLASH_CDN =
+  "https://static.igem.wiki/teams/6187/wiki/homepage-components/splash"
+const SPLASH_Z = 11
+/** Bottle squash / pool hit — droplets launch from here. */
+const SPLASH_IMPACT = { x: 56.8, y: 50.9 }
+/** Plate-% / ms². Positive y is down, so this pulls droplets back into the foam. */
+const SPLASH_GRAVITY = 0.000074
+/** Horizontal air drag (1/ms) so they fall more down than sideways after the apex. */
+const SPLASH_DRAG = 0.00115
+const SPLASH_PLATES = [
+  { id: 1, x: 52.55, y: 49.39, delay: 20, extraRise: 1.15 },
+  { id: 2, x: 84.38, y: 43.76, delay: 80, extraRise: 1.85 },
+  { id: 3, x: 44.86, y: 47.99, delay: 40, extraRise: 1.45 },
+  { id: 4, x: 54.1, y: 50.84, delay: 0, extraRise: 0.75 },
+  { id: 5, x: 56.86, y: 48.19, delay: 55, extraRise: 2.15 },
+]
+
+function splashLaunchFor(plate) {
+  const rise = Math.max(0.35, SPLASH_IMPACT.y - plate.y) + plate.extraRise
+  const vy = -Math.sqrt(Math.max(1e-8, 2 * SPLASH_GRAVITY * rise))
+  const tApex = -vy / SPLASH_GRAVITY
+  const dragSpan = (1 - Math.exp(-SPLASH_DRAG * tApex)) / SPLASH_DRAG
+  const vx = (plate.x - SPLASH_IMPACT.x) / Math.max(1e-3, dragSpan)
+  return { ...plate, vx, vy, tApex }
+}
+
+const SPLASH_LAUNCHES = SPLASH_PLATES.map(splashLaunchFor)
+
 const BUBBLE_PLATES = {
   1: { x: 30.1, y: 80.4 },
   2: { x: 29.25, y: 78.85 },
@@ -931,7 +962,10 @@ export function HomeScrollPrototype() {
   const chuteBottleImgRef = useRef(null)
   const chuteBottleStage6Ref = useRef(false)
   const section5FoamRef = useRef(null)
+  const section5SplashLayerRef = useRef(null)
   const chuteFoamBobPlayedRef = useRef(false)
+  const startChuteSplashRef = useRef(() => {})
+  const resetChuteSplashRef = useRef(() => {})
   const companionBubbleLayerRef = useRef(null)
   const companionBubbleLastTsRef = useRef(0)
   const companionLastScrollYRef = useRef(0)
@@ -1788,6 +1822,7 @@ export function HomeScrollPrototype() {
         const foam = section5FoamRef.current
         if (pathT < CHUTE_FOAM_BOB_RESET) {
           chuteFoamBobPlayedRef.current = false
+          resetChuteSplashRef.current()
         } else if (
           !reduce &&
           show &&
@@ -1800,6 +1835,7 @@ export function HomeScrollPrototype() {
             void foam.offsetWidth
             foam.dataset.impact = "1"
           }
+          startChuteSplashRef.current()
         }
 
         const useStage6 = show && yPct >= CHUTE_STAGE6_Y_PCT
@@ -1837,6 +1873,106 @@ export function HomeScrollPrototype() {
     restoreSkyBottle,
     triggerBottleSplash,
   ])
+
+  // Splash droplets: ballistic burst from the pool hit, timed with the foam bob.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined
+    let raf = 0
+    let startAt = 0
+
+    const nodes = () => {
+      const layer = section5SplashLayerRef.current
+      return layer ? layer.querySelectorAll("[data-splash]") : []
+    }
+
+    const hideAll = () => {
+      nodes().forEach(el => {
+        el.style.opacity = "0"
+        el.style.visibility = "hidden"
+      })
+    }
+
+    const stop = () => {
+      if (raf) {
+        window.cancelAnimationFrame(raf)
+        raf = 0
+      }
+      startAt = 0
+      hideAll()
+    }
+
+    const step = now => {
+      raf = 0
+      const layer = section5SplashLayerRef.current
+      const plate = section5RootRef.current
+      if (!layer || !startAt) return
+      const s5 = plate ? plate.getBoundingClientRect() : null
+      const aspect = s5 && s5.width > 1 ? s5.height / s5.width : 4.23
+      let alive = false
+
+      layer.querySelectorAll("[data-splash]").forEach(el => {
+        const id = Number(el.getAttribute("data-splash"))
+        const drop = SPLASH_LAUNCHES.find(item => item.id === id)
+        if (!drop) return
+        const t = now - startAt - CHUTE_SPLASH_LAUNCH_DELAY_MS - drop.delay
+        if (t < 0) {
+          el.style.opacity = "0"
+          el.style.visibility = "hidden"
+          alive = true
+          return
+        }
+        const dragX = (1 - Math.exp(-SPLASH_DRAG * t)) / SPLASH_DRAG
+        const x = SPLASH_IMPACT.x + drop.vx * dragX
+        const y =
+          SPLASH_IMPACT.y + drop.vy * t + 0.5 * SPLASH_GRAVITY * t * t
+        const vyNow = drop.vy + SPLASH_GRAVITY * t
+        const vxNow = drop.vx * Math.exp(-SPLASH_DRAG * t)
+        const underFoam = y >= FOAM_BARRIER_Y_PCT + 0.2 && t > drop.tApex
+        const done = underFoam || t > drop.tApex * 2.15 + 80
+        if (done) {
+          el.style.opacity = "0"
+          el.style.visibility = "hidden"
+          return
+        }
+        alive = true
+        const appear = Math.min(1, t / 70)
+        const fade =
+          t > drop.tApex
+            ? Math.max(0, 1 - (t - drop.tApex) / (drop.tApex * 1.05 + 40))
+            : 1
+        const angle =
+          (Math.atan2(vyNow * aspect, vxNow) * 180) / Math.PI
+        const speed = Math.hypot(vxNow, vyNow * aspect)
+        const stretch = 1 + Math.min(0.28, speed * 9)
+        const pop = t < 90 ? 0.62 + 0.38 * (t / 90) : 1
+        el.style.opacity = String(appear * fade)
+        el.style.visibility = "visible"
+        el.style.transformOrigin = `${drop.x}% ${drop.y}%`
+        el.style.transform = `translate3d(${x - drop.x}%, ${
+          y - drop.y
+        }%, 0) rotate(${angle}deg) scale(${pop * stretch}, ${
+          pop / Math.sqrt(stretch)
+        })`
+      })
+
+      if (alive) raf = window.requestAnimationFrame(step)
+      else stop()
+    }
+
+    startChuteSplashRef.current = () => {
+      if (raf) window.cancelAnimationFrame(raf)
+      startAt = performance.now()
+      hideAll()
+      raf = window.requestAnimationFrame(step)
+    }
+    resetChuteSplashRef.current = stop
+
+    return () => {
+      startChuteSplashRef.current = () => {}
+      resetChuteSplashRef.current = () => {}
+      if (raf) window.cancelAnimationFrame(raf)
+    }
+  }, [])
 
   // Companion bubbles: cling under/around the chute bottle, idle-float, and
   // occasionally detach toward the foam, then respawn at the bottle.
@@ -2718,6 +2854,17 @@ export function HomeScrollPrototype() {
           >
             <Section5Layer $z={1} src={SECTION5_FOAM_SRC} alt="" />
           </Section5FoamMount>
+          <Section5SplashLayer ref={section5SplashLayerRef} aria-hidden="true">
+            {SPLASH_PLATES.map(splash => (
+              <Section5SplashDrop key={splash.id} data-splash={splash.id}>
+                <Section5Layer
+                  $z={1}
+                  src={`${SPLASH_CDN}/splash${splash.id}.avif`}
+                  alt=""
+                />
+              </Section5SplashDrop>
+            ))}
+          </Section5SplashLayer>
           <Section5TextStack aria-hidden="false">
             <Section5Lead ref={section5LeadRef}>
               Some applications include...
@@ -2831,6 +2978,23 @@ const Section5FoamMount = styled.div`
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+`
+
+const Section5SplashLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: ${SPLASH_Z};
+  pointer-events: none;
+  overflow: visible;
+`
+
+const Section5SplashDrop = styled.div`
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform, opacity;
 `
 
 const Section5FishStack = styled.div`
