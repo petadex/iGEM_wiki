@@ -17,7 +17,8 @@
     "payload:import-media": "npm --prefix cms/payload-app run import:media",
     "payload:sync": "node scripts/payload-sync.mjs",
     "build:demo": "npm run payload:sync && npm run build:gatsby",
-    "test:payload-blocks": "node scripts/test-payload-mdx-blocks.mjs"
+    "test:payload-blocks": "node scripts/test-payload-mdx-blocks.mjs",
+    "export:logan-map": "node scripts/export-logan-map-locations.mjs"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.11",

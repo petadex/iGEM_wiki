@@ -11,6 +11,7 @@ import { WikiTopBar, WIKI_TOP_BAR_Z_INDEX } from "./WikiTopBar.js"
 import { WaterfallSideText, PETASE_EXPLANATION } from "./WaterfallSideText.js"
 import { SwipeInBox } from "./SwipeInBox.js"
 import { ExplainTerm } from "./ExplainTermPopover.js"
+import LoganMapOverlay from "./LoganMapOverlay.js"
 
 /**
  * Homepage bottle stages (degradation journey).
@@ -125,6 +126,14 @@ const SHORE_BAND_BOT = 2440 / FRONT_ART_HEIGHT
 const WATERFALL_BAND_HEIGHT = WATERFALL_BAND_BOT - WATERFALL_BAND_TOP
 const SHORE_BAND_TOP = WATERFALL_BAND_BOT
 const SHORE_BAND_HEIGHT = SHORE_BAND_BOT - SHORE_BAND_TOP
+/**
+ * Painted continents in the front plate (under LOGAN copy).
+ * The 2440–2900 comment is the whole map scene (cream + land + forest lip);
+ * tan land is ~2644–2834. Overlay matches that box so Mercator outlines
+ * can fill the painted continents instead of sitting in a squashed band.
+ */
+const WORLD_MAP_TOP = 2644 / FRONT_ART_HEIGHT
+const WORLD_MAP_HEIGHT = (2834 - 2644) / FRONT_ART_HEIGHT
 /** Under the world map, through the forest / just above the bushes. */
 const FOREST_BAND_TOP = 2660 / FRONT_ART_HEIGHT
 const FOREST_BAND_BOT = 3503 / FRONT_ART_HEIGHT
@@ -2559,6 +2568,10 @@ export function HomeScrollPrototype() {
                   </ShoreLoganMount>
                 </ShoreTextLayer>
               </ShoreOverlayStack>
+            </ArtBand>
+
+            <ArtBand $top={WORLD_MAP_TOP} $height={WORLD_MAP_HEIGHT} $z={10}>
+              <LoganMapOverlay />
             </ArtBand>
 
             <ArtBand
