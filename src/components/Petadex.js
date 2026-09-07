@@ -36,8 +36,9 @@ const IMG = {
 const Shell = styled.div`
   position: relative;
   width: 900px;
+  max-width: 100%;
   height: 560px;
-  margin: 400px auto;
+  margin: 1.5rem auto 4.5rem;
   border-radius: 24px;
   box-sizing: border-box;
   overflow: hidden;

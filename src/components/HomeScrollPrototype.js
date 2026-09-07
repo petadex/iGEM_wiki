@@ -11,9 +11,7 @@ import { WikiTopBar, WIKI_TOP_BAR_Z_INDEX } from "./WikiTopBar.js"
 import { WaterfallSideText, PETASE_EXPLANATION } from "./WaterfallSideText.js"
 import { SwipeInBox } from "./SwipeInBox.js"
 import { ExplainTerm } from "./ExplainTermPopover.js"
-import EnzymeBattle from "./EnzymeBattle.js"
-import Petadex from "./Petadex.js"
-import PetadexBottlePath from "./PetadexBottlePath.js"
+import LoganMapOverlay from "./LoganMapOverlay.js"
 
 /**
  * Homepage bottle stages (degradation journey).
@@ -31,6 +29,8 @@ export const BOTTLE_STAGES = {
     "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/section4.avif",
   section5:
     "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/section5.avif",
+  section6:
+    "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/section6.avif",
 }
 
 const ASSETS = {
@@ -126,6 +126,14 @@ const SHORE_BAND_BOT = 2440 / FRONT_ART_HEIGHT
 const WATERFALL_BAND_HEIGHT = WATERFALL_BAND_BOT - WATERFALL_BAND_TOP
 const SHORE_BAND_TOP = WATERFALL_BAND_BOT
 const SHORE_BAND_HEIGHT = SHORE_BAND_BOT - SHORE_BAND_TOP
+/**
+ * Painted continents in the front plate (under LOGAN copy).
+ * The 2440–2900 comment is the whole map scene (cream + land + forest lip);
+ * tan land is ~2644–2834. Overlay matches that box so Mercator outlines
+ * can fill the painted continents instead of sitting in a squashed band.
+ */
+const WORLD_MAP_TOP = 2644 / FRONT_ART_HEIGHT
+const WORLD_MAP_HEIGHT = (2834 - 2644) / FRONT_ART_HEIGHT
 /** Under the world map, through the forest / just above the bushes. */
 const FOREST_BAND_TOP = 2660 / FRONT_ART_HEIGHT
 const FOREST_BAND_BOT = 3503 / FRONT_ART_HEIGHT
@@ -249,8 +257,82 @@ const RAMP2_END_Y_PCT = 28.5
  * leaves the park, 1 = bottle 1 is fully off the left edge).
  */
 const RAMP2_ARM_AT = 0.28
-/** Scroll span (vh) for the start → end traversal. */
-const RAMP2_SLIDE_VH = CREAM_BOTTLE_RAMP_SLIDE_VH
+/** Scroll span (vh) for the start → end traversal. Larger = slower. */
+const RAMP2_SLIDE_VH = 0.9
+
+/**
+ * Section-5 chute bottle (stage 5): starts inside the WWTP pipe (behind layer
+ * 7, in front of layer 6 so the pipe masks it), slides the water column at a
+ * constant size, slams the pool (stretch/squash), then keeps scrolling with
+ * the plate like the waterfall bottle. Coordinates are % of the 946×4000 plate.
+ */
+const CHUTE_SCROLL_VH = 0.72
+/** When the pipe mouth is this far down the viewport, progress is 0. */
+const CHUTE_ARM_VIEW_Y = 0.46
+/** Sandwich: water (7) < chute (8) < WWTP (9) so the pipe masks the bottle. */
+const CHUTE_Z = 8
+/** Swap to stage 6 once the bottle centroid reaches the fish sprites (~79–82%). */
+const CHUTE_STAGE6_Y_PCT = 76.5
+/** Foam bob as the bottle squash hits the splash. */
+const CHUTE_FOAM_BOB_AT = 0.74
+const CHUTE_FOAM_BOB_RESET = 0.6
+/** Launch splash droplets as the foam compresses, just before the rebound. */
+const CHUTE_SPLASH_LAUNCH_DELAY_MS = 110
+const CHUTE_KEYS = [
+  { t: 0, x: 40.5, y: 41.2, r: -36, sx: 1, sy: 1 },
+  { t: 0.1, x: 43.5, y: 42.4, r: -18, sx: 1, sy: 1 },
+  { t: 0.24, x: 48.1, y: 43.2, r: 10, sx: 1, sy: 1 },
+  { t: 0.42, x: 53.6, y: 43.55, r: 20, sx: 1, sy: 1 },
+  { t: 0.58, x: 55.8, y: 46.35, r: 8, sx: 1, sy: 1 },
+  { t: 0.68, x: 57.4, y: 48.85, r: -8, sx: 0.78, sy: 1.2 },
+  { t: 0.76, x: 56.8, y: 51.05, r: 16, sx: 1.24, sy: 0.56 },
+  { t: 0.86, x: 55.4, y: 52.65, r: -4, sx: 1, sy: 1 },
+  { t: 1, x: 54.2, y: 54.2, r: 4, sx: 1, sy: 1 },
+]
+
+function chuteLerpKey(a, b, u) {
+  const ax = a.sx ?? a.s ?? 1
+  const ay = a.sy ?? a.s ?? 1
+  const bx = b.sx ?? b.s ?? 1
+  const by = b.sy ?? b.s ?? 1
+  return {
+    x: a.x + (b.x - a.x) * u,
+    y: a.y + (b.y - a.y) * u,
+    r: a.r + (b.r - a.r) * u,
+    sx: ax + (bx - ax) * u,
+    sy: ay + (by - ay) * u,
+  }
+}
+
+function chutePoseAt(progress) {
+  const t = clamp01(progress)
+  const path = CHUTE_KEYS
+  if (t <= path[0].t) return chuteLerpKey(path[0], path[0], 0)
+  for (let i = 1; i < path.length; i++) {
+    if (t <= path[i].t) {
+      const a = path[i - 1]
+      const b = path[i]
+      const u = (t - a.t) / Math.max(1e-6, b.t - a.t)
+      return chuteLerpKey(a, b, u)
+    }
+  }
+  return chuteLerpKey(path[path.length - 1], path[path.length - 1], 0)
+}
+
+/** Map linear scroll 0–1 onto path t: ease-in slide, linger on impact, ease-out sink. */
+function chuteScrollToPath(p) {
+  const t = clamp01(p)
+  if (t <= 0.42) {
+    const u = t / 0.42
+    return 0.7 * (0.75 * u + 0.25 * u * u)
+  }
+  if (t <= 0.72) {
+    const u = (t - 0.42) / 0.3
+    return 0.7 + 0.1 * (u * u * (3 - 2 * u))
+  }
+  const u = (t - 0.72) / 0.28
+  return 0.8 + 0.2 * (1 - (1 - u) * (1 - u))
+}
 
 const SECTION5_CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/noorine-section-5-layers"
@@ -262,8 +344,85 @@ const SECTION5_LAYERS = [
   { id: 3, file: "3-fore-trench.avif", z: 3 },
   { id: 4, file: "4-coral-texture.avif", z: 4 },
   { id: 5, file: "5-coral-blend.avif", z: 5 },
-  { id: 7, file: "7-wwtp.avif", z: 7 },
+  { id: 6, file: "6-water-stream-gush-thing.avif", z: 7 },
+  { id: 7, file: "7-wwtp.avif", z: 9 },
 ]
+
+/** Splash foam — full plate, above scenery + chute bottle, below apps copy. */
+const SECTION5_FOAM_SRC =
+  "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/bubbles-foam.avif"
+const SECTION5_FOAM_Z = 11
+/** Painted bubbles sit on the same 946×4000 plate; y% is the sprite centroid. */
+const BUBBLE_CDN =
+  "https://static.igem.wiki/teams/6187/wiki/homepage-components/bubbles"
+const FOAM_BARRIER_Y_PCT = 51.2
+/** Painted splash blobs on the same 946×4000 plate as the foam. */
+const SPLASH_CDN =
+  "https://static.igem.wiki/teams/6187/wiki/homepage-components/splash"
+const SPLASH_Z = 11
+/** Bottle squash / pool hit — droplets launch from here. */
+const SPLASH_IMPACT = { x: 56.8, y: 50.9 }
+/** Plate-% / ms². Positive y is down, so this pulls droplets back into the foam. */
+const SPLASH_GRAVITY = 0.000074
+/** Horizontal air drag (1/ms) so they fall more down than sideways after the apex. */
+const SPLASH_DRAG = 0.00115
+const SPLASH_PLATES = [
+  { id: 1, x: 52.55, y: 49.39, delay: 20, extraRise: 1.15 },
+  { id: 2, x: 84.38, y: 43.76, delay: 80, extraRise: 1.85 },
+  { id: 3, x: 44.86, y: 47.99, delay: 40, extraRise: 1.45 },
+  { id: 4, x: 54.1, y: 50.84, delay: 0, extraRise: 0.75 },
+  { id: 5, x: 56.86, y: 48.19, delay: 55, extraRise: 2.15 },
+]
+
+function splashLaunchFor(plate) {
+  const rise = Math.max(0.35, SPLASH_IMPACT.y - plate.y) + plate.extraRise
+  const vy = -Math.sqrt(Math.max(1e-8, 2 * SPLASH_GRAVITY * rise))
+  const tApex = -vy / SPLASH_GRAVITY
+  const dragSpan = (1 - Math.exp(-SPLASH_DRAG * tApex)) / SPLASH_DRAG
+  const vx = (plate.x - SPLASH_IMPACT.x) / Math.max(1e-3, dragSpan)
+  return { ...plate, vx, vy, tApex }
+}
+
+const SPLASH_LAUNCHES = SPLASH_PLATES.map(splashLaunchFor)
+
+const BUBBLE_PLATES = {
+  1: { x: 30.1, y: 80.4 },
+  2: { x: 29.25, y: 78.85 },
+  3: { x: 52.4, y: 78.1 },
+  4: { x: 57.15, y: 79.1 },
+  5: { x: 59.25, y: 77.9 },
+  6: { x: 56.15, y: 76.8 },
+  7: { x: 50.35, y: 74.3 },
+  8: { x: 44.05, y: 74.5 },
+  9: { x: 46.6, y: 73.1 },
+  10: { x: 73.35, y: 75.8 },
+  11: { x: 78.7, y: 76.0 },
+  12: { x: 78.6, y: 77.2 },
+  13: { x: 82.4, y: 74.35 },
+}
+/** Idle stream rising to the foam; `x` is the lane across the plate. */
+const STREAM_BUBBLES = [
+  { id: 1, x: 14 },
+  { id: 3, x: 32 },
+  { id: 8, x: 50 },
+  { id: 10, x: 68 },
+  { id: 13, x: 86 },
+]
+/** Cluster that rides under/around the sinking bottle. */
+const COMPANION_BUBBLE_SPECS = [
+  { id: 2, ox: -7.4, oy: 0.48, cushion: true, followMs: 520 },
+  { id: 4, ox: 0.2, oy: 0.78, cushion: true, followMs: 640 },
+  { id: 5, ox: 7.6, oy: 0.4, cushion: true, followMs: 480 },
+  { id: 6, ox: -11.2, oy: -1.2, cushion: false, followMs: 360 },
+  { id: 7, ox: 11.4, oy: -0.9, cushion: false, followMs: 560 },
+  { id: 9, ox: -7.1, oy: 0.05, cushion: false, followMs: 300 },
+  { id: 11, ox: 7.3, oy: 0.1, cushion: false, followMs: 440 },
+  { id: 12, ox: -2.4, oy: -2.15, cushion: false, followMs: 400 },
+]
+const COMPANION_DETACH_MS = 3200
+const COMPANION_RISE_MS = 2600
+/** Plate-% distance at which a follower starts idling at the bottle. */
+const COMPANION_ARRIVE_PCT = 0.7
 
 /**
  * Layer 8 — sparse fish sprites near the bottom of the plate. Drift + bob on
@@ -273,7 +432,7 @@ const SECTION5_FISHES = [
   {
     id: "fishes",
     src: `${SECTION5_CDN}/8-fishes-that-can-move-around.avif`,
-    z: 9,
+    z: 10,
     driftMs: 52000,
     driftDelayMs: 1200,
     hoverDelayMs: 0,
@@ -303,6 +462,9 @@ const RNALAB_TEXTBOX_IMG =
 
 const RNALAB_EXPLANATION =
   "RNAlab is our advisory lab partner that helped uncover 215.7 million high-quality plastic-degrading enzymes."
+
+/** Delay + slide duration; the RNAlab term is not hoverable until this elapses. */
+const RNALAB_REVEAL_MS = 740
 
 /** Jump to the top on mount / HMR. Turn back on before shipping. */
 const RESET_SCROLL_ON_MOUNT = false
@@ -490,6 +652,8 @@ const CRABS = [
     b: `${CRAB_CDN}/crab-section-2-a-2.avif`,
     xPct: -10,
     yPct: 12,
+    originX: 68.5,
+    originY: 10.4,
     flapMs: 860,
     delayMs: 0,
   },
@@ -499,6 +663,8 @@ const CRABS = [
     b: `${CRAB_CDN}/crab-section-2-b-2.avif`,
     xPct: -50,
     yPct: 30,
+    originX: 79.5,
+    originY: 13.4,
     flapMs: 640,
     delayMs: 180,
   },
@@ -508,6 +674,8 @@ const CRABS = [
     b: `${CRAB_CDN}/crab-section-2-c-2.avif`,
     xPct: 0,
     yPct: 0,
+    originX: 36.4,
+    originY: 86.1,
     flapMs: 980,
     delayMs: 320,
   },
@@ -583,6 +751,8 @@ const SECTION3_ANIMALS = [
     b: `${SECTION3_CDN}/section-3-crab-a-2.avif`,
     xPct: -23,
     yPct: 25,
+    originX: 26.5,
+    originY: 54.4,
     flapMs: 820,
     delayMs: 0,
     revealOnArrive: true,
@@ -593,6 +763,8 @@ const SECTION3_ANIMALS = [
     b: `${SECTION3_CDN}/section-3-crab-b-2.avif`,
     xPct: -1,
     yPct: -8,
+    originX: 20.1,
+    originY: 70.9,
     flapMs: 700,
     delayMs: 220,
     revealOnArrive: true,
@@ -603,6 +775,8 @@ const SECTION3_ANIMALS = [
     b: `${SECTION3_CDN}/section-3-crab-c-2.avif`,
     xPct: 0,
     yPct: -10,
+    originX: 79.5,
+    originY: 74.0,
     flapMs: 940,
     delayMs: 360,
     revealOnArrive: true,
@@ -694,6 +868,65 @@ const EXCLAMATION_MARK_Y = 30
 const EXCLAMATION_SRC =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/human/exclamation.avif"
 
+/** Sidestep distance (% of the overlay plate) and lean (deg) per hover scuttle. */
+const CRAB_SCUTTLE_X_PCT = 4.5
+const CRAB_SCUTTLE_THETA_DEG = 16
+const CRAB_SCUTTLE_MS = 480
+
+/**
+ * Hover scuttle: first enter sidesteps left, the next right, then left again.
+ * Rotation is about the plate normal (CSS rotate / z) from +θ to −θ while moving.
+ */
+function CrabScuttle({ originX = 50, originY = 50, label = "Crab", children }) {
+  const [homeX, setHomeX] = useState(0)
+  const [dir, setDir] = useState(-1)
+  const [playing, setPlaying] = useState(false)
+  const busyRef = useRef(false)
+
+  const onEnter = () => {
+    if (busyRef.current) return
+    const reduce =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (reduce) {
+      setHomeX(x => x + dir * CRAB_SCUTTLE_X_PCT)
+      setDir(d => -d)
+      return
+    }
+    busyRef.current = true
+    setPlaying(true)
+  }
+
+  const onAnimEnd = event => {
+    if (event.target !== event.currentTarget) return
+    setHomeX(x => x + dir * CRAB_SCUTTLE_X_PCT)
+    setDir(d => -d)
+    setPlaying(false)
+    busyRef.current = false
+  }
+
+  return (
+    <CrabScuttleShell $homeX={homeX} $ox={originX} $oy={originY}>
+      <CrabScuttleMotion
+        $playing={playing}
+        $dir={dir}
+        $ox={originX}
+        $oy={originY}
+        onAnimationEnd={onAnimEnd}
+      >
+        {children}
+        <CrabHitPad
+          type="button"
+          aria-label={label}
+          $ox={originX}
+          $oy={originY}
+          onMouseEnter={onEnter}
+        />
+      </CrabScuttleMotion>
+    </CrabScuttleShell>
+  )
+}
+
 /**
  * Full-page wiki front compositing: Toronto parallax behind one tall front plate.
  *
@@ -734,11 +967,38 @@ export function HomeScrollPrototype() {
   const ramp2BottleMountRef = useRef(null)
   /** scrollY when ramp-2 bottle activates (first bottle fully exited). */
   const ramp2StartScrollYRef = useRef(null)
+  const chuteBottleMountRef = useRef(null)
+  const chuteBottleImgRef = useRef(null)
+  const chuteBottleStage6Ref = useRef(false)
+  const section5FoamRef = useRef(null)
+  const section5SplashLayerRef = useRef(null)
+  const chuteFoamBobPlayedRef = useRef(false)
+  const startChuteSplashRef = useRef(() => {})
+  const resetChuteSplashRef = useRef(() => {})
+  const companionBubbleLayerRef = useRef(null)
+  const companionBubbleLastTsRef = useRef(0)
+  const companionLastScrollYRef = useRef(0)
+  const companionScrollActRef = useRef(0)
+  const companionBubbleStateRef = useRef(
+    COMPANION_BUBBLE_SPECS.map((spec, i) => ({
+      ...spec,
+      mode: "follow",
+      x: null,
+      y: null,
+      arrived: false,
+      riseT: 0,
+      fromX: 0,
+      fromY: 0,
+      driftX: (i % 2 === 0 ? 1 : -1) * (1.15 + (i % 3) * 0.35),
+      cooldown: 2200 + i * 1500,
+      phase: i * 0.85,
+      spawnT: 0,
+    })),
+  )
   const walkTrackRef = useRef(null)
   const compositionRef = useRef(null)
   const humanWalkRef = useRef(null)
   const humanBobRef = useRef(null)
-  const petadexRef = useRef(null)
   const forestDatasetRef = useRef(null)
   const birdStealRef = useRef(null)
   /** Last steal progress (0–1); persists past unpin so the bottle stays stolen. */
@@ -763,10 +1023,24 @@ export function HomeScrollPrototype() {
   const [shoreBottlePlaying, setShoreBottlePlaying] = useState(false)
   const [splashPlaying, setSplashPlaying] = useState(false)
   const [walkArrived, setWalkArrived] = useState(false)
-  const [battleOpen, setBattleOpen] = useState(false)
+  const [rnalabInteractive, setRnalabInteractive] = useState(false)
   const reduceMotionParallaxRef = useRef(false)
 
   bottleTouchPinnedRef.current = bottleTouchPinned
+
+  // RNAlab highlight is inert until the slide/fade-in has finished.
+  useEffect(() => {
+    if (!walkArrived) {
+      setRnalabInteractive(false)
+      return undefined
+    }
+    const reduce =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const delay = reduce ? 0 : RNALAB_REVEAL_MS
+    const t = window.setTimeout(() => setRnalabInteractive(true), delay)
+    return () => window.clearTimeout(t)
+  }, [walkArrived])
 
   const applyBottleSinkVisual = useCallback(opacity => {
     const visual = bottleVisualRef.current
@@ -1517,6 +1791,73 @@ export function HomeScrollPrototype() {
           }
         }
       }
+
+      // Chute bottle: masked by WWTP, art-locked down the stream, then
+      // viewport-locked after impact so it keeps following scroll (waterfall).
+      const chute = chuteBottleMountRef.current
+      const chutePlate = section5RootRef.current
+      if (chute && chutePlate) {
+        const vh = window.innerHeight
+        const s5 = chutePlate.getBoundingClientRect()
+        const mouthY = s5.top + (CHUTE_KEYS[0].y / 100) * s5.height
+        const span = Math.max(1, vh * CHUTE_SCROLL_VH)
+        const rawP = (vh * CHUTE_ARM_VIEW_Y - mouthY) / span
+        const p = clamp01(rawP)
+        const reduce =
+          typeof window.matchMedia === "function" &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        const pathT = reduce ? (rawP > 0.2 ? 1 : 0) : chuteScrollToPath(p)
+        const pose = chutePoseAt(pathT)
+        let xPct = pose.x
+        let yPct = pose.y
+        if (!reduce && rawP > 1) {
+          const extra = rawP - 1
+          yPct = pose.y + extra * (span / Math.max(1, s5.height)) * 100
+          xPct = pose.x + Math.sin(extra * 1.35) * 1.15
+        }
+        const left = s5.left + (xPct / 100) * s5.width
+        const top = s5.top + (yPct / 100) * s5.height
+        const onPlate = yPct > -4 && yPct < 102
+        const inBand = s5.bottom > -vh * 0.2 && s5.top < vh * 1.2
+        const show = onPlate && inBand
+        chute.style.left = `${left}px`
+        chute.style.top = `${top}px`
+        chute.style.transform = `translate3d(-50%, -50%, 0) rotate(${pose.r}deg) scale(${pose.sx}, ${pose.sy})`
+        chute.style.opacity = show ? "1" : "0"
+        chute.style.visibility = show ? "visible" : "hidden"
+        chute.style.transformOrigin = "50% 45%"
+        chute.dataset.sunk = pathT >= 0.86 ? "1" : ""
+
+        const foam = section5FoamRef.current
+        if (pathT < CHUTE_FOAM_BOB_RESET) {
+          chuteFoamBobPlayedRef.current = false
+          resetChuteSplashRef.current()
+        } else if (
+          !reduce &&
+          show &&
+          pathT >= CHUTE_FOAM_BOB_AT &&
+          !chuteFoamBobPlayedRef.current
+        ) {
+          chuteFoamBobPlayedRef.current = true
+          if (foam) {
+            foam.dataset.impact = ""
+            void foam.offsetWidth
+            foam.dataset.impact = "1"
+          }
+          startChuteSplashRef.current()
+        }
+
+        const useStage6 = show && yPct >= CHUTE_STAGE6_Y_PCT
+        if (useStage6 !== chuteBottleStage6Ref.current) {
+          chuteBottleStage6Ref.current = useStage6
+          const img = chuteBottleImgRef.current
+          if (img) {
+            img.src = useStage6
+              ? BOTTLE_STAGES.section6
+              : BOTTLE_STAGES.section5
+          }
+        }
+      }
     }
 
     tick()
@@ -1541,6 +1882,288 @@ export function HomeScrollPrototype() {
     restoreSkyBottle,
     triggerBottleSplash,
   ])
+
+  // Splash droplets: ballistic burst from the pool hit, timed with the foam bob.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined
+    let raf = 0
+    let startAt = 0
+
+    const nodes = () => {
+      const layer = section5SplashLayerRef.current
+      return layer ? layer.querySelectorAll("[data-splash]") : []
+    }
+
+    const hideAll = () => {
+      nodes().forEach(el => {
+        el.style.opacity = "0"
+        el.style.visibility = "hidden"
+      })
+    }
+
+    const stop = () => {
+      if (raf) {
+        window.cancelAnimationFrame(raf)
+        raf = 0
+      }
+      startAt = 0
+      hideAll()
+    }
+
+    const step = now => {
+      raf = 0
+      const layer = section5SplashLayerRef.current
+      const plate = section5RootRef.current
+      if (!layer || !startAt) return
+      const s5 = plate ? plate.getBoundingClientRect() : null
+      const aspect = s5 && s5.width > 1 ? s5.height / s5.width : 4.23
+      let alive = false
+
+      layer.querySelectorAll("[data-splash]").forEach(el => {
+        const id = Number(el.getAttribute("data-splash"))
+        const drop = SPLASH_LAUNCHES.find(item => item.id === id)
+        if (!drop) return
+        const t = now - startAt - CHUTE_SPLASH_LAUNCH_DELAY_MS - drop.delay
+        if (t < 0) {
+          el.style.opacity = "0"
+          el.style.visibility = "hidden"
+          alive = true
+          return
+        }
+        const dragX = (1 - Math.exp(-SPLASH_DRAG * t)) / SPLASH_DRAG
+        const x = SPLASH_IMPACT.x + drop.vx * dragX
+        const y =
+          SPLASH_IMPACT.y + drop.vy * t + 0.5 * SPLASH_GRAVITY * t * t
+        const vyNow = drop.vy + SPLASH_GRAVITY * t
+        const vxNow = drop.vx * Math.exp(-SPLASH_DRAG * t)
+        const underFoam = y >= FOAM_BARRIER_Y_PCT + 0.2 && t > drop.tApex
+        const done = underFoam || t > drop.tApex * 2.15 + 80
+        if (done) {
+          el.style.opacity = "0"
+          el.style.visibility = "hidden"
+          return
+        }
+        alive = true
+        const appear = Math.min(1, t / 70)
+        const fade =
+          t > drop.tApex
+            ? Math.max(0, 1 - (t - drop.tApex) / (drop.tApex * 1.05 + 40))
+            : 1
+        const angle =
+          (Math.atan2(vyNow * aspect, vxNow) * 180) / Math.PI
+        const speed = Math.hypot(vxNow, vyNow * aspect)
+        const stretch = 1 + Math.min(0.28, speed * 9)
+        const pop = t < 90 ? 0.62 + 0.38 * (t / 90) : 1
+        el.style.opacity = String(appear * fade)
+        el.style.visibility = "visible"
+        el.style.transformOrigin = `${drop.x}% ${drop.y}%`
+        el.style.transform = `translate3d(${x - drop.x}%, ${
+          y - drop.y
+        }%, 0) rotate(${angle}deg) scale(${pop * stretch}, ${
+          pop / Math.sqrt(stretch)
+        })`
+      })
+
+      if (alive) raf = window.requestAnimationFrame(step)
+      else stop()
+    }
+
+    startChuteSplashRef.current = () => {
+      if (raf) window.cancelAnimationFrame(raf)
+      startAt = performance.now()
+      hideAll()
+      raf = window.requestAnimationFrame(step)
+    }
+    resetChuteSplashRef.current = stop
+
+    return () => {
+      startChuteSplashRef.current = () => {}
+      resetChuteSplashRef.current = () => {}
+      if (raf) window.cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  // Companion bubbles: cling under/around the chute bottle, idle-float, and
+  // occasionally detach toward the foam, then respawn at the bottle.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined
+    const reduce =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    let raf = 0
+    let running = true
+
+    const step = now => {
+      if (!running) return
+      raf = window.requestAnimationFrame(step)
+      const chute = chuteBottleMountRef.current
+      const plate = section5RootRef.current
+      const layer = companionBubbleLayerRef.current
+      const companions = companionBubbleStateRef.current
+      if (!chute || !plate || !layer || !companions) return
+
+      const s5 = plate.getBoundingClientRect()
+      const vh = window.innerHeight
+      if (s5.bottom < -120 || s5.top > vh + 120) return
+
+      const primed = companionBubbleLastTsRef.current !== 0
+      const last = companionBubbleLastTsRef.current || now
+      const dt = Math.min(64, Math.max(0, now - last))
+      companionBubbleLastTsRef.current = now
+
+      const scrollY = window.scrollY
+      const prevScrollY = companionLastScrollYRef.current
+      companionLastScrollYRef.current = scrollY
+      const instSpeed = !primed
+        ? 0
+        : Math.abs(scrollY - prevScrollY) / Math.max(1, dt)
+      let activity = companionScrollActRef.current
+      if (instSpeed > 0.035) {
+        activity = Math.min(1, activity + dt / 80)
+      } else {
+        activity = Math.max(0, activity - dt / 240)
+      }
+      companionScrollActRef.current = activity
+      const detachRate = 0.42 + activity * 2.7
+      const maxRising = activity > 0.3 ? 2 : 1
+
+      const bottleRect = chute.getBoundingClientRect()
+      const bottleCxPct =
+        ((bottleRect.left + bottleRect.width * 0.5 - s5.left) /
+          Math.max(1, s5.width)) *
+        100
+      const bottleCyPct =
+        ((bottleRect.top + bottleRect.height * 0.5 - s5.top) /
+          Math.max(1, s5.height)) *
+        100
+      const bottleBottomPct =
+        ((bottleRect.bottom - s5.top) / Math.max(1, s5.height)) * 100
+      const chuteVisible = chute.style.visibility !== "hidden"
+      const inWater =
+        chuteVisible &&
+        bottleCyPct >= FOAM_BARRIER_Y_PCT + 0.8 &&
+        bottleCyPct < 92
+
+      if (bottleCyPct < 48) {
+        companions.forEach((c, i) => {
+          c.mode = "follow"
+          c.x = null
+          c.y = null
+          c.arrived = false
+          c.riseT = 0
+          c.spawnT = 0
+          c.cooldown = COMPANION_DETACH_MS + i * 1500
+        })
+      }
+
+      let rising = companions.filter(c => c.mode === "rise").length
+      if (inWater && !reduce) {
+        for (const c of companions) {
+          if (c.mode === "follow" && c.arrived && !c.cushion) {
+            c.cooldown = (c.cooldown || 0) - dt * detachRate
+          }
+          if (
+            c.mode === "follow" &&
+            c.arrived &&
+            !c.cushion &&
+            c.cooldown <= 0 &&
+            rising < maxRising
+          ) {
+            c.mode = "rise"
+            c.arrived = false
+            c.riseT = 0
+            c.fromX = c.x
+            c.fromY = c.y
+            rising += 1
+          }
+        }
+      }
+
+      const nodes = layer.querySelectorAll("[data-companion]")
+      nodes.forEach(el => {
+        const id = Number(el.getAttribute("data-companion"))
+        const c = companions.find(item => item.id === id)
+        const painted = BUBBLE_PLATES[id]
+        if (!c || !painted) return
+        if (!inWater) {
+          el.style.opacity = "0"
+          el.style.visibility = "hidden"
+          el.dataset.arrived = ""
+          return
+        }
+        const targetX = bottleCxPct + c.ox
+        const targetY =
+          (c.cushion ? bottleBottomPct : bottleCyPct) + c.oy
+        const wobX = reduce ? 0 : Math.sin(now / 640 + c.phase) * 0.42
+        const wobY = reduce ? 0 : Math.cos(now / 780 + c.phase) * 0.28
+        let tx
+        let ty
+        let opacity = 0.92
+        if (c.mode === "rise" && !reduce) {
+          c.riseT += dt
+          const u = Math.min(1, c.riseT / COMPANION_RISE_MS)
+          const ease = 1 - (1 - u) * (1 - u)
+          tx = c.fromX + Math.sin(u * Math.PI) * c.driftX
+          ty =
+            c.fromY + (FOAM_BARRIER_Y_PCT - 0.35 - c.fromY) * ease
+          c.x = tx
+          c.y = ty
+          if (u > 0.86) opacity = 0.92 * (1 - (u - 0.86) / 0.14)
+          if (u >= 1) {
+            opacity = 0
+            c.mode = "follow"
+            c.arrived = false
+            c.riseT = 0
+            c.spawnT = 0
+            c.x = targetX + c.driftX * 0.9
+            c.y = targetY + 2.8 + (id % 3) * 0.35
+            c.cooldown = COMPANION_DETACH_MS + 900 + (id % 5) * 500
+          }
+        } else {
+          if (c.x == null || c.y == null) {
+            c.x = targetX + Math.sin(c.phase) * 2.1
+            c.y = targetY + 2.6 + (id % 3) * 0.45
+            c.arrived = false
+            c.spawnT = 0
+          }
+          if (reduce) {
+            c.x = targetX
+            c.y = targetY
+            c.arrived = true
+          } else {
+            const k = 1 - Math.exp(-dt / Math.max(120, c.followMs || 400))
+            c.x += (targetX - c.x) * k
+            c.y += (targetY - c.y) * k
+            c.arrived =
+              Math.hypot(targetX - c.x, targetY - c.y) <
+              COMPANION_ARRIVE_PCT
+          }
+          c.spawnT = Math.min(480, (c.spawnT || 0) + dt)
+          tx = c.x
+          ty = c.y
+          if (c.arrived && !reduce) {
+            tx += wobX
+            ty +=
+              wobY +
+              (c.cushion ? Math.sin(now / 900 + c.phase) * 0.12 : 0)
+          }
+          opacity = 0.92 * Math.min(1, c.spawnT / 280)
+        }
+        el.dataset.arrived = c.arrived ? "1" : ""
+        el.style.opacity = String(opacity)
+        el.style.visibility = opacity > 0.02 ? "visible" : "hidden"
+        el.style.transform = `translate3d(${tx - painted.x}%, ${
+          ty - painted.y
+        }%, 0)`
+      })
+    }
+
+    raf = window.requestAnimationFrame(step)
+    return () => {
+      running = false
+      window.cancelAnimationFrame(raf)
+    }
+  }, [])
 
   // River bottle: time-based drift along SHORE_BOTTLE_PATH, pausing at each
   // gate until the bottle centroid is above the viewport midpoint.
@@ -1864,22 +2487,28 @@ export function HomeScrollPrototype() {
                       $xPct={crab.xPct}
                       $yPct={crab.yPct}
                     >
-                      <CrabFlapper>
-                        <CrabFrame
-                          $phase="a"
-                          $durationMs={crab.flapMs}
-                          $delayMs={crab.delayMs}
-                          src={crab.a}
-                          alt=""
-                        />
-                        <CrabFrame
-                          $phase="b"
-                          $durationMs={crab.flapMs}
-                          $delayMs={crab.delayMs}
-                          src={crab.b}
-                          alt=""
-                        />
-                      </CrabFlapper>
+                      <CrabScuttle
+                        originX={crab.originX}
+                        originY={crab.originY}
+                        label={`Crab ${crab.id}`}
+                      >
+                        <CrabFlapper>
+                          <CrabFrame
+                            $phase="a"
+                            $durationMs={crab.flapMs}
+                            $delayMs={crab.delayMs}
+                            src={crab.a}
+                            alt=""
+                          />
+                          <CrabFrame
+                            $phase="b"
+                            $durationMs={crab.flapMs}
+                            $delayMs={crab.delayMs}
+                            src={crab.b}
+                            alt=""
+                          />
+                        </CrabFlapper>
+                      </CrabScuttle>
                     </CrabMount>
                   ))}
                 </CrabsStack>
@@ -1941,11 +2570,15 @@ export function HomeScrollPrototype() {
               </ShoreOverlayStack>
             </ArtBand>
 
+            <ArtBand $top={WORLD_MAP_TOP} $height={WORLD_MAP_HEIGHT} $z={10}>
+              <LoganMapOverlay />
+            </ArtBand>
+
             <ArtBand
               ref={mapBottleBandRef}
               $top={MAP_BOTTLE_BAND_TOP}
               $height={MAP_BOTTLE_BAND_HEIGHT}
-              $z={2}
+              $z={11}
             >
               <MapBottleLayer aria-hidden="true">
                 <MapBottleMount ref={mapBottleMountRef}>
@@ -1963,7 +2596,7 @@ export function HomeScrollPrototype() {
             <ArtBand $top={FOREST_BAND_TOP} $height={FOREST_BAND_HEIGHT} $z={3}>
               <ForestAnimalsStack aria-hidden="true">
                 {SECTION3_ANIMALS.map(animal => {
-                  const plate = animal.static ? (
+                  let plate = animal.static ? (
                     <CrabFlapper>
                       <StaticPlateImg src={animal.src} alt="" />
                     </CrabFlapper>
@@ -1998,6 +2631,18 @@ export function HomeScrollPrototype() {
                   )
 
                   let body = plate
+                  if (animal.id.startsWith("crab")) {
+                    plate = (
+                      <CrabScuttle
+                        originX={animal.originX}
+                        originY={animal.originY}
+                        label={`Crab ${animal.id}`}
+                      >
+                        {plate}
+                      </CrabScuttle>
+                    )
+                    body = plate
+                  }
                   if (animal.revealOnArrive) {
                     body = (
                       <PetamonReveal
@@ -2018,6 +2663,7 @@ export function HomeScrollPrototype() {
                       key={animal.id}
                       $xPct={animal.xPct}
                       $yPct={animal.yPct}
+                      $z={animal.id === STEAL_BIRD_ID ? 12 : 0}
                     >
                       {body}
                     </CrabMount>
@@ -2072,17 +2718,20 @@ export function HomeScrollPrototype() {
                   200.
                 </ForestDatasetBody>
               </ForestDatasetMount>
-              <ForestRnalabMount $show={walkArrived}>
+              <ForestRnalabMount
+                $show={walkArrived}
+                $interactive={rnalabInteractive}
+              >
                 <ForestDatasetBody>
-                  With our advisory lab, the{" "}
+                  With{" "}
                   <ExplainTerm
                     term="RNAlab"
                     explanation={RNALAB_EXPLANATION}
                     imageSrc={RNALAB_TEXTBOX_IMG}
                     imageAlt="RNAlab"
                   />
-                  , the team uncovered 215.7 million high-quality
-                  plastic‑degrading enzymes.
+                  , our advisory lab, our team uncovered 215.7 million
+                  high-quality plastic‑degrading enzymes.
                 </ForestDatasetBody>
               </ForestRnalabMount>
             </ArtBand>
@@ -2106,7 +2755,28 @@ export function HomeScrollPrototype() {
           <Section5Sizer>
             <RailImg src={`${SECTION5_CDN}/1-bg.avif`} alt="" />
           </Section5Sizer>
-          {SECTION5_LAYERS.filter(layer => !layer.sizer).map(layer => (
+          {SECTION5_LAYERS.filter(
+            layer => !layer.sizer && layer.id < 7,
+          ).map(layer => (
+            <Section5Layer
+              key={layer.id}
+              $z={layer.z}
+              src={`${SECTION5_CDN}/${layer.file}`}
+              alt=""
+            />
+          ))}
+          <Section5ChuteBottleLayer aria-hidden="true">
+            <ChuteBottleMount ref={chuteBottleMountRef}>
+              <ChuteBottleIdle>
+                <ChuteBottleImg
+                  ref={chuteBottleImgRef}
+                  src={BOTTLE_STAGES.section5}
+                  alt=""
+                />
+              </ChuteBottleIdle>
+            </ChuteBottleMount>
+          </Section5ChuteBottleLayer>
+          {SECTION5_LAYERS.filter(layer => layer.id >= 7).map(layer => (
             <Section5Layer
               key={layer.id}
               $z={layer.z}
@@ -2129,6 +2799,50 @@ export function HomeScrollPrototype() {
               </Section5FishPlane>
             ))}
           </Section5FishStack>
+          <Section5BubbleStack aria-hidden="true">
+            {STREAM_BUBBLES.map((bubble, i) => {
+              const painted = BUBBLE_PLATES[bubble.id]
+              return (
+                <Section5StreamBubble
+                  key={`stream-${bubble.id}`}
+                  style={{
+                    "--shift-x": `${bubble.x - painted.x}%`,
+                    "--rise-dy": `${FOAM_BARRIER_Y_PCT - 0.4 - painted.y}%`,
+                    "--wobble-x": `${(i % 2 === 0 ? 1 : -1) * (1.15 + i * 0.35)}%`,
+                  }}
+                  $dur={6.6 + i * 1.05}
+                  $delay={-i * 1.7}
+                >
+                  <Section5BubbleIdle $delay={i * 0.35} $dur={3.1 + (i % 3) * 0.4}>
+                    <Section5Layer
+                      $z={1}
+                      src={`${BUBBLE_CDN}/bubble${bubble.id}.avif`}
+                      alt=""
+                    />
+                  </Section5BubbleIdle>
+                </Section5StreamBubble>
+              )
+            })}
+            <Section5CompanionLayer ref={companionBubbleLayerRef}>
+              {COMPANION_BUBBLE_SPECS.map(spec => (
+                <Section5CompanionBubble
+                  key={`companion-${spec.id}`}
+                  data-companion={spec.id}
+                >
+                  <Section5BubbleIdle
+                    $delay={spec.id * 0.18}
+                    $dur={2.8 + (spec.id % 4) * 0.35}
+                  >
+                    <Section5Layer
+                      $z={1}
+                      src={`${BUBBLE_CDN}/bubble${spec.id}.avif`}
+                      alt=""
+                    />
+                  </Section5BubbleIdle>
+                </Section5CompanionBubble>
+              ))}
+            </Section5CompanionLayer>
+          </Section5BubbleStack>
           <Section5AppsBottleLayer aria-hidden="true">
             <Section5AppsBottleMount ref={creamBottleMountRef}>
               <Section5AppsBottleImg
@@ -2143,6 +2857,27 @@ export function HomeScrollPrototype() {
               />
             </Section5AppsBottleMount>
           </Section5AppsBottleLayer>
+          <Section5FoamMount
+            ref={section5FoamRef}
+            aria-hidden="true"
+            onAnimationEnd={e => {
+              if (e.target !== e.currentTarget) return
+              e.currentTarget.dataset.impact = ""
+            }}
+          >
+            <Section5Layer $z={1} src={SECTION5_FOAM_SRC} alt="" />
+          </Section5FoamMount>
+          <Section5SplashLayer ref={section5SplashLayerRef} aria-hidden="true">
+            {SPLASH_PLATES.map(splash => (
+              <Section5SplashDrop key={splash.id} data-splash={splash.id}>
+                <Section5Layer
+                  $z={1}
+                  src={`${SPLASH_CDN}/splash${splash.id}.avif`}
+                  alt=""
+                />
+              </Section5SplashDrop>
+            ))}
+          </Section5SplashLayer>
           <Section5TextStack aria-hidden="false">
             <Section5Lead ref={section5LeadRef}>
               Some applications include...
@@ -2154,7 +2889,9 @@ export function HomeScrollPrototype() {
               ..., Breaking down plastics in trash and recycling bins,...
             </Section5RecyclingLine>
             <Section5AndMoreLine>...and more.</Section5AndMoreLine>
-            <Section5Cta>Discover more about Petabite.</Section5Cta>
+            <Section5Cta>
+              Discover more about Petabite.
+            </Section5Cta>
           </Section5TextStack>
         </Section5Root>
 
@@ -2162,14 +2899,6 @@ export function HomeScrollPrototype() {
           <WikiTopBar />
         </HomeNavMount>
       </ScrollStack>
-
-      <PetadexBottlePath petadexRef={petadexRef} onBattle={() => setBattleOpen(true)}>
-        <div ref={petadexRef}>
-          <Petadex />
-        </div>
-      </PetadexBottlePath>
-
-      <EnzymeBattle isOpen={battleOpen} onClose={() => setBattleOpen(false)} />
     </WikiFrontRoot>
   )
 }
@@ -2232,10 +2961,59 @@ const Section5Layer = styled.img`
   user-select: none;
 `
 
+const foamImpactBob = keyframes`
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  22% {
+    transform: translate3d(0, 10px, 0) scale(1.02);
+  }
+  58% {
+    transform: translate3d(0, -5px, 0) scale(1.008);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+`
+
+const Section5FoamMount = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: ${SECTION5_FOAM_Z};
+  pointer-events: none;
+  transform-origin: 56% 51%;
+  will-change: transform;
+
+  &[data-impact="1"] {
+    animation: ${foamImpactBob} 620ms ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`
+
+const Section5SplashLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: ${SPLASH_Z};
+  pointer-events: none;
+  overflow: visible;
+`
+
+const Section5SplashDrop = styled.div`
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform, opacity;
+`
+
 const Section5FishStack = styled.div`
   position: absolute;
   inset: 0;
-  z-index: 9;
+  z-index: 10;
   pointer-events: auto;
   overflow: hidden;
 `
@@ -2283,11 +3061,124 @@ const Section5FishHover = styled.div`
   }
 `
 
-/** Copy locked to % of the tall section-5 plate (946×4000). Above apps bottle. */
-const Section5TextStack = styled.div`
+const streamRise = keyframes`
+  0% {
+    transform: translate3d(var(--shift-x), 0, 0);
+    opacity: 0;
+  }
+  7% {
+    opacity: 0.95;
+  }
+  24% {
+    transform: translate3d(
+      calc(var(--shift-x) + var(--wobble-x) * 0.7),
+      calc(var(--rise-dy) * 0.2),
+      0
+    );
+  }
+  50% {
+    transform: translate3d(
+      calc(var(--shift-x) + var(--wobble-x) * -0.5),
+      calc(var(--rise-dy) * 0.5),
+      0
+    );
+  }
+  76% {
+    transform: translate3d(
+      calc(var(--shift-x) + var(--wobble-x) * 0.35),
+      calc(var(--rise-dy) * 0.78),
+      0
+    );
+  }
+  88% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(
+      calc(var(--shift-x) + var(--wobble-x)),
+      var(--rise-dy),
+      0
+    );
+    opacity: 0;
+  }
+`
+
+const bubbleIdleFloat = keyframes`
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  35% {
+    transform: translate3d(5px, -6px, 0);
+  }
+  68% {
+    transform: translate3d(-6px, 4px, 0);
+  }
+`
+
+const Section5BubbleStack = styled.div`
   position: absolute;
   inset: 0;
   z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+`
+
+const Section5StreamBubble = styled.div`
+  position: absolute;
+  inset: 0;
+  --rise-dy: 0%;
+  --wobble-x: 0%;
+  --shift-x: 0%;
+  animation: ${streamRise} ${({ $dur }) => $dur}s linear infinite;
+  animation-delay: ${({ $delay }) => $delay}s;
+  will-change: transform, opacity;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+`
+
+const Section5BubbleIdle = styled.div`
+  position: absolute;
+  inset: 0;
+  animation: ${bubbleIdleFloat} ${({ $dur }) => $dur || 3.2}s ease-in-out infinite;
+  animation-delay: ${({ $delay }) => `${$delay || 0}s`};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`
+
+const Section5CompanionLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+`
+
+const Section5CompanionBubble = styled.div`
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform, opacity;
+
+  ${Section5BubbleIdle} {
+    animation-play-state: paused;
+  }
+
+  &[data-arrived="1"] ${Section5BubbleIdle} {
+    animation-play-state: running;
+  }
+`
+
+/** Copy locked to % of the tall section-5 plate (946×4000). Above foam art. */
+const Section5TextStack = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 12;
   pointer-events: none;
 `
 
@@ -2298,7 +3189,7 @@ const Section5TextStack = styled.div`
 const Section5AppsBottleLayer = styled.div`
   position: absolute;
   inset: 0;
-  z-index: 8;
+  z-index: 10;
   pointer-events: none;
 `
 
@@ -2313,7 +3204,19 @@ const Section5AppsBottleMount = styled.div`
   visibility: hidden;
   pointer-events: none;
   will-change: left, top, opacity, transform;
-  z-index: 8;
+  z-index: 10;
+`
+
+const Section5ChuteBottleLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: ${CHUTE_Z};
+  pointer-events: none;
+`
+
+const ChuteBottleMount = styled(Section5AppsBottleMount)`
+  z-index: ${CHUTE_Z};
+  width: clamp(4.75rem, 15.5vw, 12.25rem);
 `
 
 const Section5AppsBottleImg = styled.img`
@@ -2323,6 +3226,39 @@ const Section5AppsBottleImg = styled.img`
   user-select: none;
   pointer-events: none;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+`
+
+const ChuteBottleImg = styled(Section5AppsBottleImg)`
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
+    saturate(1.08) contrast(0.96);
+`
+
+const chuteSinkIdle = keyframes`
+  0% {
+    transform: translate3d(0, 4px, 0) rotate(-4deg);
+  }
+  40% {
+    transform: translate3d(0, 14px, 0) rotate(5deg);
+  }
+  70% {
+    transform: translate3d(0, 8px, 0) rotate(-2deg);
+  }
+  100% {
+    transform: translate3d(0, 4px, 0) rotate(-4deg);
+  }
+`
+
+const ChuteBottleIdle = styled.div`
+  width: 100%;
+  transform-origin: 50% 70%;
+
+  ${ChuteBottleMount}[data-sunk="1"] & {
+    animation: ${chuteSinkIdle} 3.1s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `
 
 const Section5Lead = styled.p`
@@ -2348,32 +3284,38 @@ const section5AppLineBase = `
   margin: 0;
   color: #0a0a0a;
   font-family: var(--font-body);
-  font-size: clamp(1.35rem, 2.8vw, 2.85rem);
+  font-size: clamp(calc(0.85rem + 4px), calc(2.1vw + 4px), calc(2.3rem + 4px));
   font-weight: 600;
   line-height: 1.35;
   text-align: center;
   overflow-wrap: break-word;
+  text-shadow:
+    0 0 6px rgba(255, 252, 240, 0.95),
+    0 0 14px rgba(255, 248, 220, 0.7),
+    0 1px 3px rgba(255, 255, 255, 0.85);
 `
 
-/** WWTP callout — edit top/left here. */
+/** WWTP callout — edit top/left/width here. */
 const Section5WwtpLine = styled.p`
   ${section5AppLineBase}
   top: 16%;
   left: 55%;
+  width: min(38%, 22rem);
 `
 
-/** Trash / recycling bins callout — edit top/left independently. */
+/** Trash / recycling bins callout — edit top/left/width independently. */
 const Section5RecyclingLine = styled.p`
   ${section5AppLineBase}
   top: 33%;
   left: 45%;
+  width: min(38%, 22rem);
 `
 
 /** “...and more.” — edit top/left independently. */
 const Section5AndMoreLine = styled.p`
   ${section5AppLineBase}
-  top: 47%;
-  left: 65%;
+  top: 46%;
+  left: 83%;
 `
 
 const Section5Cta = styled.p`
@@ -2610,6 +3552,7 @@ const petamonPopIn = keyframes`
 const PetamonReveal = styled.div`
   width: 100%;
   opacity: ${({ $show }) => ($show ? 1 : 0)};
+  pointer-events: none;
   /* Only bites on the way out — the pop-in keyframes own the entry. */
   transition: opacity 240ms ease;
 
@@ -2618,6 +3561,14 @@ const PetamonReveal = styled.div`
     css`
       animation: ${petamonPopIn} 620ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
       animation-delay: ${$delayMs || 0}ms;
+    `}
+
+  ${({ $show }) =>
+    !$show &&
+    css`
+      button {
+        pointer-events: none;
+      }
     `}
 
   @media (prefers-reduced-motion: reduce) {
@@ -2654,6 +3605,7 @@ const animalHoverBobStrong = keyframes`
 
 const AnimalMotion = styled.div`
   width: 100%;
+  pointer-events: none;
   transform-origin: ${({ $ox, $oy }) =>
     `${$ox != null ? $ox : 50}% ${$oy != null ? $oy : 50}%`};
   --animal-scale: ${({ $scale }) => $scale || 1};
@@ -2683,6 +3635,7 @@ const CrabMount = styled.div`
   left: 0;
   top: 0;
   width: 100%;
+  z-index: ${({ $z }) => $z || 0};
   transform: translate3d(
     ${({ $xPct }) => $xPct || 0}%,
     ${({ $yPct }) => $yPct || 0}%,
@@ -2691,9 +3644,100 @@ const CrabMount = styled.div`
   pointer-events: none;
 `
 
+const crabScuttleLeft = keyframes`
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  18% {
+    transform: translate3d(-0.9%, 0, 0) rotate(${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  38% {
+    transform: translate3d(-2.1%, 0, 0) rotate(-${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  58% {
+    transform: translate3d(-3.3%, 0, 0) rotate(${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  78% {
+    transform: translate3d(-4.1%, 0, 0) rotate(-${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  100% {
+    transform: translate3d(-${CRAB_SCUTTLE_X_PCT}%, 0, 0) rotate(0deg);
+  }
+`
+
+const crabScuttleRight = keyframes`
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  18% {
+    transform: translate3d(0.9%, 0, 0) rotate(-${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  38% {
+    transform: translate3d(2.1%, 0, 0) rotate(${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  58% {
+    transform: translate3d(3.3%, 0, 0) rotate(-${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  78% {
+    transform: translate3d(4.1%, 0, 0) rotate(${CRAB_SCUTTLE_THETA_DEG}deg);
+  }
+  100% {
+    transform: translate3d(${CRAB_SCUTTLE_X_PCT}%, 0, 0) rotate(0deg);
+  }
+`
+
+const CrabScuttleShell = styled.div`
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+  transform: translate3d(${({ $homeX }) => $homeX}%, 0, 0);
+  transform-origin: ${({ $ox, $oy }) => `${$ox}% ${$oy}%`};
+`
+
+const CrabScuttleMotion = styled.div`
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+  transform-origin: ${({ $ox, $oy }) => `${$ox}% ${$oy}%`};
+
+  ${({ $playing, $dir }) =>
+    $playing &&
+    css`
+      animation: ${$dir < 0 ? crabScuttleLeft : crabScuttleRight}
+        ${CRAB_SCUTTLE_MS}ms cubic-bezier(0.45, 0.05, 0.25, 1) both;
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+  }
+`
+
+const CrabHitPad = styled.button`
+  position: absolute;
+  left: ${({ $ox }) => $ox}%;
+  top: ${({ $oy }) => $oy}%;
+  width: clamp(3.25rem, 11%, 7.5rem);
+  height: clamp(2.75rem, 8%, 5.75rem);
+  transform: translate(-50%, -50%);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 5;
+  appearance: none;
+
+  &:focus-visible {
+    outline: 2px solid rgba(20, 20, 20, 0.45);
+    outline-offset: 3px;
+  }
+`
+
 const CrabFlapper = styled.div`
   position: relative;
   width: 100%;
+  pointer-events: none;
 `
 
 const crabFlapA = keyframes`
@@ -2873,7 +3917,7 @@ const ShoreBottleImg = styled.img`
   pointer-events: none;
 `
 
-/** Scroll-scrubbed bottle: behind forest animals (z:2), under bushes (z:30). */
+/** Scroll-scrubbed bottle: above forest animals, under bushes (z:30). */
 const MapBottleLayer = styled.div`
   position: absolute;
   inset: 0;
@@ -3096,6 +4140,7 @@ const ForestDatasetBody = styled.p`
   font-weight: 600;
   line-height: 1.4;
   overflow-wrap: break-word;
+  pointer-events: none;
 `
 
 /** RNAlab payoff on the walker's right; swaps in when the bang pops. */
@@ -3111,7 +4156,13 @@ const ForestRnalabMount = styled.div`
   transition:
     opacity 520ms ease 180ms,
     transform 560ms cubic-bezier(0.22, 1.2, 0.36, 1) 180ms;
-  pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
+  pointer-events: ${({ $interactive }) => ($interactive ? "auto" : "none")};
+
+  p,
+  button {
+    pointer-events: ${({ $interactive }) =>
+      $interactive ? "auto" : "none"};
+  }
 
   @media (max-width: 720px) {
     top: 64%;
