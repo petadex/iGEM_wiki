@@ -51,6 +51,41 @@ docs/vercel-demo-deployment.md  ← Hosted team demo guide
 
 Most wiki pages live in `src/content/wiki/**/index.mdx`. Use `src/content/wiki/_template.mdx` for new pages.
 
+## Citations in MDX
+
+To add citations to a wiki page, create `references.bib` beside that page's
+`index.mdx`:
+
+```text
+src/content/wiki/project/description/
+├── index.mdx
+└── references.bib
+```
+
+Add normal BibTeX records to `references.bib`, using a unique citation key:
+
+```bibtex
+@article{austin2018,
+  author = {Austin, Harry P. and others},
+  title = {Characterization and engineering of a plastic-degrading aromatic polyesterase},
+  journal = {Proceedings of the National Academy of Sciences},
+  year = {2018},
+  doi = {10.1073/pnas.1718804115}
+}
+```
+
+Use the key in MDX with Pandoc-style citation syntax:
+
+```md
+PETase can break down PET under laboratory conditions [@austin2018].
+Several studies support this claim [@austin2018; @anotherStudy].
+A specific passage can include a locator [@austin2018, p. 3].
+```
+
+The site renders linked Vancouver-style numbers and automatically appends a
+References section containing only sources cited on that page. Clicking an
+in-text number scrolls to its bibliography entry.
+
 ---
 
 ## Useful Commands
