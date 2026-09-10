@@ -83,3 +83,7 @@ yarn-error.log
 # Local staging (e.g. hardware-notebook upload packs)
 tmp/
 
+# Local scratch copies of CDN images (measurement / conversion)
+.tmp-bubbles/
+.tmp-*/
+
