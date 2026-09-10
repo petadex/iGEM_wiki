@@ -7,8 +7,18 @@ variables:
 
 pages:
   stage: build
+  # Allow cold installs and production compilation to finish on shared runners.
+  # A runner-level maximum timeout still takes precedence over this value.
+  timeout: 30 minutes
+  cache:
+    key:
+      prefix: npm-node-20
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
   before_script:
-    - npm ci --no-audit --no-fund
+    - npm ci --cache .npm --prefer-offline --no-audit --no-fund
   script:
     - npm run build:igem
     - node scripts/trim-pages-artifact.mjs

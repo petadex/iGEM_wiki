@@ -150,6 +150,19 @@ target is `main`, and merge it. The iGEM GitLab Pages pipeline runs after that
 merge. If the merge command reports conflicts, resolve and test them before
 pushing the sync branch.
 
+The Pages job requests a 30-minute timeout and caches npm downloads by
+`package-lock.json`. A cold run still downloads dependencies; later runs reuse
+the cache when the runner makes it available. `npm ci` continues to install the
+locked dependency versions.
+
+If the job ends with `execution took longer than 10m0s seconds`, it has hit a
+GitLab timeout, even if the last Gatsby line says `Building HTML renderer`.
+The Browserslist update notice is only a warning. The job timeout overrides the
+project default, but cannot exceed a runner's maximum timeout. If the job still
+stops at 10 minutes, ask the iGEM runner administrator to raise that maximum to
+at least 30 minutes. Increasing the timeout gives the build room to finish; it
+does not make the build take 30 minutes.
+
 ---
 
 _iGEM Toronto 2026 — University of Toronto_

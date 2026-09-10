@@ -56,6 +56,7 @@ typings/
 
 # gatsby files
 .cache/
+.config/gatsby/
 public
 
 # Payload CMS build output (source under cms/ is tracked)
@@ -86,4 +87,3 @@ tmp/
 # Local scratch copies of CDN images (measurement / conversion)
 .tmp-bubbles/
 .tmp-*/
-
