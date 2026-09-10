@@ -1992,19 +1992,21 @@ export function HomeScrollPrototype() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     let raf = 0
     let running = true
+    let active = false
 
     const step = now => {
-      if (!running) return
-      raf = window.requestAnimationFrame(step)
+      raf = 0
+      if (!running || !active) return
       const chute = chuteBottleMountRef.current
       const plate = section5RootRef.current
       const layer = companionBubbleLayerRef.current
       const companions = companionBubbleStateRef.current
-      if (!chute || !plate || !layer || !companions) return
+      if (!chute || !plate || !layer || !companions) {
+        raf = window.requestAnimationFrame(step)
+        return
+      }
 
       const s5 = plate.getBoundingClientRect()
-      const vh = window.innerHeight
-      if (s5.bottom < -120 || s5.top > vh + 120) return
 
       const primed = companionBubbleLastTsRef.current !== 0
       const last = companionBubbleLastTsRef.current || now
@@ -2156,12 +2158,39 @@ export function HomeScrollPrototype() {
           ty - painted.y
         }%, 0)`
       })
+
+      if (running && active) raf = window.requestAnimationFrame(step)
     }
 
-    raf = window.requestAnimationFrame(step)
+    const setActive = nextActive => {
+      if (active === nextActive) return
+      active = nextActive
+      companionBubbleLastTsRef.current = 0
+      companionLastScrollYRef.current = window.scrollY
+      if (active && !raf) {
+        raf = window.requestAnimationFrame(step)
+      } else if (!active && raf) {
+        window.cancelAnimationFrame(raf)
+        raf = 0
+      }
+    }
+
+    const plate = section5RootRef.current
+    const observer =
+      plate && typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(
+            entries => setActive(entries.some(entry => entry.isIntersecting)),
+            { rootMargin: "120px 0px" },
+          )
+        : null
+
+    if (observer && plate) observer.observe(plate)
+    else setActive(true)
+
     return () => {
       running = false
-      window.cancelAnimationFrame(raf)
+      if (observer) observer.disconnect()
+      if (raf) window.cancelAnimationFrame(raf)
     }
   }, [])
 
