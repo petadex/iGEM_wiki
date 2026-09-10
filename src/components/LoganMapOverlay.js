@@ -250,6 +250,10 @@ function cardLayout(rect) {
 }
 
 const CLUSTERED_POINTS = clusterLocations(snapshot.locations || [])
+const MAPPED_POINTS = CLUSTERED_POINTS.map(point => ({
+  point,
+  pos: lngLatToPct(point.longitude, point.latitude),
+})).filter(entry => entry.pos)
 
 function HoverCard({ hover, onKeep, onClose }) {
   const copy = cardCopy(hover.point)
@@ -296,7 +300,11 @@ function HoverCard({ hover, onKeep, onClose }) {
 export default function LoganMapOverlay() {
   const [calibrate, setCalibrate] = useState(false)
   const [hover, setHover] = useState(null)
+  const [keyboardPinId, setKeyboardPinId] = useState(
+    MAPPED_POINTS[0]?.point.id ?? null,
+  )
   const hoverTimer = useRef(null)
+  const pinRefs = useRef(new Map())
   const crop = useMemo(() => worldTileCrop(), [])
 
   useEffect(() => {
@@ -348,8 +356,30 @@ export default function LoganMapOverlay() {
     hoverTimer.current = window.setTimeout(() => setHover(null), 80)
   }
 
+  const moveKeyboardFocus = (event, currentIndex) => {
+    let nextIndex
+    if (event.key === "Home") nextIndex = 0
+    else if (event.key === "End") nextIndex = MAPPED_POINTS.length - 1
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      nextIndex = (currentIndex - 1 + MAPPED_POINTS.length) % MAPPED_POINTS.length
+    } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      nextIndex = (currentIndex + 1) % MAPPED_POINTS.length
+    } else {
+      return
+    }
+
+    event.preventDefault()
+    const nextId = MAPPED_POINTS[nextIndex]?.point.id
+    if (!nextId) return
+    setKeyboardPinId(nextId)
+    pinRefs.current.get(nextId)?.focus()
+  }
+
   return (
-    <MapOverlayRoot>
+    <MapOverlayRoot
+      role="group"
+      aria-label="LOGAN sample locations. Use arrow keys to move between pins."
+    >
       {calibrate ? (
         <CalibrateFrame
           style={{
@@ -367,16 +397,19 @@ export default function LoganMapOverlay() {
           />
         </CalibrateFrame>
       ) : null}
-      {CLUSTERED_POINTS.map(point => {
-        const pos = lngLatToPct(point.longitude, point.latitude)
-        if (!pos) return null
+      {MAPPED_POINTS.map(({ point, pos }, index) => {
         const size = pinSize(point.count)
         const copy = cardCopy(point)
         const active = hover?.id === point.id
         return (
           <MapPin
             key={point.id}
+            ref={element => {
+              if (element) pinRefs.current.set(point.id, element)
+              else pinRefs.current.delete(point.id)
+            }}
             type="button"
+            tabIndex={keyboardPinId === point.id ? 0 : -1}
             aria-label={`${copy.title}. ${point.count} sample${
               point.count === 1 ? "" : "s"
             }`}
@@ -390,9 +423,13 @@ export default function LoganMapOverlay() {
             }}
             onMouseEnter={event => openHover(point, event.currentTarget)}
             onMouseLeave={closeHover}
-            onFocus={event => openHover(point, event.currentTarget)}
+            onFocus={event => {
+              setKeyboardPinId(point.id)
+              openHover(point, event.currentTarget)
+            }}
             onBlur={closeHover}
             onClick={event => openHover(point, event.currentTarget)}
+            onKeyDown={event => moveKeyboardFocus(event, index)}
           >
             <MapPinImg src={PIN_SRC} alt="" draggable="false" />
           </MapPin>
