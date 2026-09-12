@@ -30,22 +30,27 @@ The iGEM Toronto 2026 wiki is a static Gatsby site built from React components a
 
 ## Technical Stack
 
-| Area | Implementation |
-| --- | --- |
-| Site generator | Gatsby |
-| Interface | React and styled-components |
-| Content | MDX and Payload CMS blocks |
-| Source control | GitHub with synchronization to iGEM GitLab |
-| Official deployment | GitLab Pages under `/toronto` |
+| Area                | Implementation                             |
+| ------------------- | ------------------------------------------ |
+| Site generator      | Gatsby                                     |
+| Interface           | React and styled-components                |
+| Content             | MDX and Payload CMS blocks                 |
+| Source control      | GitHub with synchronization to iGEM GitLab |
+| Official deployment | GitLab Pages under `/toronto`              |
 
 ## Accessibility and Testing
 
-Interactive components should remain usable with a keyboard, expose meaningful labels to assistive technology, and provide a non-animated experience when reduced motion is requested. Content validation and production builds run before deployment; important workflows are also checked manually across desktop and mobile layouts.
+Interactive components should remain usable[@maybe] with a keyboard, expose meaningful labels to assistive technology, and provide a non-animated experience when reduced motion is requested. Content validation and production builds run before deployment; important workflows are also checked manually across desktop and mobile layouts.
+
+## Citations
+
+Put a `references.bib` file beside a page's `index.mdx`, then cite its BibTeX keys with Pandoc-style syntax such as `[@rehypeCitation]`. Citations use a linked numerical style and the bibliography is generated automatically at the end of the page [@rehypeCitation].
 
 ## Attributions
 
-Team responsibilities belong on the [team attributions page](/team/attributions/). External libraries, media, and other site-wide acknowledgements belong on the [general attributions page](/attributions/).
+Team responsibilities belong on the [@maybe?] [team attributions page](/team/attributions/). External libraries, media, and other site-wide acknowledgements belong on the [general attributions page](/attributions/).
 
 <Callout title="Living documentation">
-Update this page as the design system, content workflow, testing process, and deployment architecture evolve.
+  Update this page as the design system, content workflow, testing process, and
+  deployment architecture evolve.
 </Callout>

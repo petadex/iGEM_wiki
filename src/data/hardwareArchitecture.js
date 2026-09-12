@@ -54,7 +54,7 @@ export const HARDWARE_SUBSYSTEMS = {
   power: {
     id: "power",
     label: "Power",
-    color: "#888880",
+    color: "#647984",
     description: "Laptop or wall supply, converted to 5 V and distributed.",
   },
   comms: {

@@ -4,12 +4,12 @@ export const GlobalStyle = createGlobalStyle`
   /* ── Design tokens ── */
   :root {
     /* Colors */
-    --color-bg:         #f0ede6;
-    --color-surface:    #111111;
-    --color-border:     #222222;
-    --color-text:       #0a0a0a;
-    --color-muted:      #888880;
-    --color-accent:     #c8f050;   /* electric lime — swap this for your brand color */
+    --color-bg:         #f7fbff;
+    --color-surface:    #ffffff;
+    --color-border:     #9bb8c5;
+    --color-text:       #06202b;
+    --color-muted:      #58717b;
+    --color-accent:     #c92f3b;
 
     /* Typography */
     --font-display: 'DM Serif Display', Georgia, serif;
@@ -38,6 +38,7 @@ export const GlobalStyle = createGlobalStyle`
   html {
     font-size: 16px;
     scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
     min-height: 100%;
   }
 
@@ -68,6 +69,51 @@ export const GlobalStyle = createGlobalStyle`
   img, video {
     max-width: 100%;
     display: block;
+  }
+
+  .citation a,
+  [id^="citation-"] a {
+    color: var(--color-accent);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .citation a:hover,
+  [id^="citation-"] a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  .citation a:focus-visible,
+  [id^="citation-"] a:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .references {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .references::before {
+    content: "References";
+    display: block;
+    margin-bottom: var(--space-md);
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1.15;
+  }
+
+  .references .csl-entry {
+    scroll-margin-top: 6rem;
+    margin-bottom: var(--space-sm);
+    transition: background-color 180ms ease;
+  }
+
+  .references .csl-entry:target {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   }
 
   /* Scrollbar */

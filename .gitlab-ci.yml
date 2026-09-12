@@ -7,9 +7,12 @@ variables:
 
 pages:
   stage: build
-  timeout: 30m
+  # Allow cold installs and production compilation to finish on shared runners.
+  # A runner-level maximum timeout still takes precedence over this value.
+  timeout: 30 minutes
   cache:
     key:
+      prefix: npm-node-20
       files:
         - package-lock.json
     paths:

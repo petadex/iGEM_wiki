@@ -25,7 +25,7 @@ const GROUP_BY_ID = Object.fromEntries(HARDWARE_ARCH_GROUPS.map((g) => [g.id, g]
 const DESIGN_WIDTH = 1000
 
 function getSubsystemColor(subsystemId) {
-  return HARDWARE_SUBSYSTEMS[subsystemId]?.color ?? "#888880"
+  return HARDWARE_SUBSYSTEMS[subsystemId]?.color ?? "#647984"
 }
 
 /**

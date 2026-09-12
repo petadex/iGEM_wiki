@@ -1,6 +1,7 @@
 import { fileURLToPath } from "url"
 import path from "path"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
+import rehypeWikiCitations from "./plugins/rehype-wiki-citations.mjs"
 import rehypeSlug from "rehype-slug"
 import remarkGfm from "remark-gfm"
 
@@ -41,6 +42,7 @@ const config = {
         mdxOptions: {
           remarkPlugins: [remarkGfm],
           rehypePlugins: [
+            rehypeWikiCitations,
             rehypeSlug,
             [
               rehypeAutolinkHeadings,

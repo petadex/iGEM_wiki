@@ -17,7 +17,8 @@
     "payload:import-media": "npm --prefix cms/payload-app run import:media",
     "payload:sync": "node scripts/payload-sync.mjs",
     "build:demo": "npm run payload:sync && npm run build:gatsby",
-    "test:payload-blocks": "node scripts/test-payload-mdx-blocks.mjs"
+    "test:payload-blocks": "node scripts/test-payload-mdx-blocks.mjs",
+    "export:logan-map": "node scripts/export-logan-map-locations.mjs"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.11",
@@ -33,6 +34,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rehype-autolink-headings": "^7.1.0",
+    "rehype-citation": "^2.3.2",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^3.0.1",
     "styled-components": "^6.1.0"

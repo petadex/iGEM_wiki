@@ -51,6 +51,41 @@ docs/vercel-demo-deployment.md  ← Hosted team demo guide
 
 Most wiki pages live in `src/content/wiki/**/index.mdx`. Use `src/content/wiki/_template.mdx` for new pages.
 
+## Citations in MDX
+
+To add citations to a wiki page, create `references.bib` beside that page's
+`index.mdx`:
+
+```text
+src/content/wiki/project/description/
+├── index.mdx
+└── references.bib
+```
+
+Add normal BibTeX records to `references.bib`, using a unique citation key:
+
+```bibtex
+@article{austin2018,
+  author = {Austin, Harry P. and others},
+  title = {Characterization and engineering of a plastic-degrading aromatic polyesterase},
+  journal = {Proceedings of the National Academy of Sciences},
+  year = {2018},
+  doi = {10.1073/pnas.1718804115}
+}
+```
+
+Use the key in MDX with Pandoc-style citation syntax:
+
+```md
+PETase can break down PET under laboratory conditions [@austin2018].
+Several studies support this claim [@austin2018; @anotherStudy].
+A specific passage can include a locator [@austin2018, p. 3].
+```
+
+The site renders linked Vancouver-style numbers and automatically appends a
+References section containing only sources cited on that page. Clicking an
+in-text number scrolls to its bibliography entry.
+
 ---
 
 ## Useful Commands
@@ -114,6 +149,19 @@ Git prints a link for opening the GitLab merge request. Open it, confirm the
 target is `main`, and merge it. The iGEM GitLab Pages pipeline runs after that
 merge. If the merge command reports conflicts, resolve and test them before
 pushing the sync branch.
+
+The Pages job requests a 30-minute timeout and caches npm downloads by
+`package-lock.json`. A cold run still downloads dependencies; later runs reuse
+the cache when the runner makes it available. `npm ci` continues to install the
+locked dependency versions.
+
+If the job ends with `execution took longer than 10m0s seconds`, it has hit a
+GitLab timeout, even if the last Gatsby line says `Building HTML renderer`.
+The Browserslist update notice is only a warning. The job timeout overrides the
+project default, but cannot exceed a runner's maximum timeout. If the job still
+stops at 10 minutes, ask the iGEM runner administrator to raise that maximum to
+at least 30 minutes. Increasing the timeout gives the build room to finish; it
+does not make the build take 30 minutes.
 
 ---
 
