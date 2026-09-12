@@ -1,0 +1,51 @@
+---
+title: "Wiki"
+section: "Team"
+path: "/wiki/"
+navTitle: "Wiki"
+order: 40
+description: "Design, content, accessibility, and deployment process for the iGEM Toronto 2026 wiki."
+owners: ["Web Team"]
+updated: "2026-08-09"
+status: "draft"
+---
+
+The iGEM Toronto 2026 wiki is a static Gatsby site built from React components and MDX content. The team uses Payload CMS for structured page editing and exports published content into the repository for validation and deployment.
+
+## Design Goals
+
+- Make project evidence easy to find from the required iGEM award URLs.
+- Keep navigation and page structure consistent across subteams.
+- Support interactive scientific explanations without hiding essential information.
+- Provide responsive layouts and keyboard-accessible controls.
+- Respect reduced-motion preferences and maintain readable contrast.
+
+## Content Workflow
+
+1. Subteams draft and review page content with their designated owners.
+2. Published Payload content is exported to MDX where applicable.
+3. Automated validation checks frontmatter, duplicate routes, and navigation links.
+4. Pull requests run a complete Gatsby production build before merging.
+5. Changes merged into GitHub `main` are synchronized to the official iGEM GitLab repository.
+
+## Technical Stack
+
+| Area | Implementation |
+| --- | --- |
+| Site generator | Gatsby |
+| Interface | React and styled-components |
+| Content | MDX and Payload CMS blocks |
+| Source control | GitHub with synchronization to iGEM GitLab |
+| Official deployment | GitLab Pages under `/toronto` |
+
+## Accessibility and Testing
+
+Interactive components should remain usable with a keyboard, expose meaningful labels to assistive technology, and provide a non-animated experience when reduced motion is requested. Content validation and production builds run before deployment; important workflows are also checked manually across desktop and mobile layouts.
+
+## Attributions
+
+Team responsibilities belong on the [team attributions page](/team/attributions/). External libraries, media, and other site-wide acknowledgements belong on the [general attributions page](/attributions/).
+
+<Callout title="Living documentation">
+Update this page as the design system, content workflow, testing process, and deployment architecture evolve.
+</Callout>

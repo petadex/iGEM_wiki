@@ -81,7 +81,7 @@ const WEEK_CONTENT_OVERRIDES = {
       web: {
         summary: "Wiki site skeleton merged.",
         detail: "Navigation, page layout shell, and contribution timeline placeholder routes in place.",
-        link: "/dry-lab/software/",
+        link: "/software/",
       },
     },
   },
@@ -248,7 +248,7 @@ const WEEK_CONTENT_OVERRIDES = {
         summary: "Top enzyme shortlist shared internally.",
         detail:
           "Filtered PETase (plastic-degrading enzyme) candidates for stability and active-site quality; handed sequences to wet lab.",
-        link: "/dry-lab/model/",
+        link: "/model/",
       },
       hardware: {
         summary: "Optical-sensor housing printed; power architecture reviewed.",
@@ -585,26 +585,32 @@ const OUTREACH_WEEK_PATCHES = {
   "week-2026-07-19": {
     milestones: [
       { date: "2026-07-19", label: "Promo animation planning meeting", subteamId: "outreach" },
+      { date: "2026-07-20", label: "Outreach meeting #15", subteamId: "outreach" },
+      { date: "2026-07-21", label: "Hardware promo filming window", subteamId: "outreach" },
       { date: "2026-07-22", label: "Promo voiceover due", subteamId: "outreach" },
+      { date: "2026-07-22", label: "Anthony VC promo interview", subteamId: "outreach" },
       { date: "2026-07-23", label: "Promo storyboard simplified", subteamId: "outreach" },
+      { date: "2026-07-23", label: "Sania VC promo interview", subteamId: "outreach" },
+      { date: "2026-07-24", label: "Wet lab promo filming", subteamId: "outreach" },
       { date: "2026-07-25", label: "First live promo filming", subteamId: "outreach" },
-      { date: "2026-07-30", label: "July newsletter draft window", subteamId: "outreach" },
     ],
     outreach: {
-      summary: "Promo animation plan locked — educational short style, Aug 3 deadline.",
+      summary: "Meet #15 — promo filming ramp + animation plan; Aug 3 animation deadline.",
       detail:
-        "Jul 19 meeting locked an animated mid-section (~25–30 seconds) plus a flowchart beat, in a simple educational-video style with textured brushes matching the PetaBite look. Voiceover for the animated section due Jul 22. Jul 23: cut a zooplankton beat to simplify the storyboard. Live filming of the opening scene Jul 25 before the animated splash transition. Hand-drawn art → render/rig in post; internal animation deadline Aug 3.",
+        "Jul 20 Meet #15: ~15 of 35 promo filming shots done (8 more from Islands); CapCut + DaVinci Resolve editing; animation meeting 1 done with style refs. Shoot windows — hardware Tue 5:30–7:30, wet lab Fri, Victoria Park wastewater B-roll, VC interviews (Clara done; Anthony Wed, Sania Thu); animations due Aug 3. Jul 19 animation meeting locked TED-Ed mid-section shots 2.1–2.9 + flowchart 3.12; VO Jul 22; zooplankton cut Jul 23; scene 1 film Jul 25. Presentation video (15 min, Oct) staffed separately; July newsletter draft targeted for Jul 30 / Aug 1; merch (hoodies, tees, quarter-zips, stickers) exploration started; RTJ still on hold.",
       link: "/beyond-the-bench/outreach/",
     },
   },
   "week-2026-07-26": {
     milestones: [
       { date: "2026-07-27", label: "Hand-drawn promo art due", subteamId: "outreach" },
+      { date: "2026-07-30", label: "July newsletter target post", subteamId: "outreach" },
+      { date: "2026-08-01", label: "July newsletter backup post window", subteamId: "outreach" },
     ],
     outreach: {
-      summary: "Hand-drawn promo art sprint; opening scene filmed Jul 25.",
+      summary: "Hand-drawn promo art sprint; July newsletter draft → Jul 30 / Aug 1.",
       detail:
-        "Pipeline: storyboard (done) → hand-drawn assets (due Mon Jul 27) → render and rig in After Effects. Art covers nets, bottles, microplastics, fish, human/eating frames, and lake/table backgrounds, plus a flowchart animation beat.",
+        "Pipeline: storyboard (done) → hand-drawn assets (due Mon Jul 27) → render and rig in After Effects. Art covers nets, bottles, microplastics, fish, human/eating frames, and lake/table backgrounds, plus a flowchart animation beat. July newsletter draft due this window for a Jul 30 or Aug 1 send (possible Mailchimp switch next month). Merch supplier scouting continues alongside wiki homepage stitch.",
       link: "/beyond-the-bench/outreach/",
     },
   },
@@ -659,7 +665,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "March kickoff: what human practices is, winner case studies, stakeholder map.",
       detail:
         "Early meetings covered how human practices differs from outreach, award criteria, and assigned readings. Members presented past winning projects and began country stakeholder lists (India, Nigeria, Indonesia, China, Indigenous communities of Canada). Plastic-degrading enzyme (PETase) goals framed for HP — wastewater contacts and government/agency outreach.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-04-05": {
@@ -667,7 +673,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Stakeholder list growing; members sit in on other subteams.",
       detail:
         "Continuing literature review and adding contacts to the stakeholder sheet. Members attending wet lab, dry lab, hardware, and venture meetings so interviews stay grounded in project needs.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-04-12": {
@@ -675,7 +681,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Building the stakeholder contact list.",
       detail:
         "Country-assigned stakeholder research continues; preparing tailored outreach emails ahead of the May interview campaign.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-04-19": {
@@ -683,7 +689,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Stakeholder prep and subteam sync.",
       detail:
         "Quiet documentation week — expanding the contact sheet and liaison notes that feed May email templates and interview guides.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-04-26": {
@@ -691,7 +697,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Pre-May outreach and conference speaker search.",
       detail:
         "Finalizing stakeholder categories and email templates. Microplastics conference planning begins in parallel (venues and seminar/panel speakers).",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-05-03": {
@@ -702,7 +708,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Accepted to Synbio conference; start stakeholder emails.",
       detail:
         "Accepted for a poster at Synbio (a synthetic biology conference at Waterloo, Jun 15–17). Email templates for stakeholder outreach; about ten tailored emails per member. Opened the search for microplastics-conference keynote and seminar speakers.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-05-10": {
@@ -710,7 +716,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "First-wave stakeholder emails and interview scheduling.",
       detail:
         "Members send tailored outreach; formal interviews wait until the interview guide lands next meeting. Synbio registration (Waterloo, Jun 15–17) and conference venue search continue.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-05-17": {
@@ -721,7 +727,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Interview guide ready; three season reports defined.",
       detail:
         "Interview workflow: background research → tailored questions → follow-up. Season deliverables set — a regulatory framework report, a sustainability report, and a socioeconomic report — toward a global deployment framing. Conference venue search (on- and off-campus). Wet/dry/hardware liaison updates continue.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-05-24": {
@@ -732,7 +738,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Low email response rate; push follow-ups and venues.",
       detail:
         "Hardware and dry-lab liaison briefings. Roughly one in ten outreach emails answered — push tailored questions and share booked interview links with the team. Conference venues added to the shared sheet.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-05-31": {
@@ -740,7 +746,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Ethics framing; stakeholder guide and pitch deck shared.",
       detail:
         "Discussed biosafety, environmental safety, regulation, public perception, and open science for enzyme use in wastewater treatment. Shared a stakeholder guide and short interview pitch deck. Continue emails or prep for booked interviews; ethics contacts added to the sheet.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-06-07": {
@@ -755,7 +761,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Three written reports launched — regulation, society, sustainability.",
       detail:
         "New workstreams: regulatory frameworks, socioeconomic analysis, and sustainability (short report / infographic style). Stakeholder notes cleaned for the shared folder; sheet tracks email, response, and interview status. Policy contacts requested.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-06-14": {
@@ -767,7 +773,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Report owners assigned; Synbio poster at Waterloo.",
       detail:
         "Synbio is a synthetic biology conference (Jun 15–17, Waterloo). Report owners assigned for regulatory, socioeconomic, and sustainability drafts. Outlines become 1–2 page drafts that fold in stakeholder feedback.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-06-21": {
@@ -775,7 +781,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Annotated sources for reports; Bioethics Symposium announced.",
       detail:
         "Add 2–3 reference links per outline point. Virtual Bioethics Symposium Jul 12 (2–4pm EST) — a 10–15 minute ethics presentation plus Q&A. Continue stakeholder emails; liaisons list preferred stakeholder types and questions.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-06-28": {
@@ -786,7 +792,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Symposium prep and report outlines.",
       detail:
         "Weekly meeting Jul 2. Continuing annotated bibliographies, report outlines, and Bioethics Symposium slides ahead of Jul 12.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-07-05": {
@@ -794,7 +800,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Bioethics Symposium prep week.",
       detail:
         "Finalize slides on the four bioethics pillars (beneficence, non-maleficence, justice, autonomy) for enzyme-based wastewater remediation. Report drafts continue in parallel.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-07-12": {
@@ -805,7 +811,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Bioethics Symposium — present project ethics.",
       detail:
         "Virtual symposium Jul 12: team presents ethical principles behind enzymatic microplastic cleanup and discusses fair access, scale-up, and industry design changes.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-07-19": {
@@ -820,7 +826,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Symposium reflection; feedback on PETadex site and reports.",
       detail:
         "Two kinds of stakeholder meetings going forward: feedback on PETadex (our public enzyme database / website) and feedback on the regulatory, socioeconomic, and sustainability reports. Follow up with PETase scientists met earlier; choose final report formats and start rough drafts.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-07-26": {
@@ -828,7 +834,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Report drafts and PETadex follow-ups.",
       detail:
         "Rough drafts in chosen formats; email prior scientific contacts to meet about the PETadex website. Microplastics conference speaker work continues with outreach.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-09-06": {
@@ -836,7 +842,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Conference approach — narrative and speakers.",
       detail:
         "Finalize how regulatory, socioeconomic, and sustainability findings feed the Sep 19 microplastics conference and the wiki human-practices narrative.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-09-13": {
@@ -847,7 +853,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Microplastics conference (Sep 19).",
       detail:
         "Public conference programming with outreach — capture stakeholder quotes and design-change evidence for Integrated Human Practices.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
   "week-2026-10-18": {
@@ -855,7 +861,7 @@ const HUMAN_PRACTICES_WEEK_PATCHES = {
       summary: "Jamboree wrap and reflections.",
       detail:
         "Archive interview notes and report drafts; schedule post-competition reflection interviews for the wiki narrative.",
-      link: "/beyond-the-bench/human-practices/",
+      link: "/human-practices/",
     },
   },
 }

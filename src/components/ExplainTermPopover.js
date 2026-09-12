@@ -253,8 +253,7 @@ export function ExplainTerm({
 }
 
 const TermRoot = styled.span`
-  display: inline-block;
-  width: max-content;
+  display: inline;
   vertical-align: baseline;
 `
 
@@ -270,6 +269,8 @@ const TermButton = styled.button`
     #e63946 88%,
     transparent 88%
   );
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
   color: inherit;
   font: inherit;
   letter-spacing: inherit;

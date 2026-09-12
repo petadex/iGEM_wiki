@@ -1,6 +1,6 @@
 # Contribution calendar data
 
-Week-by-week team progress for `/project/contribution/` (April–October 2026).
+Week-by-week team progress for `/contribution/` (April–October 2026).
 
 ## Current format
 

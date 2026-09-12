@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import process from "process"
+import { STANDARD_ROUTE_ALIASES } from "../src/data/standardRoutes.mjs"
 
 const root = process.cwd()
 const contentRoot = path.join(root, "src", "content", "wiki")
@@ -141,28 +142,37 @@ for (const filePath of mdxFiles) {
   validateFrontmatter(filePath, frontmatter)
 
   if (frontmatter.path) {
-    const existingFilePath = mdxRoutes.get(frontmatter.path)
+    const existing = mdxRoutes.get(frontmatter.path)
 
-    if (existingFilePath) {
-      const existingIsPayloadExport = isPayloadExport(existingFilePath)
+    if (existing) {
+      const existingIsPayloadExport = isPayloadExport(existing.filePath)
       const currentIsPayloadExport = isPayloadExport(filePath)
+      const preferredLocal = [existing, { filePath, frontmatter }].find(
+        (candidate) =>
+          !isPayloadExport(candidate.filePath) && candidate.frontmatter.preferLocal === true
+      )
+
+      if (preferredLocal) {
+        mdxRoutes.set(frontmatter.path, preferredLocal)
+        continue
+      }
 
       if (existingIsPayloadExport && !currentIsPayloadExport) {
         continue
       }
 
       if (!existingIsPayloadExport && currentIsPayloadExport) {
-        mdxRoutes.set(frontmatter.path, filePath)
+        mdxRoutes.set(frontmatter.path, { filePath, frontmatter })
         continue
       }
 
       errors.push(
         `Duplicate MDX path "${frontmatter.path}" in ${relative(filePath)} and ${relative(
-          existingFilePath
+          existing.filePath
         )}.`
       )
     } else {
-      mdxRoutes.set(frontmatter.path, filePath)
+      mdxRoutes.set(frontmatter.path, { filePath, frontmatter })
     }
   }
 }
@@ -173,6 +183,17 @@ const reactPageFiles = walk(
 )
 
 const reactRoutes = new Map(reactPageFiles.map((filePath) => [pageRouteFromFile(filePath), filePath]))
+const standardRoutes = new Set(Object.keys(STANDARD_ROUTE_ALIASES))
+
+for (const [aliasPath, sourcePath] of Object.entries(STANDARD_ROUTE_ALIASES)) {
+  if (mdxRoutes.has(aliasPath) || reactRoutes.has(aliasPath)) {
+    errors.push(`Standard iGEM path collides with an existing page: "${aliasPath}".`)
+  }
+
+  if (!mdxRoutes.has(sourcePath)) {
+    errors.push(`Standard iGEM path "${aliasPath}" has no MDX source page at "${sourcePath}".`)
+  }
+}
 
 for (const [route, mdxFile] of mdxRoutes) {
   if (reactRoutes.has(route)) {
@@ -187,7 +208,7 @@ if (fs.existsSync(navPath)) {
   const navRoutes = [...navSource.matchAll(/to:\s*["`]([^"`]+)["`]/g)].map((match) => match[1])
 
   for (const route of navRoutes) {
-    if (!reactRoutes.has(route) && !mdxRoutes.has(route)) {
+    if (!reactRoutes.has(route) && !mdxRoutes.has(route) && !standardRoutes.has(route)) {
       errors.push(`Navigation route "${route}" does not resolve to a React page or MDX page.`)
     }
   }

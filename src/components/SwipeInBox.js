@@ -41,6 +41,8 @@ export function SwipeInBox({
   enterEnd = DEFAULT_ENTER_END,
   holdEnd = DEFAULT_HOLD_END,
   trackVh = DEFAULT_TRACK_VH,
+  /** Skip L→R motion; keep the card centered (handy while prototyping). */
+  stationary = false,
   className,
 }) {
   const trackRef = useRef(null)
@@ -50,13 +52,19 @@ export function SwipeInBox({
   useEffect(() => {
     if (typeof window === "undefined") return undefined
 
+    // Stationary: no scroll motion or show/hide — always centered in place.
+    if (stationary) return undefined
+
     const box = boxRef.current
     const reduceMotion =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
     if (reduceMotion) {
-      if (box) box.style.transform = "translate3d(0, 0, 0)"
+      if (box) {
+        box.style.transform = "translate3d(0, 0, 0)"
+        box.style.visibility = "visible"
+      }
       return undefined
     }
 
@@ -96,16 +104,25 @@ export function SwipeInBox({
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
     }
-  }, [anchored, getProgress, enterEnd, holdEnd])
+  }, [anchored, getProgress, enterEnd, holdEnd, stationary])
 
   const card = (
-    <Box ref={boxRef} className={anchored ? undefined : className}>
+    <Box ref={boxRef} $stationary={stationary} className={anchored && !stationary ? undefined : className}>
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       {title && <Title>{title}</Title>}
       {body && <Body>{body}</Body>}
       {children}
     </Box>
   )
+
+  if (stationary) {
+    // Absolute within a positioned parent (e.g. shore section) — scrolls with the art.
+    return (
+      <AnchoredStage className={className} aria-hidden="true">
+        {card}
+      </AnchoredStage>
+    )
+  }
 
   if (anchored) {
     return (
@@ -150,6 +167,23 @@ const FixedStage = styled.div`
   pointer-events: none;
 `
 
+/**
+ * Page-anchored overlay: fills the relative parent (shore / composition band)
+ * and centers the card there — no viewport-fixed stickiness, no blank in-flow section.
+ * Nudge with `top` if you want it higher/lower on the shore art.
+ */
+const AnchoredStage = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -16%;
+  bottom: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+`
+
 const Box = styled.div`
   width: min(1100px, 98vw);
   padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1rem, 2.5vw, 1.75rem);
@@ -157,9 +191,10 @@ const Box = styled.div`
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  will-change: transform;
-  transform: translate3d(-100vw, 0, 0);
-  visibility: hidden;
+  will-change: ${({ $stationary }) => ($stationary ? "auto" : "transform")};
+  transform: ${({ $stationary }) =>
+    $stationary ? "translate3d(0, 0, 0)" : "translate3d(-100vw, 0, 0)"};
+  visibility: ${({ $stationary }) => ($stationary ? "visible" : "hidden")};
 `
 
 const Eyebrow = styled.p`

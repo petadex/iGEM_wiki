@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
  * @type {import('gatsby').GatsbyConfig}
  */
 const config = {
+  pathPrefix: process.env.GATSBY_PATH_PREFIX || ``,
   siteMetadata: {
     title: `iGEM Toronto 2026`,
     description: `iGEM Toronto 2026 Wiki`,

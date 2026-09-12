@@ -1,4 +1,5 @@
 import path from "path"
+import { STANDARD_ROUTE_ALIASES } from "./src/data/standardRoutes.mjs"
 
 const wikiTemplate = path.resolve(`./src/templates/wiki-mdx.js`)
 
@@ -17,6 +18,7 @@ export async function createPages({ actions, graphql, reporter }) {
           id
           frontmatter {
             path
+            preferLocal
           }
           internal {
             contentFilePath
@@ -41,6 +43,15 @@ export async function createPages({ actions, graphql, reporter }) {
     const existing = selectedRoutes.get(pagePath)
 
     if (existing) {
+      const preferredLocal = [existing, node].find(
+        (candidate) => !isPayloadExport(candidate) && candidate.frontmatter.preferLocal === true
+      )
+
+      if (preferredLocal) {
+        selectedRoutes.set(pagePath, preferredLocal)
+        continue
+      }
+
       if (isPayloadExport(existing) && !isPayloadExport(node)) {
         continue
       }
@@ -60,6 +71,27 @@ export async function createPages({ actions, graphql, reporter }) {
   for (const [, node] of selectedRoutes) {
     createPage({
       path: node.frontmatter.path,
+      component: `${wikiTemplate}?__contentFilePath=${node.internal.contentFilePath}`,
+      context: {
+        id: node.id,
+      },
+    })
+  }
+
+  for (const [aliasPath, sourcePath] of Object.entries(STANDARD_ROUTE_ALIASES)) {
+    if (selectedRoutes.has(aliasPath)) {
+      reporter.panicOnBuild(`Standard iGEM path collides with an MDX page: ${aliasPath}`)
+      return
+    }
+
+    const node = selectedRoutes.get(sourcePath)
+    if (!node) {
+      reporter.panicOnBuild(`Standard iGEM path ${aliasPath} has no source page: ${sourcePath}`)
+      return
+    }
+
+    createPage({
+      path: aliasPath,
       component: `${wikiTemplate}?__contentFilePath=${node.internal.contentFilePath}`,
       context: {
         id: node.id,

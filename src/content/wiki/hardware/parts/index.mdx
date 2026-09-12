@@ -8,12 +8,21 @@ description: "Hardware components, design modules, and materials."
 owners: ["Hardware"]
 updated: "2026-05-30"
 status: "draft"
+preferLocal: true
 hideToc: true
 ---
 
 Interactive system architecture for Bioreactor 1. Click a subsystem header to collapse its component list, or select one or more legend items to highlight related parts and connections.
 
 <HardwareArchitectureDiagram />
+
+## Wiring and libraries
+
+Early OD sensing used OPT101 photodiodes; later work migrated toward AS7343 spectral sensors on SoftWire when two devices share an I2C address. Keep pinouts and library links with the mechanical holder CAD so bench rebuilds stay repeatable.
+
+![OPT101 wiring / pinout reference](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/parts/wiring-opt101-pinout.avif)
+
+Useful starting points from the team library sheet: Adafruit AS7343 Arduino library, SoftWire (software I2C), and motor/transistor drive notes for peristaltic pumps.
 
 ## Parts list
 
@@ -22,5 +31,9 @@ Interactive system architecture for Bioreactor 1. Click a subsystem header to co
 | Component | Purpose | Status |
 | --- | --- | --- |
 | Bioreactor module | Placeholder for device documentation. | Draft |
+| AS7343 OD pair | Optical density sensing (ref + measure) | In progress |
+| Peristaltic pumps (×3) | In / out fluid handling | Bench testing |
+| Heater + thermocouple | Temperature control | Bench testing |
+| Arduino Nano (+ hubs) | Subsystem MCU / serial host | In progress |
 
 </DataTable>

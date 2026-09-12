@@ -79,3 +79,7 @@ yarn-error.log
 # Yarn Integrity file
 .yarn-integrity
 .vercel
+
+# Local staging (e.g. hardware-notebook upload packs)
+tmp/
+

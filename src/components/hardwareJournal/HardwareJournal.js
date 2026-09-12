@@ -46,6 +46,19 @@ function JournalEntryPanel({ entry }) {
           </DeliverableList>
         </Field>
       )}
+      {entry.images?.length > 0 && (
+        <Field>
+          <FieldLabel>Figures</FieldLabel>
+          <ImageGrid>
+            {entry.images.map((image) => (
+              <Figure key={image.src}>
+                <FigureImg src={image.src} alt={image.alt || ""} loading="lazy" />
+                {image.caption ? <FigureCap>{image.caption}</FigureCap> : null}
+              </Figure>
+            ))}
+          </ImageGrid>
+        </Field>
+      )}
       {entry.links?.length > 0 && (
         <LinkRow>
           {entry.links.map((link) => (
@@ -357,4 +370,31 @@ const LinkRow = styled.div`
     text-decoration: underline;
     text-underline-offset: 2px;
   }
+`
+
+const ImageGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-md);
+`
+
+const Figure = styled.figure`
+  margin: 0;
+  min-width: 0;
+`
+
+const FigureImg = styled.img`
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: #0f0f0f;
+`
+
+const FigureCap = styled.figcaption`
+  margin-top: 0.4rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-muted);
 `

@@ -5,6 +5,13 @@
  */
 
 /**
+ * @typedef {Object} HardwareJournalImage
+ * @property {string} src - CDN URL under static.igem.wiki/.../hardware-notebook/
+ * @property {string} [alt]
+ * @property {string} [caption]
+ */
+
+/**
  * @typedef {Object} HardwareJournalEntry
  * @property {string} id - YYYY-MM-DD
  * @property {string} date
@@ -15,7 +22,10 @@
  * @property {string} nextStep
  * @property {string[]} [deliverables]
  * @property {HardwareJournalLink[]} [links]
+ * @property {HardwareJournalImage[]} [images]
  */
+
+const HW_IMG = (path) => `https://static.igem.wiki/teams/6187/wiki/hardware-notebook/${path}`
 
 /** @type {HardwareJournalEntry[]} */
 const HARDWARE_JOURNAL_ENTRIES_RAW = [
@@ -183,11 +193,23 @@ const HARDWARE_JOURNAL_ENTRIES_RAW = [
     label: "Jun 9",
     goal: "Plan subsystem design-of-experiment protocols and CAD for caps/OD.",
     workCompleted:
-      "Outreach check-in; member updates on CAD for self-healing caps and OD components; pH interim plan (effluent harvest + manual probe); microcontroller comparison; bioreactor layout sketching.",
+      "Outreach check-in; member updates on CAD for self-healing caps and OD components; pH interim plan (effluent harvest + manual probe); microcontroller comparison; bioreactor layout sketching. Temperature / heater validation methods drafted in the master engineering workbook.",
     result:
       "DoE variables defined for flow rate, temperature accuracy, autoclave path, and sourcing; power budgeting and I2C daisy-chain options documented.",
     nextStep:
       "Solder pumps; finalize CAD prints; draft stress-test variable lists per subsystem.",
+    images: [
+      {
+        src: HW_IMG("journal/master-temp-sensor-test-jun.avif"),
+        alt: "Temperature sensor test setup from master workbook",
+        caption: "Temperature sensor validation notes (master workbook).",
+      },
+      {
+        src: HW_IMG("journal/master-heater-test-jun.avif"),
+        alt: "Heater test setup from master workbook",
+        caption: "Heater validation notes (master workbook).",
+      },
+    ],
   },
   {
     id: "2026-06-16",
@@ -243,9 +265,239 @@ const HARDWARE_JOURNAL_ENTRIES_RAW = [
       },
     ],
   },
+  {
+    id: "2026-07-09",
+    date: "2026-07-09",
+    label: "Jul 9",
+    goal: "Re-CAD the OD vial holder for AS7343 sensors and pioreactor vial diameter.",
+    workCompleted:
+      "Replaced prior OPT101-oriented holder (stilts for stir-bar clearance, dual photodiode cutouts) with a 35 mm vial design, stilts attached for stability, and larger AS7343 cutouts while keeping dual-sensor orientation.",
+    result: "Print-ready OD holder CAD updated for AS7343 + pioreactor vial geometry.",
+    nextStep: "Print holder; start Nano + AS7343 wiring and Adafruit basic_readings sketch.",
+    images: [
+      {
+        src: HW_IMG("journal/claire-od-cad-jul9-a.avif"),
+        alt: "OD vial holder CAD iteration A",
+        caption: "OD vial holder CAD — Jul 9 iteration.",
+      },
+      {
+        src: HW_IMG("journal/claire-od-cad-jul9-b.avif"),
+        alt: "OD vial holder CAD iteration B",
+        caption: "AS7343 cutout / stilt layout.",
+      },
+    ],
+  },
+  {
+    id: "2026-07-10",
+    date: "2026-07-10",
+    label: "Jul 10",
+    goal: "Wire Arduino Nano to one AS7343 and verify I2C readings.",
+    workCompleted:
+      "Wired a single AS7343 (shared I2C address blocks dual sensors for now). Brought up Adafruit AS7343 basic_readings; fixed baud rate; used an I2C scanner sketch to confirm device ACK.",
+    result: "Single-sensor path reading; dual-sensor addressing deferred to SoftWire / software I2C.",
+    nextStep: "Continue OD setup; plan SoftWire for two same-address sensors.",
+    links: [
+      {
+        label: "Adafruit AS7343 library",
+        href: "https://github.com/adafruit/Adafruit_AS7343",
+      },
+    ],
+    images: [
+      {
+        src: HW_IMG("journal/claire-as7343-wiring-jul10.avif"),
+        alt: "AS7343 wiring to Arduino Nano",
+        caption: "Nano + AS7343 wiring / verification.",
+      },
+    ],
+  },
+  {
+    id: "2026-07-11",
+    date: "2026-07-11",
+    label: "Jul 11",
+    goal: "Stabilize OD bench setup and reference collection workflow.",
+    workCompleted:
+      "Continued OD fixture setup after CAD/wiring; documented reference and blank collection needs for later nOD math.",
+    result: "Physical OD test fixture progressing; reference logic still to be coded.",
+    nextStep: "Implement reference / blank collection steps before dual-sensor runs.",
+    images: [
+      {
+        src: HW_IMG("journal/claire-od-setup-jul11.avif"),
+        alt: "OD bench setup",
+        caption: "OD sensing bench setup.",
+      },
+    ],
+  },
+  {
+    id: "2026-07-13",
+    date: "2026-07-13",
+    label: "Jul 13",
+    goal: "Define reference vs measuring sensor roles for normalized OD.",
+    workCompleted:
+      "Sketched ref + measuring sensor logic so normalized OD can be computed as a ratio once SoftWire addresses both devices.",
+    result: "Clearer nOD architecture: blank/dark calibration then live ratio.",
+    nextStep: "Code SoftWire dual-bus reads; validate single-channel collection first.",
+  },
+  {
+    id: "2026-07-18",
+    date: "2026-07-18",
+    label: "Jul 18",
+    goal: "Collect single-sensor readings and lock reference procedure.",
+    workCompleted: "Exercised single AS7343 reading path and documented reference collection for calibration.",
+    result: "Single-sensor data path usable for early math checks.",
+    nextStep: "Bring up second sensor on SoftWire.",
+  },
+  {
+    id: "2026-07-20",
+    date: "2026-07-20",
+    label: "Jul 20",
+    goal: "Run two AS7343 sensors and debug pump transistor drive.",
+    workCompleted:
+      "Claire: dual-sensor SoftWire path in progress. Lindsay: peristaltic pump drive via S8050 transistor — direct PSU-to-pump worked; base drive from Arduino failed; recalculated base resistor (~330 Ω) after datasheet math; also hit avrdude sync / upload failures.",
+    result:
+      "Dual OD addressing moving forward; pump circuit suspect (base resistor / transistor current headroom vs 500 mA pump).",
+    nextStep: "Retry pump with ~330 Ω base resistor; confirm Nano upload path; keep SoftWire dual OD work.",
+    images: [
+      {
+        src: HW_IMG("journal/claire-dual-sensor-jul19.avif"),
+        alt: "Dual OD sensor bench",
+        caption: "Dual-sensor OD work (Jul 19–20).",
+      },
+      {
+        src: HW_IMG("journal/lindsay-pump-transistor-jul21-a.avif"),
+        alt: "Pump transistor bench photo A",
+        caption: "Pump / transistor bench — Jul 20–21.",
+      },
+      {
+        src: HW_IMG("journal/lindsay-pump-transistor-jul21-b.avif"),
+        alt: "Pump transistor bench photo B",
+      },
+      {
+        src: HW_IMG("journal/lindsay-pump-transistor-jul21-c.avif"),
+        alt: "Pump transistor bench photo C",
+      },
+    ],
+    links: [
+      {
+        label: "Adafruit DC motor / transistor lesson",
+        href: "https://learn.adafruit.com/adafruit-arduino-lesson-13-dc-motors/transistors",
+      },
+    ],
+  },
+  {
+    id: "2026-07-21",
+    date: "2026-07-21",
+    label: "Jul 21",
+    goal: "Advance serial UI architecture and keep subsystem actuation over COM.",
+    workCompleted:
+      "Lia: pushed for modular helpers and JSON-over-serial (temp / OD / actuator status). Explored pyserial host scripts; drafted UI features (command line, CSV download); researched Grafana / Flask / Prometheus path for later dashboards.",
+    result: "Host↔Arduino contract leaning JSON; early Grafana install notes captured.",
+    nextStep: "Prototype serial command loop for fan / heater / pump; harden error handling across ports.",
+    images: [
+      {
+        src: HW_IMG("journal/lia-serial-ui-sketch-a.avif"),
+        alt: "Serial UI sketch A",
+        caption: "Serial / dashboard UI sketches.",
+      },
+      {
+        src: HW_IMG("journal/lia-serial-ui-sketch-b.avif"),
+        alt: "Serial UI sketch B",
+      },
+    ],
+  },
+  {
+    id: "2026-07-25",
+    date: "2026-07-25",
+    label: "Jul 25",
+    goal: "Clarify normalized OD vs spectrophotometer OD600 calibration.",
+    workCompleted:
+      "Documented nOD as current/reference ratio vs “real” OD from fitting nOD to spectrometer OD600; noted 180° transmission geometry for current fixture.",
+    result: "Calibration plan: collect spectrometer OD600 alongside bioreactor ratios, fit curve, map live readings.",
+    nextStep: "Collect paired calibration points once dual sensors are stable.",
+    images: [
+      {
+        src: HW_IMG("journal/claire-od-math-jul25.avif"),
+        alt: "OD math notes",
+        caption: "nOD / OD600 math notes.",
+      },
+    ],
+  },
+  {
+    id: "2026-07-27",
+    date: "2026-07-27",
+    label: "Jul 27",
+    goal: "Resize OD mechanical envelope and continue pump/UI work.",
+    workCompleted:
+      "Claire: vial holder geometry notes (inner radius 35.1 mm; 148×148 mm plate; scale factors). Lindsay: continued pump drive debug. Lia: serial UI and multi-Arduino interface comments.",
+    result: "Mechanical envelope refined for scaled prints; electrical/UI threads still open.",
+    nextStep: "Integrate OD fixture with pump drawers in CAD; keep transistor + serial work.",
+  },
+  {
+    id: "2026-07-30",
+    date: "2026-07-30",
+    label: "Jul 30",
+    goal: "Characterize Sunon fan tach / RPM floor for stirring.",
+    workCompleted:
+      "Arya wired Sunon fan tach and confirmed RPM readout; lowest stable speed ~1800 RPM — too high for culture safety concerns.",
+    result: "Fan usable for tach testing but minimum RPM likely unsuitable for bacteria; need geared / PWM alternative or different impeller drive.",
+    nextStep: "Evaluate lower-RPM stirring options; document MicroSD autonomy notes from Jun 27 research.",
+  },
+  {
+    id: "2026-08-04",
+    date: "2026-08-04",
+    label: "Aug 4",
+    goal: "Stabilize multi-reactor Tkinter dashboard behavior.",
+    workCompleted:
+      "Lia: Tkinter dashboard testing — a bad input from one bioreactor disrupted telemetry for all units.",
+    result: "Need per-reactor isolation / better validation so one fault does not take down the board.",
+    nextStep: "Add input validation and isolate serial readers per port.",
+  },
+  {
+    id: "2026-08-11",
+    date: "2026-08-11",
+    label: "Aug 11",
+    goal: "Answer HP sustainability power questions and fix USB hub data path.",
+    workCompleted:
+      "Lia: HP power liaison; tested USB hubs — powered hubs often charge-only; non-powered transfer data. Researched powered hubs that still pass data. Continued code error-handling and GitHub workflow fixes. Claire: ongoing CAD/OD integration rewrite (dates fuzzy Aug 11–18).",
+    result: "Clearer hub purchasing criteria; HP V1 power figures drafted for wiki.",
+    nextStep: "Order data-capable powered hub; continue OD class rewrite + CAD drawers.",
+  },
+  {
+    id: "2026-08-18",
+    date: "2026-08-18",
+    label: "Aug 18",
+    goal: "Document V1 wiki structure, CAD assembly, and OD integration code.",
+    workCompleted:
+      "Lia: received Human Practices Info V1; reviewed award-winning hardware wikis for patterns (context → requirements → subsystems → experiments → results → reflection). Specified Tkinter setup (dark/blank OD), pump stop + PWM slider, JSON targets/commands, multi-Arduino power notes. Claire: CAD iterations — OD wiring space, vial holder cutouts, horizontal peristaltic pump drawers (vs vertical), breadboard slot; continued SoftWire OD classes (divide-by-zero expected on dummy values).",
+    result:
+      "V1 documentation outline and control UI requirements captured; mechanical layout shifted to horizontal pump drawers for shorter vial height.",
+    nextStep: "Fill wiki V1 / Experiments tabs; finish OD setup/calibration code path; keep dashboard JSON protocol.",
+    images: [
+      {
+        src: HW_IMG("journal/claire-cad-assembly-aug.avif"),
+        alt: "August CAD assembly",
+        caption: "CAD assembly / OD integration space — mid August.",
+      },
+      {
+        src: HW_IMG("journal/claire-cad-pump-drawer-aug.avif"),
+        alt: "Pump drawer CAD",
+        caption: "Horizontal peristaltic pump drawer concept.",
+      },
+      {
+        src: HW_IMG("journal/claire-od-integration-aug.avif"),
+        alt: "OD integration notes",
+        caption: "OD SoftWire / class rewrite notes.",
+      },
+    ],
+    links: [
+      {
+        label: "Jira BIO board",
+        href: "https://rebeccazoetam.atlassian.net/jira/software/projects/BIO/boards/2",
+      },
+    ],
+  },
 ]
 
-/** Newest first — Jul 7 at top, Mar 13 at bottom. */
+/** Newest first — Aug 18 at top, Mar 13 at bottom. */
 export const HARDWARE_JOURNAL_ENTRIES = [...HARDWARE_JOURNAL_ENTRIES_RAW].sort((a, b) =>
   b.date.localeCompare(a.date)
 )

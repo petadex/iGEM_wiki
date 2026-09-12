@@ -153,7 +153,7 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     title: "Other",
     sectionId: "other",
     body:
-      "A catch-all for design notes that don’t fit the main tabs yet — workshop dumps, tool experiments, merch ideas, and anything else worth keeping in the sketchbook. Add pages here as they land.",
+      "A catch-all for design notes that don’t fit the main tabs yet — workshop dumps, tool experiments, and merch. Meet #15 (Jul 20) opened merch scouting for hoodies, tees, quarter-zips, and stickers (local sticker shop + Alibaba apparel options). Add pages here as they land.",
     density: "soft",
     variant: "spread",
     imagePlaceholder: "Awaiting upload: misc design process notes",

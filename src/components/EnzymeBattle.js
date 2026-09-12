@@ -4,7 +4,7 @@ import styled, { keyframes, css } from "styled-components"
 /**
  * EnzymeBattle
  * -------------------------------------------------------------
- * The petamon vs PET battle game. 
+ * The petamon vs PET battle game.
  *
  * GAME RULES
  * - 11 enzymes, 8 plastic types.
@@ -13,6 +13,7 @@ import styled, { keyframes, css } from "styled-components"
  *     - it takes reduced damage from that plastic type
  * - Battles are turn-based: you attack, then the
  *   plastic attacks back, until one side's HP hits 0.
+ */
 /* ---------------------------------- game data ---------------------------------- */
 
 const ADVANTAGE_ATK_MULT = 1.6 // bonus damage dealt to the countered plastic
@@ -59,7 +60,7 @@ const SCREENS = {
 }
 
 export default function EnzymeBattle({ isOpen, onClose }) {
-  const [screen, setScreen] = useState(SCREENS.SELECT)
+  const [screen, setScreen] = useState(SCREENS.BATTLE)
   const [enzyme, setEnzyme] = useState(null)
   const [plastic, setPlastic] = useState(null)
   const [enzymeHp, setEnzymeHp] = useState(0)
@@ -71,10 +72,14 @@ export default function EnzymeBattle({ isOpen, onClose }) {
 
   useEffect(() => {
     if (isOpen) {
-      setScreen(SCREENS.SELECT)
+      const chosenPlastic = PLASTICS[Math.floor(Math.random() * PLASTICS.length)]
+      setScreen(SCREENS.BATTLE)
       setEnzyme(null)
-      setPlastic(null)
-      setLog([])
+      setPlastic(chosenPlastic)
+      setEnzymeHp(0)
+      setPlasticHp(chosenPlastic.hp)
+      setLog([`A wild ${chosenPlastic.name} sample appears! Select an enzyme to begin.`])
+      setBusy(false)
       setOutcome(null)
     }
   }, [isOpen])
@@ -85,21 +90,29 @@ export default function EnzymeBattle({ isOpen, onClose }) {
 
   const openSelect = () => {
     setScreen(SCREENS.SELECT)
-    setEnzyme(null)
-    setPlastic(null)
-    setLog([])
-    setOutcome(null)
   }
 
-  const startBattle = (chosenEnzyme) => {
-    const chosenPlastic = PLASTICS[Math.floor(Math.random() * PLASTICS.length)]
+  const selectEnzyme = (chosenEnzyme) => {
     setEnzyme(chosenEnzyme)
-    setPlastic(chosenPlastic)
     setEnzymeHp(chosenEnzyme.hp)
-    setPlasticHp(chosenPlastic.hp)
     setOutcome(null)
-    setLog([`A wild ${chosenPlastic.name} sample appears!`])
+    setLog((currentLog) => [
+      ...currentLog,
+      `${chosenEnzyme.name} enters the battle against ${plastic.name}.`,
+    ])
     setScreen(SCREENS.BATTLE)
+  }
+
+  const startNewBattle = () => {
+    const chosenPlastic = PLASTICS[Math.floor(Math.random() * PLASTICS.length)]
+    setScreen(SCREENS.BATTLE)
+    setEnzyme(null)
+    setPlastic(chosenPlastic)
+    setEnzymeHp(0)
+    setPlasticHp(chosenPlastic.hp)
+    setLog([`A wild ${chosenPlastic.name} sample appears! Select an enzyme to begin.`])
+    setBusy(false)
+    setOutcome(null)
   }
 
   const attack = () => {
@@ -167,7 +180,7 @@ export default function EnzymeBattle({ isOpen, onClose }) {
             </PanelSubtitle>
             <EnzymeGrid>
               {ENZYMES.map((e) => (
-                <EnzymeCard key={e.key} type="button" onClick={() => startBattle(e)}>
+                <EnzymeCard key={e.key} type="button" onClick={() => selectEnzyme(e)}>
                   <EnzymeCardName>{e.name}</EnzymeCardName>
                   <EnzymeCounterTag>
                     vs <strong>{e.counter}</strong>
@@ -182,25 +195,35 @@ export default function EnzymeBattle({ isOpen, onClose }) {
           </>
         )}
 
-        {screen === SCREENS.BATTLE && enzyme && plastic && (
+        {screen === SCREENS.BATTLE && plastic && (
           <BattleLayout>
             <Fighters>
               <FighterCard>
-                <SpriteBox aria-hidden="true">
-                  <SpriteBoxLabel>{enzyme.name}</SpriteBoxLabel>
-                </SpriteBox>
-                <FighterName>{enzyme.name}</FighterName>
-                <HpBar>
-                  <HpFill
-                    style={{ width: `${(enzymeHp / enzyme.hp) * 100}%` }}
-                    $low={enzymeHp / enzyme.hp < 0.3}
-                  />
-                </HpBar>
-                <HpLabel>
-                  {enzymeHp} / {enzyme.hp} HP
-                </HpLabel>
-                {enzyme.counter === plastic.key && (
-                  <AdvantageTag>Advantage vs {plastic.name}</AdvantageTag>
+                {enzyme ? (
+                  <>
+                    <SpriteBox aria-hidden="true">
+                      <SpriteBoxLabel>{enzyme.name}</SpriteBoxLabel>
+                    </SpriteBox>
+                    <FighterName>{enzyme.name}</FighterName>
+                    <HpBar>
+                      <HpFill
+                        style={{ width: `${(enzymeHp / enzyme.hp) * 100}%` }}
+                        $low={enzymeHp / enzyme.hp < 0.3}
+                      />
+                    </HpBar>
+                    <HpLabel>
+                      {enzymeHp} / {enzyme.hp} HP
+                    </HpLabel>
+                    {enzyme.counter === plastic.key && (
+                      <AdvantageTag>Advantage vs {plastic.name}</AdvantageTag>
+                    )}
+                  </>
+                ) : (
+                  <EmptyFighter>
+                    <EmptySprite aria-hidden="true">?</EmptySprite>
+                    <FighterName>No enzyme selected</FighterName>
+                    <EmptyHint>Choose an enzyme to enter the battle.</EmptyHint>
+                  </EmptyFighter>
                 )}
               </FighterCard>
 
@@ -231,9 +254,15 @@ export default function EnzymeBattle({ isOpen, onClose }) {
               <div ref={logEndRef} />
             </LogBox>
 
-            <AttackButton type="button" onClick={attack} disabled={busy}>
-              {busy ? "…" : "Attack"}
-            </AttackButton>
+            {enzyme ? (
+              <AttackButton type="button" onClick={attack} disabled={busy}>
+                {busy ? "…" : "Attack"}
+              </AttackButton>
+            ) : (
+              <AttackButton type="button" onClick={openSelect}>
+                Select enzyme
+              </AttackButton>
+            )}
           </BattleLayout>
         )}
 
@@ -248,7 +277,7 @@ export default function EnzymeBattle({ isOpen, onClose }) {
                 : `${enzyme.name} ran out of activity before finishing off the ${plastic.name} sample.`}
             </ResultBody>
             <ResultActions>
-              <SecondaryButton type="button" onClick={openSelect}>
+              <SecondaryButton type="button" onClick={startNewBattle}>
                 Battle again
               </SecondaryButton>
               <SecondaryButton type="button" onClick={onClose}>
@@ -382,6 +411,31 @@ const Fighters = styled.div`
 const FighterCard = styled.div`
   flex: 1 1 0;
   min-width: 0;
+`
+
+const EmptyFighter = styled.div`
+  text-align: center;
+`
+
+const EmptySprite = styled.div`
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 0.5rem;
+  border: 2px dashed var(--color-border, #aaa);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.025);
+  color: var(--color-muted, #777);
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 700;
+`
+
+const EmptyHint = styled.p`
+  margin: 0;
+  color: var(--color-muted, #666);
+  font-size: 0.78rem;
+  line-height: 1.35;
 `
 
 /** Placeholder for a future petamon illustration */
