@@ -911,6 +911,23 @@ const ConditionImageRow = styled.div`
   gap: clamp(1rem, 2.4vw, 1.75rem);
   margin-top: clamp(1.1rem, 2.2vw, 1.75rem);
   align-items: start;
+
+  @media (max-width: 640px) {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.25rem 4vw 0.75rem;
+    margin-left: -4vw;
+    margin-right: -4vw;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 `
 
 const ConditionFigure = styled.figure`
@@ -920,6 +937,13 @@ const ConditionFigure = styled.figure`
   align-items: center;
   gap: 0.55rem;
   min-width: 0;
+
+  @media (max-width: 640px) {
+    flex: 0 0 auto;
+    width: 62vw;
+    max-width: 16rem;
+    scroll-snap-align: center;
+  }
 `
 
 const ConditionImage = styled.img`
@@ -932,6 +956,10 @@ const ConditionImage = styled.img`
   pointer-events: none;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
     drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+
+  @media (max-width: 640px) {
+    max-height: 44vw;
+  }
 `
 
 const ConditionCaption = styled.figcaption`
@@ -945,6 +973,10 @@ const ConditionCaption = styled.figcaption`
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.55),
     0 0 12px rgba(0, 0, 0, 0.35);
+
+  @media (max-width: 640px) {
+    font-size: 1.15rem;
+  }
 `
 
 const ShoreRailImg = styled.img`
@@ -1279,6 +1311,11 @@ const BottleFloatWrap = styled.div`
   max-width: 12rem;
   animation: ${bottleIdleFloat} 1.5s ease-in-out infinite;
   animation-delay: -0.7s;
+
+  @media (max-width: 480px) {
+    width: 34%;
+    max-width: 8rem;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
