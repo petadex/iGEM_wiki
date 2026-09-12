@@ -2748,6 +2748,10 @@ const CreamPadTextMount = styled.div`
   box-sizing: border-box;
   pointer-events: auto;
   text-align: center;
+
+  @media (max-width: 720px) {
+    width: min(88%, 90vw);
+  }
 `
 
 const CreamPadBody = styled.p`
@@ -2767,21 +2771,14 @@ const ConditionImageRow = styled.div`
   margin-top: clamp(0.7rem, 2.2vw, 1.75rem);
   align-items: start;
 
+  /* Keep all 3 cards visible together (no swipe) — just tighten the gap and
+     let ConditionImage/ConditionCaption shrink their own clamps below. */
   @media (max-width: 640px) {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-    overflow-x: auto;
-    overflow-y: visible;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    padding: 0.25rem 4vw 0.75rem;
-    margin-left: -4vw;
-    margin-right: -4vw;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 380px) {
+    gap: 0.35rem;
   }
 `
 
@@ -2794,10 +2791,7 @@ const ConditionFigure = styled.figure`
   min-width: 0;
 
   @media (max-width: 640px) {
-    flex: 0 0 auto;
-    width: 62vw;
-    max-width: 16rem;
-    scroll-snap-align: center;
+    gap: 0.3rem;
   }
 `
 
@@ -2805,7 +2799,6 @@ const ConditionImage = styled.img`
   display: block;
   width: 100%;
   height: auto;
-  /* Same desktop max as before; drop the 14rem floor so narrow windows can shrink. */
   max-height: clamp(6rem, 36vw, 24rem);
   object-fit: contain;
   user-select: none;
@@ -2813,8 +2806,15 @@ const ConditionImage = styled.img`
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
     drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 
+  /* Below tablet width the 36vw curve is sized for a single wide column, not a
+     1/3-width grid cell — cap it much lower so the image fits its column instead
+     of forcing the whole row to overflow or get clipped. */
   @media (max-width: 640px) {
-    max-height: 44vw;
+    max-height: 22vw;
+  }
+
+  @media (max-width: 380px) {
+    max-height: 20vw;
   }
 `
 
@@ -2831,7 +2831,11 @@ const ConditionCaption = styled.figcaption`
     0 0 12px rgba(0, 0, 0, 0.35);
 
   @media (max-width: 640px) {
-    font-size: 1.15rem;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 380px) {
+    font-size: 0.7rem;
   }
 `
 
