@@ -1,51 +1,8 @@
-import React, { useState } from "react"
-import { Link } from "gatsby"
+import React from "react"
 import styled from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
 import { SponsorCarousel } from "./SponsorCarousel.js"
-
-const nav = [
-  { to: "/", label: "Home" },
-  { label: "Project", children: [
-    { to: "/project/description/", label: "Project Description" },
-    { to: "/project/applications/", label: "Applications" },
-    { to: "/contribution/", label: "Contribution" },
-    { to: "/engineering/", label: "Engineering" },
-    { to: "/finance/", label: "Finance" },
-  ]},
-  { label: "Wet Lab", children: [
-    { to: "/wet-lab/overview/", label: "Experimental Overview" },
-    { to: "/wet-lab/parts/", label: "Parts" },
-    { to: "/wet-lab/notebook/", label: "Notebook" },
-    { to: "/wet-lab/results/", label: "Results" },
-    { to: "/wet-lab/milestones/", label: "Pivotal Changes and Milestones" },
-  ]},
-  { label: "Dry Lab", children: [
-    { to: "/dry-lab/overview/", label: "Overview" },
-    { to: "/model/", label: "Generalized Model" },
-    { to: "/software/", label: "Software" },
-    { to: "/dry-lab/software-specs/", label: "Software Specs" },
-  ]},
-  { label: "Hardware", children: [
-    { to: "/hardware/", label: "Overview" },
-    { to: "/hardware/parts/", label: "Parts" },
-    { to: "/hardware/notebook/", label: "Notebook" },
-    { to: "/hardware/results/", label: "Results" },
-  ]},
-  { label: "Beyond the Bench", children: [
-    { to: "/education/", label: "Education Toolkit" },
-    { to: "/human-practices/", label: "Human Practices" },
-    { to: "/beyond-the-bench/outreach/", label: "Outreach" },
-    { to: "/entrepreneurship/", label: "Entrepreneurship" },
-    { to: "/safety-and-security/", label: "Safety" },
-  ]},
-  { label: "Team", children: [
-    { to: "/team/", label: "Meet the Team" },
-    { to: "/team/attributions/", label: "Attributions" },
-    { to: "/team/collaborations/", label: "Collaborations" },
-    { to: "/wiki/", label: "Wiki" },
-  ]},
-]
+import { WikiTopBar } from "./WikiTopBar.js"
 
 const WikiLayout = ({
   children,
@@ -61,27 +18,7 @@ const WikiLayout = ({
       <GlobalStyle />
       <SiteWrapper>
 
-        {!hideSiteChrome && !hideTopBar && (
-          <TopBar>
-            <NavInner>
-              <LogoPlaceholder to="/" aria-label="iGEM Toronto 2026 — Home">
-                <LogoBox>LOGO</LogoBox>
-              </LogoPlaceholder>
-              <Nav aria-label="Wiki sections">
-                {nav.slice(1).map(({ label, children }) => (
-                  <NavItem key={label}>
-                    <NavParent>{label}</NavParent>
-                    <Dropdown>
-                      {children.map(({ to, label: childLabel }) => (
-                        <DropdownLink key={to} to={to}>{childLabel}</DropdownLink>
-                      ))}
-                    </Dropdown>
-                  </NavItem>
-                ))}
-              </Nav>
-            </NavInner>
-          </TopBar>
-        )}
+        {!hideSiteChrome && !hideTopBar && <WikiTopBar />}
 
         {hideSiteChrome || fullBleed ? (
           <MainFullBleed>{children}</MainFullBleed>
@@ -145,156 +82,6 @@ const SiteWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-`
-
-const TopBar = styled.div`
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg);
-`
-
-const NavInner = styled.div`
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: var(--space-lg) var(--page-padding);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`
-
-const LogoPlaceholder = styled(Link)`
-  text-decoration: none;
-  flex-shrink: 0;
-`
-
-const LogoBox = styled.div`
-  width: 8rem;
-  height: 2.5rem;
-  border: 1px dashed var(--color-border);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-`
-
-const Nav = styled.nav`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-md) var(--space-lg);
-  font-size: 0.9rem;
-  @media (max-width: 768px) { display: none; }
-`
-
-const NavItem = styled.div`
-  position: relative;
-
-  &:hover > div,
-  &:focus-within > div {
-    display: flex;
-  }
-`
-
-const NavParent = styled.span`
-  color: var(--color-muted);
-  font-size: 0.9rem;
-  cursor: default;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  &::after {
-    content: '▾';
-    font-size: 0.7rem;
-    transition: transform 0.2s ease;
-  }
-
-  ${NavItem}:hover & {
-    color: var(--color-text);
-    &::after { transform: rotate(180deg); }
-  }
-`
-
-const Hamburger = styled.button`
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  span { display: block; width: 24px; height: 2px; background: var(--color-text); border-radius: 2px; }
-  @media (max-width: 768px) { display: flex; }
-`
-
-const MobileDrawer = styled.div`
-  display: none;
-  @media (max-width: 768px) {
-    display: ${({ $open }) => ($open ? "flex" : "none")};
-    flex-direction: column;
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-  }
-`
-
-const MobileSection = styled.div`
-  padding: var(--space-md) var(--page-padding);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  b { color: var(--color-text); font-size: 0.9rem; }
-`
-
-const MobileLink = styled(Link)`
-  padding-left: 1rem;
-  color: var(--color-muted);
-  font-size: 0.875rem;
-  text-decoration: none;
-  &:hover { color: var(--color-text); }
-`
-
-const Dropdown = styled.div`
-  display: none;
-  flex-direction: column;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  padding-top: 0.5rem;
-  background: transparent;
-  min-width: 200px;
-  z-index: 100;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0.5rem 0 0;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    z-index: -1;
-  }
-`
-
-const DropdownLink = styled(Link)`
-  padding: 0.5rem 1rem;
-  margin-top: 0.5rem;
-  color: var(--color-muted);
-  font-size: 0.875rem;
-  text-decoration: none;
-  white-space: nowrap;
-  position: relative;
-  z-index: 1;
-
-  &:first-child { margin-top: 0.75rem; }
-  &:last-child { margin-bottom: 0.25rem; }
-
-  &:hover {
-    color: var(--color-text);
-    background: rgba(0,0,0,0.04);
-  }
 `
 
 const Main = styled.main`

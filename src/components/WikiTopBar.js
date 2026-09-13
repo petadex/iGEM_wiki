@@ -4,12 +4,11 @@ import styled from "styled-components"
 
 export const wikiNav = [
   { to: "/", label: "Home" },
-  { label: "Project", children: [
-    { to: "/project/description/", label: "Project Description" },
-    { to: "/project/applications/", label: "Applications" },
-    { to: "/contribution/", label: "Contribution" },
-    { to: "/engineering/", label: "Engineering" },
-    { to: "/finance/", label: "Finance" },
+  { label: "Dry Lab", children: [
+    { to: "/dry-lab/overview/", label: "Overview" },
+    { to: "/model/", label: "Generalized Model" },
+    { to: "/software/", label: "Software" },
+    { to: "/dry-lab/software-specs/", label: "Software Specs" },
   ]},
   { label: "Wet Lab", children: [
     { to: "/wet-lab/overview/", label: "Experimental Overview" },
@@ -18,30 +17,25 @@ export const wikiNav = [
     { to: "/wet-lab/results/", label: "Results" },
     { to: "/wet-lab/milestones/", label: "Pivotal Changes and Milestones" },
   ]},
-  { label: "Dry Lab", children: [
-    { to: "/dry-lab/overview/", label: "Overview" },
-    { to: "/model/", label: "Generalized Model" },
-    { to: "/software/", label: "Software" },
-    { to: "/dry-lab/software-specs/", label: "Software Specs" },
-  ]},
   { label: "Hardware", children: [
     { to: "/hardware/", label: "Overview" },
     { to: "/hardware/parts/", label: "Parts" },
     { to: "/hardware/notebook/", label: "Notebook" },
     { to: "/hardware/results/", label: "Results" },
   ]},
+  { to: "/human-practices/", label: "Human Practices" },
+  { to: "/beyond-the-bench/outreach/", label: "Outreach" },
+  { to: "/entrepreneurship/", label: "Entrepreneurship" },
   { label: "Team", children: [
+    { to: "/project/description/", label: "Project Description" },
+    { to: "/contribution/", label: "Contribution" },
+    { to: "/engineering/", label: "Engineering" },
+    { to: "/finance/", label: "Finance" },
+    { to: "/education/", label: "Education Toolkit" },
+    { to: "/safety-and-security/", label: "Safety" },
     { to: "/team/", label: "Meet the Team" },
     { to: "/team/attributions/", label: "Attributions" },
-    { to: "/team/collaborations/", label: "Collaborations" },
     { to: "/wiki/", label: "Wiki" },
-  ]},
-  { label: "Beyond the Bench", children: [
-    { to: "/education/", label: "Education Toolkit" },
-    { to: "/human-practices/", label: "Human Practices" },
-    { to: "/beyond-the-bench/outreach/", label: "Outreach" },
-    { to: "/entrepreneurship/", label: "Entrepreneurship" },
-    { to: "/safety-and-security/", label: "Safety" },
   ]},
 ]
 
@@ -77,16 +71,20 @@ export function WikiTopBar() {
         </LogoPlaceholder>
 
         <DesktopNav aria-label="Wiki sections">
-          {wikiNav.slice(1).map(({ label, children }) => (
-            <NavItem key={label}>
-              <NavParent>{label}</NavParent>
-              <Dropdown>
-                {children.map(({ to, label: childLabel }) => (
-                  <DropdownLink key={to} to={to}>{childLabel}</DropdownLink>
-                ))}
-              </Dropdown>
-            </NavItem>
-          ))}
+          {wikiNav.slice(1).map(({ to, label, children }) =>
+            children ? (
+              <NavItem key={label}>
+                <NavParent>{label}</NavParent>
+                <Dropdown>
+                  {children.map(({ to: childTo, label: childLabel }) => (
+                    <DropdownLink key={childTo} to={childTo}>{childLabel}</DropdownLink>
+                  ))}
+                </Dropdown>
+              </NavItem>
+            ) : (
+              <DesktopLink key={to} to={to}>{label}</DesktopLink>
+            )
+          )}
         </DesktopNav>
 
         <MenuToggle
@@ -102,18 +100,24 @@ export function WikiTopBar() {
 
       <MobileMenu id="wiki-mobile-nav" $open={menuOpen} aria-hidden={!menuOpen}>
         <MobileNav aria-label="Wiki sections">
-          {wikiNav.slice(1).map(({ label, children }) => (
-            <MobileSection key={label}>
-              <MobileSectionLabel>{label}</MobileSectionLabel>
-              <MobileLinks>
-                {children.map(({ to, label: childLabel }) => (
-                  <MobileLink key={to} to={to} onClick={closeMenu}>
-                    {childLabel}
-                  </MobileLink>
-                ))}
-              </MobileLinks>
-            </MobileSection>
-          ))}
+          {wikiNav.slice(1).map(({ to, label, children }) =>
+            children ? (
+              <MobileSection key={label}>
+                <MobileSectionLabel>{label}</MobileSectionLabel>
+                <MobileLinks>
+                  {children.map(({ to: childTo, label: childLabel }) => (
+                    <MobileLink key={childTo} to={childTo} onClick={closeMenu}>
+                      {childLabel}
+                    </MobileLink>
+                  ))}
+                </MobileLinks>
+              </MobileSection>
+            ) : (
+              <MobileTopLink key={to} to={to} onClick={closeMenu}>
+                {label}
+              </MobileTopLink>
+            )
+          )}
         </MobileNav>
       </MobileMenu>
     </TopBar>
@@ -135,7 +139,7 @@ const TopBar = styled.header`
 const NavInner = styled.div`
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0.5rem var(--page-padding);
+  padding: 0.8rem var(--page-padding);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -148,15 +152,15 @@ const LogoPlaceholder = styled(Link)`
 `
 
 const LogoBox = styled.div`
-  width: 6.5rem;
-  height: 1.75rem;
+  width: 7.25rem;
+  height: 2.25rem;
   border: 1px dashed var(--color-border);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-muted);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
 `
 
@@ -165,10 +169,26 @@ const DesktopNav = styled.nav`
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-sm) var(--space-md);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 
   @media (max-width: ${MOBILE_NAV_BREAKPOINT}) {
     display: none;
+  }
+`
+
+const DesktopLink = styled(Link)`
+  color: var(--color-muted);
+  font-size: inherit;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 `
 
@@ -365,4 +385,9 @@ const MobileLink = styled(Link)`
     outline-offset: 2px;
     border-radius: 2px;
   }
+`
+
+const MobileTopLink = styled(MobileLink)`
+  color: var(--color-text);
+  font-weight: 600;
 `
