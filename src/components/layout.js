@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
 import { SponsorCarousel } from "./SponsorCarousel.js"
@@ -13,12 +13,28 @@ const WikiLayout = ({
   fullBleed = false,
   wideSideTabs = false,
 }) => {
+  const [showScrollTop, setShowScrollTop] = useState(false)
+
+  useEffect(() => {
+    const updateVisibility = () => setShowScrollTop(window.scrollY > 600)
+    updateVisibility()
+    window.addEventListener("scroll", updateVisibility, { passive: true })
+    return () => window.removeEventListener("scroll", updateVisibility)
+  }, [])
+
+  const scrollToTop = () => {
+    const reduceMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" })
+  }
+
   return (
     <>
       <GlobalStyle />
       <SiteWrapper>
 
-        {!hideSiteChrome && !hideTopBar && <WikiTopBar />}
+        {!hideSiteChrome && !hideTopBar && <WikiTopBar sticky />}
 
         {hideSiteChrome || fullBleed ? (
           <MainFullBleed>{children}</MainFullBleed>
@@ -33,6 +49,17 @@ const WikiLayout = ({
             )}
             {children}
           </Main>
+        )}
+
+        {showScrollTop && (
+          <ScrollTopButton
+            type="button"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+            onClick={scrollToTop}
+          >
+            <span aria-hidden="true">↑</span>
+          </ScrollTopButton>
         )}
 
         <Footer>
@@ -82,6 +109,43 @@ const SiteWrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+`
+
+const ScrollTopButton = styled.button`
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 105;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: 0 4px 14px rgba(6, 32, 43, 0.18);
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: var(--color-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `
 
 const Main = styled.main`

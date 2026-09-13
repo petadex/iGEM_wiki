@@ -41,14 +41,18 @@ export const wikiNav = [
 
 const MOBILE_NAV_BREAKPOINT = "900px"
 
-export function WikiTopBar() {
+export function WikiTopBar({ sticky = false }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [openMobileSection, setOpenMobileSection] = useState(null)
 
   useEffect(() => {
     if (typeof document === "undefined" || !menuOpen) return undefined
 
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setMenuOpen(false)
+      if (event.key === "Escape") {
+        setMenuOpen(false)
+        setOpenMobileSection(null)
+      }
     }
 
     const previousOverflow = document.body.style.overflow
@@ -61,10 +65,20 @@ export function WikiTopBar() {
     }
   }, [menuOpen])
 
-  const closeMenu = () => setMenuOpen(false)
+  const closeMenu = () => {
+    setMenuOpen(false)
+    setOpenMobileSection(null)
+  }
+
+  const toggleMenu = () => {
+    setMenuOpen(open => {
+      if (open) setOpenMobileSection(null)
+      return !open
+    })
+  }
 
   return (
-    <TopBar>
+    <TopBar $sticky={sticky}>
       <NavInner>
         <LogoPlaceholder to="/" aria-label="iGEM Toronto 2026 — Home" onClick={closeMenu}>
           <LogoBox>LOGO</LogoBox>
@@ -92,7 +106,7 @@ export function WikiTopBar() {
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           aria-controls="wiki-mobile-nav"
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={toggleMenu}
         >
           <MenuBar $open={menuOpen} aria-hidden />
         </MenuToggle>
@@ -103,8 +117,24 @@ export function WikiTopBar() {
           {wikiNav.slice(1).map(({ to, label, children }) =>
             children ? (
               <MobileSection key={label}>
-                <MobileSectionLabel>{label}</MobileSectionLabel>
-                <MobileLinks>
+                <MobileSectionToggle
+                  type="button"
+                  aria-expanded={openMobileSection === label}
+                  onClick={() =>
+                    setOpenMobileSection(current =>
+                      current === label ? null : label,
+                    )
+                  }
+                >
+                  <span>{label}</span>
+                  <MobileChevron
+                    $open={openMobileSection === label}
+                    aria-hidden="true"
+                  >
+                    ▾
+                  </MobileChevron>
+                </MobileSectionToggle>
+                <MobileLinks $open={openMobileSection === label}>
                   {children.map(({ to: childTo, label: childLabel }) => (
                     <MobileLink key={childTo} to={childTo} onClick={closeMenu}>
                       {childLabel}
@@ -128,12 +158,11 @@ export function WikiTopBar() {
 export const WIKI_TOP_BAR_Z_INDEX = 110
 
 const TopBar = styled.header`
-  position: relative;
+  position: ${({ $sticky }) => ($sticky ? "sticky" : "relative")};
+  top: ${({ $sticky }) => ($sticky ? "0" : "auto")};
   z-index: ${WIKI_TOP_BAR_Z_INDEX};
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
-  position: relative;
-  z-index: 120;
 `
 
 const NavInner = styled.div`
@@ -354,18 +383,44 @@ const MobileSection = styled.div`
   gap: 0.35rem;
 `
 
-const MobileSectionLabel = styled.p`
+const MobileSectionToggle = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.45rem 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  background: transparent;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 600;
   color: var(--color-text);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+`
+
+const MobileChevron = styled.span`
+  font-size: 0.8rem;
+  transform: rotate(${({ $open }) => ($open ? "180deg" : "0deg")});
+  transition: transform 0.2s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `
 
 const MobileLinks = styled.div`
-  display: flex;
+  display: ${({ $open }) => ($open ? "flex" : "none")};
   flex-direction: column;
   gap: 0.125rem;
+  padding-left: 0.75rem;
 `
 
 const MobileLink = styled(Link)`
