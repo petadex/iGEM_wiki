@@ -1,4 +1,5 @@
 import path from "path"
+import { USE_PAYLOAD_EXPORTS } from "./content-source.config.mjs"
 import { STANDARD_ROUTE_ALIASES } from "./src/data/standardRoutes.mjs"
 
 const wikiTemplate = path.resolve(`./src/templates/wiki-mdx.js`)
@@ -36,6 +37,7 @@ export async function createPages({ actions, graphql, reporter }) {
   const selectedRoutes = new Map()
   const nodes = result.data.allMdx.nodes
     .filter((node) => !path.basename(node.internal.contentFilePath).startsWith(`_`))
+    .filter((node) => USE_PAYLOAD_EXPORTS || !isPayloadExport(node))
     .sort((a, b) => Number(isPayloadExport(b)) - Number(isPayloadExport(a)))
 
   for (const node of nodes) {

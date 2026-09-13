@@ -1,6 +1,7 @@
 import fs from "fs"
 import path from "path"
 import process from "process"
+import { USE_PAYLOAD_EXPORTS } from "../content-source.config.mjs"
 import { STANDARD_ROUTE_ALIASES } from "../src/data/standardRoutes.mjs"
 
 const root = process.cwd()
@@ -134,7 +135,7 @@ function validateFrontmatter(filePath, frontmatter) {
 const mdxFiles = walk(
   contentRoot,
   (filePath) => filePath.endsWith(".mdx") && !path.basename(filePath).startsWith("_")
-)
+).filter((filePath) => USE_PAYLOAD_EXPORTS || !isPayloadExport(filePath))
 
 const mdxRoutes = new Map()
 for (const filePath of mdxFiles) {
