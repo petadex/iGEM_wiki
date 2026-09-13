@@ -4214,6 +4214,10 @@ const CreamPadTextMount = styled.div`
   box-sizing: border-box;
   pointer-events: auto;
   text-align: center;
+
+  @media (max-width: 720px) {
+    width: min(88%, 90vw);
+  }
 `
 
 const CreamPadBody = styled.p`
@@ -4232,6 +4236,16 @@ const ConditionImageRow = styled.div`
   gap: clamp(0.35rem, 2.4vw, 1.75rem);
   margin-top: clamp(0.45rem, 2.2vw, 1.75rem);
   align-items: start;
+
+  /* Keep all 3 cards visible together (no swipe) — just tighten the gap and
+     let ConditionImage/ConditionCaption shrink their own clamps below. */
+  @media (max-width: 640px) {
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 380px) {
+    gap: 0.35rem;
+  }
 `
 
 const ConditionFigure = styled.figure`
@@ -4241,6 +4255,10 @@ const ConditionFigure = styled.figure`
   align-items: center;
   gap: clamp(0.3rem, 0.8vw, 0.55rem);
   min-width: 0;
+
+  @media (max-width: 640px) {
+    gap: 0.3rem;
+  }
 `
 
 const ConditionImage = styled.img`
@@ -4254,6 +4272,17 @@ const ConditionImage = styled.img`
   pointer-events: none;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
     drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+
+  /* Below tablet width the 36vw curve is sized for a single wide column, not a
+     1/3-width grid cell — cap it much lower so the image fits its column instead
+     of forcing the whole row to overflow or get clipped. */
+  @media (max-width: 640px) {
+    max-height: 22vw;
+  }
+
+  @media (max-width: 380px) {
+    max-height: 20vw;
+  }
 `
 
 const ConditionCaption = styled.figcaption`
@@ -4267,6 +4296,14 @@ const ConditionCaption = styled.figcaption`
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.55),
     0 0 12px rgba(0, 0, 0, 0.35);
+
+  @media (max-width: 640px) {
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 380px) {
+    font-size: 0.7rem;
+  }
 `
 
 const RailImg = styled.img`
@@ -4626,6 +4663,11 @@ const BottleFloatWrap = styled.div`
   max-width: 18%;
   animation: ${bottleIdleFloat} 1.5s ease-in-out infinite;
   animation-delay: -0.7s;
+
+  @media (max-width: 480px) {
+    width: 34%;
+    max-width: 8rem;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;

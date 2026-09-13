@@ -6,8 +6,11 @@ import styled, { keyframes } from "styled-components"
 const MHETASE_TEXTBOX_IMG =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/mhetase-textbox.avif"
 
-/** Fixed popover size (px) — does not change when the window resizes. */
+/** Fixed popover size (px) — the ceiling on desktop; shrinks to fit narrow viewports. */
 export const POPOVER_WIDTH_PX = 560
+
+/** Minimum popover width for smaller screen sizes. */
+const POPOVER_MIN_WIDTH_PX = 220
 
 /** Below site chrome (`WikiTopBar` / home nav mount at 110); above mockup overlays (≤95). */
 export const POPOVER_Z_INDEX = 100
@@ -54,18 +57,35 @@ function measureButton(el) {
   }
 }
 
-function layoutFromButton(btn, popHeight) {
-  const popW = POPOVER_WIDTH_PX
+/** Popover width that actually fits the current viewport (desktop keeps the full 560px). */
+function computePopoverWidth() {
+  if (typeof window === "undefined") return POPOVER_WIDTH_PX
+  const available = window.innerWidth - POPOVER_EDGE_PAD_PX * 2
+  return Math.max(POPOVER_MIN_WIDTH_PX, Math.min(POPOVER_WIDTH_PX, available))
+}
+
+function layoutFromButton(btn, popHeight, popW) {
   const popH = popHeight
   const gap = POPOVER_GAP_PX
   const boltX = popW * BOLT_TIP_X_FRAC
 
   let left = btn.centerX - boltX
-  const top = btn.top - gap - popH
+  let top = btn.top - gap - popH
 
   if (typeof window !== "undefined") {
     const maxLeft = Math.max(POPOVER_EDGE_PAD_PX, window.innerWidth - popW - POPOVER_EDGE_PAD_PX)
     left = Math.min(Math.max(left, POPOVER_EDGE_PAD_PX), maxLeft)
+
+    // If there isn't room above the term (short viewport / term near the top),
+    // flip the popover to sit below it instead of letting it run off-screen.
+    if (top < POPOVER_EDGE_PAD_PX) {
+      const belowTop = btn.bottom + gap
+      if (belowTop + popH <= window.innerHeight - POPOVER_EDGE_PAD_PX) {
+        top = belowTop
+      } else {
+        top = Math.max(POPOVER_EDGE_PAD_PX, top)
+      }
+    }
   }
 
   return { left, top, width: popW }
@@ -102,13 +122,14 @@ export function ExplainTerm({
     const m = measureButton(btn)
     if (m.width <= 0 && m.height <= 0) return
 
+    const popW = computePopoverWidth()
     const popEl = popoverRef.current
     const popH =
       popEl?.offsetHeight > 0
         ? popEl.offsetHeight
-        : Math.round(POPOVER_WIDTH_PX * SHELL_ASPECT)
+        : Math.round(popW * SHELL_ASPECT)
 
-    setPos(layoutFromButton(m, popH))
+    setPos(layoutFromButton(m, popH, popW))
   }, [])
 
   const show = useCallback(() => setOpen(true), [])
