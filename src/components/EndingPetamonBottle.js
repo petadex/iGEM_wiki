@@ -834,7 +834,7 @@ const Hint = styled.p`
 `
 
 /**
- * Prototype: subteam name always shown by its piece (piece colour, header
+ * Prototype: subteam name always shown by its piece (piece colour, bold body
  * font); the description + "visit" slide open under it on hover. Sizes are
  * cqw of the bottle frame, so they scale with the bottle.
  */
@@ -855,8 +855,9 @@ const Label = styled(Link)`
 
 const LabelName = styled.span`
   display: block;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: max(0.9rem, 3.4cqw);
+  font-weight: 700;
   line-height: 1.1;
   white-space: nowrap;
 `
