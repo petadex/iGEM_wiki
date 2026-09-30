@@ -5,8 +5,9 @@ import React, {
   useRef,
   useState,
 } from "react"
+import { Link, navigate } from "gatsby"
 import styled from "styled-components"
-import { artFont, artPx, inputCopyCss, phone } from "./artScale.js"
+import { inputCopyCss, phone } from "./artScale.js"
 
 const CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/ending-petamon-eating-bottle"
@@ -32,10 +33,21 @@ const BOX_PAD = 6
  * (share of the assembly scroll).
  *
  * `burst` is each petamon's pop delay, as a share of BURST_STAGGER_MS.
+ *
+ * `team` / `blurb` / `to`: the subteam, its page's frontmatter description,
+ * and its page; clicking the piece opens `to`.
+ * `labelAt`: where the always-on subteam name sits (canvas px), just outside
+ * the piece; `side` says whether it hangs above or below that point.
  */
 const PIECES = [
   {
     id: "drylab",
+    labelAt: { x: 250, y: 2268, side: "above" },
+    team: "Dry Lab",
+    to: "/dry-lab/overview/",
+    color: "#f2c14e",
+    blurb:
+      "Computational discovery, modeling, software, and technical specifications.",
     label: "Dry lab",
     hol: "drylabyellowhol.avif",
     pop: "drylabyellow.avif",
@@ -49,6 +61,12 @@ const PIECES = [
   },
   {
     id: "hardware",
+    labelAt: { x: 560, y: 2188, side: "above" },
+    team: "Hardware",
+    to: "/hardware/",
+    color: "#f08a4b",
+    blurb:
+      "How the Hardware team supports practical enzyme testing for PET biorecycling.",
     label: "Hardware",
     hol: "hardwareorangehol.avif",
     pop: "hardwareorange.avif",
@@ -62,6 +80,12 @@ const PIECES = [
   },
   {
     id: "human-practices",
+    labelAt: { x: 1250, y: 2058, side: "above" },
+    team: "Human Practices",
+    to: "/human-practices/",
+    color: "#ef5a5f",
+    blurb:
+      "Stakeholder engagement, ethics, and how society shaped the PETase project.",
     label: "Human practices",
     hol: "hpredhol.avif",
     pop: "hpred.avif",
@@ -75,6 +99,12 @@ const PIECES = [
   },
   {
     id: "outreach",
+    labelAt: { x: 860, y: 2052, side: "above" },
+    team: "Outreach",
+    to: "/beyond-the-bench/outreach/",
+    color: "#f27ab8",
+    blurb:
+      "Community outreach, events, and public engagement progress.",
     label: "Outreach",
     hol: "outreachpinkhol.avif",
     pop: "outreachpink.avif",
@@ -88,6 +118,12 @@ const PIECES = [
   },
   {
     id: "venture",
+    labelAt: { x: 1250, y: 2775, side: "below" },
+    team: "Entrepreneurship",
+    to: "/entrepreneurship/",
+    color: "#a07cf2",
+    blurb:
+      "Entrepreneurial thinking, market context, and implementation considerations.",
     label: "Venture",
     hol: "venturepurplehol.avif",
     pop: "venturepurple.avif",
@@ -101,6 +137,12 @@ const PIECES = [
   },
   {
     id: "web",
+    labelAt: { x: 440, y: 2950, side: "below" },
+    team: "Web",
+    to: "/wiki/",
+    color: "#62c883",
+    blurb:
+      "Design, content, accessibility, and deployment process for the iGEM Toronto 2026 wiki.",
     label: "Web",
     hol: "webgreenhol.avif",
     pop: "webgreen.avif",
@@ -114,6 +156,12 @@ const PIECES = [
   },
   {
     id: "wetlab",
+    labelAt: { x: 800, y: 2830, side: "below" },
+    team: "Wet Lab",
+    to: "/wet-lab/overview/",
+    color: "#55aee9",
+    blurb:
+      "How the Wet Lab converts computational PETase candidates into experimentally validated hits.",
     label: "Wet lab",
     hol: "wetlabbluehol.avif",
     pop: "wetlabblue.avif",
@@ -127,7 +175,14 @@ const PIECES = [
   },
 ]
 
-/** Hover / pinned enlargement of a piece and its petamon. */
+/**
+ * Prototype switch: true = subteam names always shown around the bottle, with
+ * the description opening under the hovered one; false = description in the
+ * line under the bottle.
+ */
+const SUBTEAM_LABELS = true
+
+/** Hover enlargement of a piece and its petamon. */
 const POP_SCALE = 1.25
 /** Longest fly-in delay; every piece still lands by assemble = 1. */
 const FLY_DELAY_MAX = 0.15
@@ -256,11 +311,14 @@ function pieceAt(masks, x, y) {
  * The ending bottle. The page drives it through the ref:
  * `update({ assemble, burst })`, both 0–1 — pieces fly in from the screen
  * edges as `assemble` rises, then petamons pop out from behind their pieces
- * as `burst` rises. Hover/pin only once both are done.
+ * as `burst` rises. Once both are done: hover (or first tap on touch) pops a
+ * piece and shows its subteam under the bottle; click (or second tap) opens
+ * that subteam's page.
  */
 const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
-  const [pinned, setPinned] = useState(null)
   const [hover, setHover] = useState(null)
+  /** Last pointer type, so a tap previews first and only a second tap navigates. */
+  const pointerTypeRef = useRef("mouse")
   const [ready, setReady] = useState(true)
   const masksRef = useRef(null)
   const frameRef = useRef(null)
@@ -273,7 +331,8 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
   const burstPlayingRef = useRef(false)
   const burstDoneRef = useRef(false)
   const burstAnimsRef = useRef([])
-  const active = ready ? pinned ?? hover : null
+  const active = ready ? hover : null
+  const activePiece = PIECES.find(piece => piece.id === active)
 
   useImperativeHandle(ref, () => ({
     update({ assemble, burst }) {
@@ -342,10 +401,7 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
       if (nowReady !== readyRef.current) {
         readyRef.current = nowReady
         setReady(nowReady)
-        if (!nowReady) {
-          setHover(null)
-          setPinned(null)
-        }
+        if (!nowReady) setHover(null)
       }
     },
   }))
@@ -453,6 +509,16 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
     }
   }, [])
 
+  // Touch preview: tapping anywhere outside the bottle clears it.
+  useEffect(() => {
+    if (!hover || pointerTypeRef.current === "mouse") return undefined
+    const onDown = event => {
+      if (!frameRef.current?.contains(event.target)) setHover(null)
+    }
+    document.addEventListener("pointerdown", onDown)
+    return () => document.removeEventListener("pointerdown", onDown)
+  }, [hover])
+
   const pieceFromEvent = event => {
     const rect = event.currentTarget.getBoundingClientRect()
     const x = CROP.x + ((event.clientX - rect.left) / rect.width) * CROP.w
@@ -465,8 +531,13 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
       <Frame
         ref={frameRef}
         style={{ cursor: hover && ready ? "pointer" : undefined }}
+        onPointerDown={event => {
+          pointerTypeRef.current = event.pointerType
+        }}
         onPointerMove={event => {
-          if (event.pointerType !== "mouse" || pinned || !ready) return
+          if (event.pointerType !== "mouse" || !ready) return
+          // Over a subteam label: the label's own handlers own the hover.
+          if (event.target.closest?.("[data-label]")) return
           setHover(pieceFromEvent(event))
         }}
         onPointerLeave={event => {
@@ -474,14 +545,20 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
           setHover(null)
         }}
         onClick={event => {
-          if (!ready) return
-          // Keyboard activation targets the button; pointer clicks resolve by shape.
-          const id =
-            event.target.dataset?.piece ??
-            (event.detail > 0 ? pieceFromEvent(event) : null)
-          if (!id) return
-          setHover(null)
-          setPinned(current => (current === id ? null : id))
+          // Keyboard / label links navigate on their own.
+          if (!ready || event.target.closest?.("a")) return
+          const id = pieceFromEvent(event)
+          const piece = PIECES.find(item => item.id === id)
+          if (!piece) {
+            setHover(null)
+            return
+          }
+          // Mouse: straight to the page. Touch: first tap previews, second opens.
+          if (pointerTypeRef.current === "mouse" || hover === id) {
+            navigate(piece.to)
+          } else {
+            setHover(id)
+          }
         }}
       >
         <Canvas aria-hidden="true">
@@ -578,24 +655,85 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
             )
           })}
         </Canvas>
-        <Hint $show={ready} aria-hidden={!ready}>
-          <HintBang src={HINT_BANG_SRC} alt="" />
-          <span className="hover-copy">
-            Hover over a piece to meet its petamon — click to keep it popped.
-          </span>
-          <span className="touch-copy">
-            Tap a piece to meet its petamon — tap again to put it back.
-          </span>
-        </Hint>
+        {SUBTEAM_LABELS &&
+          PIECES.map(piece => {
+            const on = active === piece.id
+            return (
+              <Label
+                key={`${piece.id}-label`}
+                to={piece.to}
+                data-label=""
+                tabIndex={-1}
+                aria-hidden="true"
+                $show={ready}
+                $side={piece.labelAt.side}
+                $on={on}
+                style={{
+                  left: `${((piece.labelAt.x - CROP.x) / CROP.w) * 100}%`,
+                  top: `${((piece.labelAt.y - CROP.y) / CROP.h) * 100}%`,
+                  color: piece.color,
+                }}
+                onPointerEnter={event => {
+                  if (event.pointerType === "mouse" && ready) setHover(piece.id)
+                }}
+                onClick={event => {
+                  // Touch: first tap on a label previews, second opens.
+                  if (pointerTypeRef.current !== "mouse" && hover !== piece.id) {
+                    event.preventDefault()
+                    setHover(piece.id)
+                  }
+                }}
+              >
+                <LabelName>{piece.team}</LabelName>
+                <LabelMore $on={on}>
+                  <div>
+                    <LabelBlurb>{piece.blurb}</LabelBlurb>
+                    <LabelGo>
+                      <span className="hover-copy">Click to visit →</span>
+                      <span className="touch-copy">Tap again to visit →</span>
+                    </LabelGo>
+                  </div>
+                </LabelMore>
+              </Label>
+            )
+          })}
+        {/* With labels, the hint steps aside while a description is open (the
+            lower labels open down over where it sits). */}
+        <Under $show={ready && !(SUBTEAM_LABELS && activePiece)} aria-live="polite">
+          {activePiece && !SUBTEAM_LABELS ? (
+            <Info>
+              <InfoTeam style={{ color: activePiece.color }}>
+                {activePiece.team}
+              </InfoTeam>
+              <InfoBlurb>{activePiece.blurb}</InfoBlurb>
+              <InfoGo style={{ color: activePiece.color }}>
+                <span className="hover-copy">Click to visit →</span>
+                <span className="touch-copy">Tap again to visit →</span>
+              </InfoGo>
+            </Info>
+          ) : (
+            <Hint aria-hidden={!ready}>
+              <HintBang src={HINT_BANG_SRC} alt="" />
+              <span className="hover-copy">
+                Hover over a piece to meet its petamon — click to visit their
+                page.
+              </span>
+              <span className="touch-copy">
+                Tap a piece to meet its petamon — tap again to visit their
+                page.
+              </span>
+            </Hint>
+          )}
+        </Under>
         {PIECES.map(piece => (
-          <Hit
+          <HitLink
             key={`${piece.id}-hit`}
-            type="button"
+            to={piece.to}
             style={hitStyle(piece.hit)}
-            aria-pressed={pinned === piece.id}
-            aria-label={piece.label}
-            data-piece={piece.id}
-            disabled={!ready}
+            aria-label={`${piece.team}: ${piece.blurb}`}
+            tabIndex={ready ? 0 : -1}
+            onFocus={() => ready && setHover(piece.id)}
+            onBlur={() => setHover(current => (current === piece.id ? null : current))}
           />
         ))}
       </Frame>
@@ -615,6 +753,8 @@ const Frame = styled.div`
   width: 100%;
   aspect-ratio: ${CROP.w} / ${CROP.h};
   overflow: visible;
+  /* The text under the bottle sizes in cqw, i.e. with the bottle. */
+  container-type: inline-size;
 `
 
 const Canvas = styled.div`
@@ -655,46 +795,139 @@ const Shine = styled.div`
   );
 `
 
-/** Shown once the burst is done: how to use the pieces. */
-const Hint = styled.p`
+/**
+ * Under the bottle, once the burst is done: the how-to hint, or — while a
+ * piece is hovered (or tapped once on touch) — its subteam and description.
+ */
+const Under = styled.div`
   position: absolute;
   top: 100%;
   left: 50%;
-  display: flex;
-  align-items: center;
-  gap: ${artPx(10)};
   width: max-content;
-  max-width: 110%;
-  margin: ${artPx(6)} 0 0;
+  max-width: 100%;
+  margin-top: 0.8cqw;
   transform: translateX(-50%);
-  color: #ff6b75;
   font-family: var(--font-body);
-  ${artFont(22)}
-  font-weight: 700;
-  line-height: 1.3;
   text-align: center;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   opacity: ${({ $show }) => ($show ? 1 : 0)};
-  transition: opacity 500ms ease 200ms;
+  transition: opacity ${({ $show }) => ($show ? "400ms ease 150ms" : "180ms ease")};
   pointer-events: none;
 
   ${phone} {
-    font-size: 0.75rem;
     width: 90vw;
-    justify-content: center;
   }
 
   ${inputCopyCss}
 `
 
-const HintBang = styled.img`
-  width: ${artPx(40)};
-  height: auto;
-  flex: 0 0 auto;
+const Hint = styled.p`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2cqw;
+  margin: 0;
+  color: #ff6b75;
+  font-size: max(0.8rem, 2.5cqw);
+  font-weight: 700;
+  line-height: 1.3;
+`
+
+/**
+ * Prototype: subteam name always shown by its piece (piece colour, header
+ * font); the description + "visit" slide open under it on hover. Sizes are
+ * cqw of the bottle frame, so they scale with the bottle.
+ */
+const Label = styled(Link)`
+  position: absolute;
+  z-index: 8;
+  width: max-content;
+  max-width: 28cqw;
+  transform: translate(-50%, ${({ $side }) => ($side === "above" ? "-100%" : "0")});
+  text-align: center;
+  text-decoration: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+  transition: opacity 500ms ease 200ms;
+  pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
+  ${inputCopyCss}
+`
+
+const LabelName = styled.span`
+  display: block;
+  font-family: var(--font-display);
+  font-size: max(0.9rem, 3.4cqw);
+  line-height: 1.1;
+  white-space: nowrap;
+`
+
+/** Collapsed to 0 height until hovered, then eases open under the name. */
+const LabelMore = styled.span`
+  display: grid;
+  grid-template-rows: ${({ $on }) => ($on ? "1fr" : "0fr")};
+  opacity: ${({ $on }) => ($on ? 1 : 0)};
+  transition:
+    grid-template-rows 320ms ease,
+    opacity 240ms ease;
+
+  > div {
+    overflow: hidden;
+  }
+`
+
+const LabelBlurb = styled.span`
+  display: block;
+  margin-top: 0.5cqw;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: max(0.75rem, 1.9cqw);
+  font-weight: 500;
+  line-height: 1.35;
+`
+
+const LabelGo = styled.span`
+  display: block;
+  margin-top: 0.5cqw;
+  font-family: var(--font-body);
+  font-size: max(0.7rem, 1.7cqw);
+  font-weight: 700;
+`
+
+/** Sizes are cqw of the bottle frame, so they scale with the bottle (and window). */
+const Info = styled.div`
+  max-width: 78cqw;
+  margin: 0 auto;
 
   ${phone} {
-    width: 1.4rem;
+    max-width: none;
   }
+`
+
+const InfoTeam = styled.p`
+  margin: 0;
+  font-size: max(1.1rem, 4.4cqw);
+  font-weight: 800;
+  line-height: 1.15;
+`
+
+const InfoBlurb = styled.p`
+  margin: 0.6cqw 0 0;
+  color: #fff;
+  font-size: max(0.85rem, 2.7cqw);
+  font-weight: 500;
+  line-height: 1.35;
+`
+
+const InfoGo = styled.p`
+  margin: 0.9cqw 0 0;
+  font-size: max(0.8rem, 2.3cqw);
+  font-weight: 700;
+`
+
+const HintBang = styled.img`
+  width: max(1.4rem, 4.4cqw);
+  height: auto;
+  flex: 0 0 auto;
 `
 
 /** Hover pop, separate from the scroll-driven transform on Win. */
@@ -724,12 +957,15 @@ const WinImg = styled.img`
   }
 `
 
-const Hit = styled.button`
+/** Keyboard/screen-reader link per piece; pointer hits are resolved on Frame by shape. */
+const HitLink = styled(Link)`
   position: absolute;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  /* Kept for keyboard focus; pointer hits are resolved on Frame by shape. */
+  display: block;
   pointer-events: none;
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+    border-radius: 12px;
+  }
 `

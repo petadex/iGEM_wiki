@@ -3352,7 +3352,7 @@ const EndingBottleSlot = styled.div`
   position: absolute;
   left: 50%;
   /* Raised off the bottom of the hex art: some room below it before the footer. */
-  bottom: 20vh;
+  bottom: 30vh;
   z-index: 2;
   /* As big as the view allows while held mid-screen (frame is 1340×1060),
      leaving room for the hint under it. */
