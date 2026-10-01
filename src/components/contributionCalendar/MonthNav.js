@@ -154,6 +154,7 @@ const MonthTrigger = styled.button`
   background: transparent;
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  font-weight: 700;
   color: #06202b;
   cursor: pointer;
   padding: 0.25rem 0.5rem;

@@ -161,9 +161,9 @@ const ThumbPlaceholder = styled.div`
   margin-bottom: var(--space-sm);
   background: color-mix(in srgb, var(--color-border) 35%, transparent); flex-shrink: 0;
 `
-const CardName = styled.div`font-family: var(--font-display); font-size: 1.15rem; margin-bottom: var(--space-xs);`
+const CardName = styled.div`font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: var(--space-xs);`
 const CardRole = styled.div`color: var(--color-muted); font-size: 0.9rem; margin-bottom: var(--space-sm);`
-const BackName = styled.h2`font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; margin-bottom: var(--space-md);`
+const BackName = styled.h2`font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: var(--space-md);`
 const BackBio = styled.p`flex: 1; margin-bottom: var(--space-md); white-space: pre-wrap; font-size: 0.9rem; line-height: 1.55;`
 const Links = styled.div`
   display: flex; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.85rem; margin-top: auto;

@@ -9,6 +9,7 @@ import { WideSideTabProvider } from "../components/PageTabs.js"
 import ScrollProgress from "../components/scrollProgress.js"
 import TableOfContents from "../components/tableOfContents.js"
 import { TOCWrapper } from "../components/pageStyles.js"
+import DryLabScene from "../components/DryLabScene.js"
 
 const formatDate = (date) => {
   if (!date) return null
@@ -25,6 +26,22 @@ const WikiMdxTemplate = ({ data, children }) => {
   const { frontmatter } = data.mdx
   const owners = frontmatter.owners || []
   const updated = formatDate(frontmatter.updated)
+
+  if (frontmatter.section === "Dry Lab") {
+    return (
+      <WikiLayout fullBleed>
+        <DryLabScene
+          title={frontmatter.title}
+          sectionLabel={frontmatter.section}
+          description={frontmatter.description}
+        >
+          <Article $wideProse>
+            <MDXProvider components={mdxComponents}>{children}</MDXProvider>
+          </Article>
+        </DryLabScene>
+      </WikiLayout>
+    )
+  }
 
   const wideSideTabs = frontmatter.wideSideTabs === true
   const wideProse    = frontmatter.wideProse    === true

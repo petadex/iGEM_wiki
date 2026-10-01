@@ -534,6 +534,7 @@ const PinCardTitle = styled.p`
   margin: 0;
   font-family: var(--font-display);
   font-size: 0.98rem;
+  font-weight: 700;
   line-height: 1.2;
 `
 

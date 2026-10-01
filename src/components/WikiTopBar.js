@@ -184,7 +184,7 @@ const LogoWord = styled.span`
   color: var(--color-text);
   font-family: var(--font-display);
   font-size: 1.6rem;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0.01em;
 `

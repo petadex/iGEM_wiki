@@ -80,7 +80,7 @@ const PIECES = [
   },
   {
     id: "human-practices",
-    labelAt: { x: 1250, y: 2058, side: "above" },
+    labelAt: { x: 1250, y: 2010, side: "above" },
     team: "Human Practices",
     to: "/human-practices/",
     color: "#ef5a5f",

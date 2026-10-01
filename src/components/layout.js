@@ -269,6 +269,7 @@ const FooterSponsorSlot = styled.div`
 const FooterBrand = styled.p`
   font-family: var(--font-display);
   font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 700;
   color: var(--color-text);
   letter-spacing: 0.02em;
 `

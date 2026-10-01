@@ -1149,7 +1149,7 @@ const SketchCoverMark = styled.span`
 const SketchTitle = styled.h3`
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 3vw, 1.75rem);
-  font-weight: 400;
+  font-weight: 700;
   color: var(--color-text);
   margin: 0 0 var(--space-sm);
   line-height: 1.2;

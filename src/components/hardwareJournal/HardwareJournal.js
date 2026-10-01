@@ -314,7 +314,7 @@ const EntryArticle = styled.article`
 const EntryHeading = styled.h2`
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 2.5vw, 1.6rem);
-  font-weight: 400;
+  font-weight: 700;
   color: var(--color-text);
   margin: 0 0 var(--space-md);
   line-height: 1.2;

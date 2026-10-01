@@ -17,8 +17,13 @@ import { LOGO_BOX, LOGO_FRAMES, LOGO_PLATE, LogoFrame } from "./logoFrames.js"
 import { SiteLoader } from "./SiteLoader.js"
 
 /**
- * Homepage bottle stages (degradation journey).
- * `sky` is used for the waterfall; section1–5 are reserved for later sections.
+ * Homepage bottle stages (degradation journey). The bottle stays at `sky`
+ * (stage 0) through the waterfall, map and forest, then degrades one stage
+ * at a time through the later sections:
+ *   cream roll-in   sky → section1
+ *   ramp 1          section2 → section3 (as it tilts and slides)
+ *   ramp 2          section4
+ *   chute           section5 → section6 at the fish (bubbles, most degraded)
  */
 export const BOTTLE_STAGES = {
   sky: "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/sky.avif",
@@ -36,6 +41,17 @@ export const BOTTLE_STAGES = {
     "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/section6.avif",
 }
 
+/** Stages in order, least → most degraded. */
+const BOTTLE_STAGE_ORDER = [
+  BOTTLE_STAGES.sky,
+  BOTTLE_STAGES.section1,
+  BOTTLE_STAGES.section2,
+  BOTTLE_STAGES.section3,
+  BOTTLE_STAGES.section4,
+  BOTTLE_STAGES.section5,
+  BOTTLE_STAGES.section6,
+]
+
 const ASSETS = {
   /** Toronto sky + skyline, on the same 563×4000 canvas as the front. */
   back: "https://static.igem.wiki/teams/6187/wiki/homepage-components/wiki-front-page-back-new.avif",
@@ -43,7 +59,8 @@ const ASSETS = {
   front:
     "https://static.igem.wiki/teams/6187/wiki/homepage-components/wiki-front-page-top-new.avif",
   /** Turtle petamon on the front canvas (left edge, under the waterfall). */
-  turtle: "https://static.igem.wiki/teams/6187/wiki/homepage-components/turtle.avif",
+  turtle:
+    "https://static.igem.wiki/teams/6187/wiki/homepage-components/turtle.avif",
   /** Foreground bushes — highest scenery layer (same 563×4000 canvas as front). */
   bush: "https://static.igem.wiki/teams/6187/wiki/homepage-components/wiki-front-page-bush.avif",
   /** Waterfall / sky section bottle (current homepage stage). */
@@ -101,7 +118,7 @@ const CREAM_PAD_HEIGHT = 1 - CREAM_PAD_TOP
 
 /**
  * Scroll-driven bottle: enter from left after shore float, descend the map→forest
- * band, swap+shrink at the topmost section-3 bird, park at the second-topmost crab
+ * band, shrink at the topmost section-3 bird, park at the second-topmost crab
  * (above the industry line) during walk-sticky, then fall behind the bushes once
  * non-sticky scrolling resumes. Scroll-up reverses the same path.
  *
@@ -118,7 +135,7 @@ const MAP_BOTTLE_LEFT_REST = 12
 const MAP_BOTTLE_ENTER_END = 0.12
 /** Vertical keyframes within the bottle band (%). */
 const MAP_BOTTLE_TOP_START = 8
-/** Same Y as topmost section-3 bird — swap to section3 + begin shrink here. */
+/** Same Y as topmost section-3 bird — begin shrink here. */
 const MAP_BOTTLE_TOP_SWAP = 49.5
 /** Reached as the walk begins (higher = smaller %). Above industry copy. */
 const MAP_BOTTLE_TOP_HOLD = 73
@@ -131,7 +148,7 @@ const MAP_BOTTLE_TOP_HOLD = 73
 const MAP_BOTTLE_TOP_BUSH = 86
 /** Tuck fully behind bushes after walk sticky releases. */
 const MAP_BOTTLE_TOP_EXIT = 98
-/** Final scale once fully into the section3 stage (lerps SWAP → HOLD). */
+/** Final scale in the forest (lerps SWAP → HOLD). */
 const MAP_BOTTLE_FOREST_SCALE = 0.62
 
 /** Map a band-top % onto 0–1 scroll progress along START → EXIT. */
@@ -165,6 +182,11 @@ const CREAM_BOTTLE_LEFT_ENTER = 120
 const CREAM_BOTTLE_LEFT_CENTER = 50
 /** Full Z rotations during the right→center approach. */
 const CREAM_BOTTLE_ROLLS = 4
+/** Roll-in progress at which the cream bottle turns section1. */
+const CREAM_BOTTLE_STAGE1_AT = 0.5
+/** Ramp-1 exit progress at which it turns section2, then section3. */
+const CREAM_BOTTLE_STAGE2_AT = 0.02
+const CREAM_BOTTLE_STAGE3_AT = 0.45
 /** Gap from the apps lead bottom to the bottle top while parked (px). */
 const CREAM_BOTTLE_PARK_GAP_PX = 28
 /**
@@ -219,7 +241,7 @@ const RAMP2_ARM_AT = 0.28
 const RAMP2_SLIDE_VH = 0.9
 
 /**
- * Section-5 chute bottle (stage 5): starts inside the WWTP pipe (behind layer
+ * Section-5 chute bottle (stage 5, then 6 at the fish): starts inside the WWTP pipe (behind layer
  * 7, in front of layer 6 so the pipe masks it), slides the water column at a
  * constant size, slams the pool (stretch/squash), then keeps scrolling with
  * the plate like the waterfall bottle. Coordinates are % of the 946×4000 plate.
@@ -313,6 +335,11 @@ const HEX_FIELD_BELOW_ASPECT = "1 / 1.417"
 const HEX_OPAQUE_FROM = 1202 / 3831
 /** Scroll (share of vh) the view holds on the ending bottle while petamons burst. */
 const ENDING_HOLD_VH = 1.1
+/**
+ * While held, the bottle sits this share of the view below center, so the
+ * descriptions that open above the top labels stay on screen.
+ */
+const ENDING_HOLD_DROP_VH = 0.05
 
 /** Tall underwater plate (946×4000), stacked back → front. */
 const SECTION5_LAYERS = [
@@ -350,23 +377,43 @@ const SPLASH_DRAG = 0.00115
  */
 const SPLASH_PLATES = [
   {
-    id: 1, x: 52.55, y: 49.39, delay: 20, extraRise: 1.15,
+    id: 1,
+    x: 52.55,
+    y: 49.39,
+    delay: 20,
+    extraRise: 1.15,
     crop: { x: 45.2, y: 48.05, w: 17.4, h: 2.4 },
   },
   {
-    id: 2, x: 84.38, y: 43.76, delay: 80, extraRise: 1.85,
+    id: 2,
+    x: 84.38,
+    y: 43.76,
+    delay: 80,
+    extraRise: 1.85,
     crop: { x: 80.9, y: 43.2, w: 7.5, h: 1.15 },
   },
   {
-    id: 3, x: 44.86, y: 47.99, delay: 40, extraRise: 1.45,
+    id: 3,
+    x: 44.86,
+    y: 47.99,
+    delay: 40,
+    extraRise: 1.45,
     crop: { x: 42.2, y: 47.25, w: 5.2, h: 1.6 },
   },
   {
-    id: 4, x: 54.1, y: 50.84, delay: 0, extraRise: 0.75,
+    id: 4,
+    x: 54.1,
+    y: 50.84,
+    delay: 0,
+    extraRise: 0.75,
     crop: { x: 49.1, y: 50.25, w: 10.4, h: 1.3 },
   },
   {
-    id: 5, x: 56.86, y: 48.19, delay: 55, extraRise: 2.15,
+    id: 5,
+    x: 56.86,
+    y: 48.19,
+    delay: 55,
+    extraRise: 2.15,
     crop: { x: 54.05, y: 46.9, w: 6, h: 2.65 },
   },
 ]
@@ -489,8 +536,15 @@ const SECTION5_FISHES = [
   },
 ]
 
-const SHORE_BOTTLE_IMG =
+/**
+ * Floating bottle: the stage-0 bottle above the waterline, and the painted
+ * ripples (bottom of bottle-w-ripples, whose bottle is a later stage) below
+ * it. Both share the stage canvas (1065 × 1640).
+ */
+const SHORE_BOTTLE_RIPPLES_IMG =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottle-stages/bottle-w-ripples.avif"
+/** Waterline on the stage canvas (% down the 1640px height). */
+const SHORE_BOTTLE_WATERLINE_PCT = (830 / 1640) * 100
 
 const CONDITION_CARD_IMAGES = [
   {
@@ -711,6 +765,8 @@ const CRABS = [
     originY: 10.4,
     flapMs: 860,
     delayMs: 0,
+    /** Bobbing "!" above it (no message) so people notice the crabs react. */
+    bang: true,
   },
   {
     id: "b",
@@ -927,6 +983,10 @@ const OVERLAY_PLATE_ASPECT = 3132 / 2238
 /** Head on the human plate (%), for placing the bang behind it. */
 const HUMAN_HEAD_X = 61.5
 const HUMAN_HEAD_Y = 22
+/** Same "!" as the popup hint by the waterfall. */
+const CRAB_BANG_SRC =
+  "https://static.igem.wiki/teams/6187/wiki/homepage-components/exclamation.avif"
+
 /** Bang centroid on the full-size exclamation plate (%). */
 const EXCLAMATION_MARK_X = 55
 const EXCLAMATION_MARK_Y = 30
@@ -986,6 +1046,10 @@ function CrabScuttle({ originX = 50, originY = 50, label = "Crab", children }) {
           $ox={originX}
           $oy={originY}
           onMouseEnter={onEnter}
+          onPointerDown={event => {
+            // Touch has no hover: a tap scuttles it instead.
+            if (event.pointerType !== "mouse") onEnter()
+          }}
         />
       </CrabScuttleMotion>
     </CrabScuttleShell>
@@ -1017,13 +1081,14 @@ export function HomeScrollPrototype() {
   const mapBottleBandRef = useRef(null)
   const mapBottleMountRef = useRef(null)
   const mapBottleImgRef = useRef(null)
-  const mapBottleInForestRef = useRef(false)
   /** Band progress when forest walk begins — ease from here to the crab hold. */
   const mapBottleWalkStartPRef = useRef(null)
   const creamPadTextRef = useRef(null)
   const section5RootRef = useRef(null)
   const section5LeadRef = useRef(null)
   const creamBottleMountRef = useRef(null)
+  const creamBottleImgRef = useRef(null)
+  const creamBottleStageRef = useRef(0)
   const creamBottleParkedRef = useRef(false)
   /** scrollY when the bottle first parks under the apps lead. */
   const creamBottleParkScrollYRef = useRef(null)
@@ -1107,6 +1172,16 @@ export function HomeScrollPrototype() {
 
   bottleTouchPinnedRef.current = bottleTouchPinned
 
+  // Warm the cache with every bottle stage so the cream bottle's stage swaps
+  // never flash an empty frame.
+  useEffect(() => {
+    for (const src of BOTTLE_STAGE_ORDER) {
+      const img = new Image()
+      img.decoding = "async"
+      img.src = src
+    }
+  }, [])
+
   // Condition cards: shine once as they scroll into view; re-arm once
   // they're fully out of view so the next pass shines again.
   useEffect(() => {
@@ -1176,7 +1251,10 @@ export function HomeScrollPrototype() {
     const art = compositionRef.current
     if (!root || !art) return undefined
     const sync = () => {
-      root.style.setProperty(ART_WIDTH_VAR, `${art.getBoundingClientRect().width}px`)
+      root.style.setProperty(
+        ART_WIDTH_VAR,
+        `${art.getBoundingClientRect().width}px`,
+      )
     }
     sync()
     if (typeof ResizeObserver === "undefined") {
@@ -1404,9 +1482,7 @@ export function HomeScrollPrototype() {
             // steal. Only clearing the pin entirely (below) locks it in.
             walkLatchedRef.current = walkProgress >= 0.995
             stealProgress =
-              holdPx > 0
-                ? clamp01((y - (pinAt + walkPx)) / holdPx)
-                : 0
+              holdPx > 0 ? clamp01((y - (pinAt + walkPx)) / holdPx) : 0
             birdStealPRef.current = stealProgress
             painting.style.left = "0px"
             painting.style.width = "100%"
@@ -1476,8 +1552,7 @@ export function HomeScrollPrototype() {
             stealBird.style.opacity = ""
             stealBird.style.willChange = "auto"
           } else {
-            const birdX =
-              ((STEAL_BIRD.originX + STEAL_BIRD.xPct) / 100) * artW
+            const birdX = ((STEAL_BIRD.originX + STEAL_BIRD.xPct) / 100) * artW
             const birdY =
               FOREST_BAND_TOP * artH +
               ((STEAL_BIRD.originY + STEAL_BIRD.yPct) / 100) * plateH
@@ -1519,8 +1594,7 @@ export function HomeScrollPrototype() {
             const entryX = window.innerWidth * STEAL_ENTRY_X_FRAC
             const entryY = window.innerHeight * STEAL_ENTRY_Y_FRAC
             const grabX = paintRect.left + bottleX
-            const grabY =
-              paintRect.top + bottleY - STEAL_GRAB_LIFT_FRAC * artW
+            const grabY = paintRect.top + bottleY - STEAL_GRAB_LIFT_FRAC * artW
 
             const dx =
               entryX + (grabX - entryX) * approach - restX + exitDx * exit
@@ -1738,15 +1812,6 @@ export function HomeScrollPrototype() {
           MAP_BOTTLE_TOP_START +
           (MAP_BOTTLE_TOP_EXIT - MAP_BOTTLE_TOP_START) * p
 
-        const inForest = top >= MAP_BOTTLE_TOP_SWAP
-        if (inForest !== mapBottleInForestRef.current) {
-          mapBottleInForestRef.current = inForest
-          const img = mapBottleImgRef.current
-          if (img) {
-            img.src = inForest ? BOTTLE_STAGES.section3 : BOTTLE_STAGES.section2
-          }
-        }
-
         let scale = 1
         if (top >= MAP_BOTTLE_TOP_HOLD) {
           scale = MAP_BOTTLE_FOREST_SCALE
@@ -1762,7 +1827,8 @@ export function HomeScrollPrototype() {
           if (p >= MAP_BOTTLE_FADE_P) {
             opacity = Math.max(
               0,
-              1 - (p - MAP_BOTTLE_FADE_P) / Math.max(1e-6, 1 - MAP_BOTTLE_FADE_P),
+              1 -
+                (p - MAP_BOTTLE_FADE_P) / Math.max(1e-6, 1 - MAP_BOTTLE_FADE_P),
             )
           } else {
             opacity = 1
@@ -1807,10 +1873,7 @@ export function HomeScrollPrototype() {
         // the WWTP art — no viewport sticky follow) until scroll-back unpark.
         if (creamBottleParkedRef.current) {
           const parkAt = creamBottleParkScrollYRef.current
-          if (
-            parkAt != null &&
-            y < parkAt - vh * CREAM_BOTTLE_UNPARK_VH
-          ) {
+          if (parkAt != null && y < parkAt - vh * CREAM_BOTTLE_UNPARK_VH) {
             creamBottleParkedRef.current = false
             creamBottleParkScrollYRef.current = null
             creamBottleParkDocYRef.current = null
@@ -1852,10 +1915,7 @@ export function HomeScrollPrototype() {
           const holdPx = vh * CREAM_BOTTLE_RAMP_HOLD_VH
           const slidePx = Math.max(1, vh * CREAM_BOTTLE_RAMP_SLIDE_VH)
           const past = y - creamBottleParkScrollYRef.current
-          firstExitP = Math.max(
-            0,
-            Math.min(1, (past - holdPx) / slidePx),
-          )
+          firstExitP = Math.max(0, Math.min(1, (past - holdPx) / slidePx))
           // Smoothstep for slide travel.
           const slideEase = firstExitP * firstExitP * (3 - 2 * firstExitP)
           const tiltP = Math.max(
@@ -1869,9 +1929,7 @@ export function HomeScrollPrototype() {
 
           const slopeRad = (CREAM_BOTTLE_RAMP_SLOPE_DEG * Math.PI) / 180
           const dist =
-            slideEase *
-            Math.hypot(vw, vh) *
-            CREAM_BOTTLE_RAMP_DIST_FRAC
+            slideEase * Math.hypot(vw, vh) * CREAM_BOTTLE_RAMP_DIST_FRAC
           // Along the ramp: left (+ a little down from slope). Y stays art-locked.
           leftPx = parkLeft - Math.cos(slopeRad) * dist
           topPx = anchorTop + Math.sin(slopeRad) * dist
@@ -1915,13 +1973,29 @@ export function HomeScrollPrototype() {
           creamBottle.style.transform = `translate3d(-50%, -50%, 0) rotate(${rotateDeg}deg)`
         }
 
+        // sky → section1 while rolling in, section2 → section3 down ramp 1.
+        let stage
+        if (creamBottleParkedRef.current) {
+          if (firstExitP >= CREAM_BOTTLE_STAGE3_AT) stage = 3
+          else if (firstExitP >= CREAM_BOTTLE_STAGE2_AT) stage = 2
+          else stage = 1
+        } else {
+          stage = rollP >= CREAM_BOTTLE_STAGE1_AT ? 1 : 0
+        }
+        if (stage !== creamBottleStageRef.current) {
+          creamBottleStageRef.current = stage
+          if (creamBottleImgRef.current) {
+            creamBottleImgRef.current.src = BOTTLE_STAGE_ORDER[stage]
+          }
+        }
+
         creamBottle.style.left = `${leftPx}px`
         creamBottle.style.top = `${topPx}px`
         creamBottle.style.opacity = String(opacity)
         creamBottle.style.visibility = opacity > 0.02 ? "visible" : "hidden"
         creamBottle.style.transformOrigin = transformOrigin
 
-        // Ramp-2 bottle: same stage + slope as ramp 1. Arms the frame bottle 1
+        // Ramp-2 bottle (section4): same slope as ramp 1. Arms the frame bottle 1
         // has left the screen; scrolling back rewinds it off the right, then
         // hands off to bottle 1 coming back from the left.
         const ramp2 = ramp2BottleMountRef.current
@@ -1940,8 +2014,7 @@ export function HomeScrollPrototype() {
             RAMP2_SLIDE_VH,
             section5RootRef.current?.offsetWidth || window.innerWidth,
           )
-          const ramp2P =
-            ramp2Start == null ? 0 : (y - ramp2Start) / ramp2Span
+          const ramp2P = ramp2Start == null ? 0 : (y - ramp2Start) / ramp2Span
 
           if (ramp2P <= 0 && firstExitP < RAMP2_ARM_AT) {
             ramp2StartScrollYRef.current = null
@@ -1955,10 +2028,7 @@ export function HomeScrollPrototype() {
             const slideEase = p * p * (3 - 2 * p)
             const tiltP = Math.max(
               0,
-              Math.min(
-                1,
-                p / Math.max(1e-6, CREAM_BOTTLE_RAMP_TILT_FRAC),
-              ),
+              Math.min(1, p / Math.max(1e-6, CREAM_BOTTLE_RAMP_TILT_FRAC)),
             )
             const tiltEase = tiltP * tiltP * (3 - 2 * tiltP)
             const s5 = section5.getBoundingClientRect()
@@ -1973,8 +2043,7 @@ export function HomeScrollPrototype() {
             const r2Rot = CREAM_BOTTLE_RAMP_TILT_DEG * tiltEase
             let r2Op = 1
             if (p <= 0.06) r2Op = p / 0.06
-            else if (p >= 0.88)
-              r2Op = Math.max(0, 1 - (p - 0.88) / 0.12)
+            else if (p >= 0.88) r2Op = Math.max(0, 1 - (p - 0.88) / 0.12)
 
             ramp2.style.left = `${r2Left}px`
             ramp2.style.top = `${r2Top}px`
@@ -2082,7 +2151,9 @@ export function HomeScrollPrototype() {
         const hexOff = hexOverlap.offsetTop
         const bottleOff =
           hexOff + endingSlot.offsetTop + endingSlot.offsetHeight / 2
-        const stickyTop = Math.round(vh / 2 - bottleOff)
+        const stickyTop = Math.round(
+          vh * (0.5 + ENDING_HOLD_DROP_VH) - bottleOff,
+        )
         if (holdSticky.style.top !== `${stickyTop}px`) {
           holdSticky.style.top = `${stickyTop}px`
         }
@@ -2193,8 +2264,7 @@ export function HomeScrollPrototype() {
         }
         const dragX = (1 - Math.exp(-SPLASH_DRAG * t)) / SPLASH_DRAG
         const x = SPLASH_IMPACT.x + drop.vx * dragX
-        const y =
-          SPLASH_IMPACT.y + drop.vy * t + 0.5 * SPLASH_GRAVITY * t * t
+        const y = SPLASH_IMPACT.y + drop.vy * t + 0.5 * SPLASH_GRAVITY * t * t
         const vyNow = drop.vy + SPLASH_GRAVITY * t
         const vxNow = drop.vx * Math.exp(-SPLASH_DRAG * t)
         const underFoam = y >= FOAM_BARRIER_Y_PCT + 0.2 && t > drop.tApex
@@ -2210,8 +2280,7 @@ export function HomeScrollPrototype() {
           t > drop.tApex
             ? Math.max(0, 1 - (t - drop.tApex) / (drop.tApex * 1.05 + 40))
             : 1
-        const angle =
-          (Math.atan2(vyNow * aspect, vxNow) * 180) / Math.PI
+        const angle = (Math.atan2(vyNow * aspect, vxNow) * 180) / Math.PI
         const speed = Math.hypot(vxNow, vyNow * aspect)
         const stretch = 1 + Math.min(0.28, speed * 9)
         const pop = t < 90 ? 0.62 + 0.38 * (t / 90) : 1
@@ -2364,8 +2433,7 @@ export function HomeScrollPrototype() {
           return
         }
         const targetX = bottleCxPct + c.ox
-        const targetY =
-          (c.cushion ? bottleBottomPct : bottleCyPct) + c.oy
+        const targetY = (c.cushion ? bottleBottomPct : bottleCyPct) + c.oy
         const wobX = reduce ? 0 : Math.sin(now / 640 + c.phase) * 0.42
         const wobY = reduce ? 0 : Math.cos(now / 780 + c.phase) * 0.28
         let tx
@@ -2376,8 +2444,7 @@ export function HomeScrollPrototype() {
           const u = Math.min(1, c.riseT / COMPANION_RISE_MS)
           const ease = 1 - (1 - u) * (1 - u)
           tx = c.fromX + Math.sin(u * Math.PI) * c.driftX
-          ty =
-            c.fromY + (FOAM_BARRIER_Y_PCT - 0.35 - c.fromY) * ease
+          ty = c.fromY + (FOAM_BARRIER_Y_PCT - 0.35 - c.fromY) * ease
           c.x = tx
           c.y = ty
           if (u > 0.86) opacity = 0.92 * (1 - (u - 0.86) / 0.14)
@@ -2407,17 +2474,14 @@ export function HomeScrollPrototype() {
             c.x += (targetX - c.x) * k
             c.y += (targetY - c.y) * k
             c.arrived =
-              Math.hypot(targetX - c.x, targetY - c.y) <
-              COMPANION_ARRIVE_PCT
+              Math.hypot(targetX - c.x, targetY - c.y) < COMPANION_ARRIVE_PCT
           }
           c.spawnT = Math.min(480, (c.spawnT || 0) + dt)
           tx = c.x
           ty = c.y
           if (c.arrived && !reduce) {
             tx += wobX
-            ty +=
-              wobY +
-              (c.cushion ? Math.sin(now / 900 + c.phase) * 0.12 : 0)
+            ty += wobY + (c.cushion ? Math.sin(now / 900 + c.phase) * 0.12 : 0)
           }
           opacity = 0.92 * Math.min(1, c.spawnT / 280)
         }
@@ -2512,7 +2576,10 @@ export function HomeScrollPrototype() {
       let gate = shoreBottleGateRef.current
 
       // Clear any gates already in front of the reader (or just reached).
-      while (gate < SHORE_BOTTLE_GATES.length && p >= SHORE_BOTTLE_GATES[gate]) {
+      while (
+        gate < SHORE_BOTTLE_GATES.length &&
+        p >= SHORE_BOTTLE_GATES[gate]
+      ) {
         if (bottleAboveMid()) {
           gate += 1
         } else {
@@ -2526,10 +2593,7 @@ export function HomeScrollPrototype() {
       if (!blocked) {
         p = Math.min(1, p + dt / driftMs)
         // Don't skip through a gate on this frame — land on it and wait.
-        if (
-          gate < SHORE_BOTTLE_GATES.length &&
-          p >= SHORE_BOTTLE_GATES[gate]
-        ) {
+        if (gate < SHORE_BOTTLE_GATES.length && p >= SHORE_BOTTLE_GATES[gate]) {
           p = SHORE_BOTTLE_GATES[gate]
         }
       }
@@ -2843,6 +2907,16 @@ export function HomeScrollPrototype() {
                             alt=""
                           />
                         </CrabFlapper>
+                        {crab.bang && (
+                          <CrabBang
+                            style={{
+                              left: `${crab.originX}%`,
+                              top: `${crab.originY}%`,
+                            }}
+                          >
+                            <CrabBangImg src={CRAB_BANG_SRC} alt="" />
+                          </CrabBang>
+                        )}
                       </CrabScuttle>
                     </CrabMount>
                   ))}
@@ -2854,7 +2928,20 @@ export function HomeScrollPrototype() {
                   >
                     <ShoreBottleSize>
                       <ShoreBottleRock $playing={shoreBottlePlaying}>
-                        <ShoreBottleImg src={SHORE_BOTTLE_IMG} alt="" />
+                        <ShoreBottleImg
+                          src={BOTTLE_STAGES.sky}
+                          alt=""
+                          style={{
+                            clipPath: `inset(0 0 ${100 - SHORE_BOTTLE_WATERLINE_PCT}% 0)`,
+                          }}
+                        />
+                        <ShoreBottleRipples
+                          src={SHORE_BOTTLE_RIPPLES_IMG}
+                          alt=""
+                          style={{
+                            clipPath: `inset(${SHORE_BOTTLE_WATERLINE_PCT}% 0 0 0)`,
+                          }}
+                        />
                       </ShoreBottleRock>
                     </ShoreBottleSize>
                   </ShoreBottleMount>
@@ -2924,7 +3011,7 @@ export function HomeScrollPrototype() {
                   <MapBottleRock>
                     <MapBottleImg
                       ref={mapBottleImgRef}
-                      src={BOTTLE_STAGES.section2}
+                      src={BOTTLE_STAGES.sky}
                       alt=""
                     />
                   </MapBottleRock>
@@ -2993,7 +3080,9 @@ export function HomeScrollPrototype() {
                     )
                   } else if (animal.id === STEAL_BIRD_ID) {
                     body = (
-                      <BirdStealMount ref={birdStealRef}>{plate}</BirdStealMount>
+                      <BirdStealMount ref={birdStealRef}>
+                        {plate}
+                      </BirdStealMount>
                     )
                   }
 
@@ -3190,7 +3279,10 @@ export function HomeScrollPrototype() {
                       $dur={6.6 + i * 1.05}
                       $delay={-i * 1.7}
                     >
-                      <Section5BubbleIdle $delay={i * 0.35} $dur={3.1 + (i % 3) * 0.4}>
+                      <Section5BubbleIdle
+                        $delay={i * 0.35}
+                        $dur={3.1 + (i % 3) * 0.4}
+                      >
                         <PlateCropImg
                           src={`${BUBBLE_CDN}/bubble${bubble.id}.avif`}
                           alt=""
@@ -3224,15 +3316,13 @@ export function HomeScrollPrototype() {
               <Section5AppsBottleLayer aria-hidden="true">
                 <Section5AppsBottleMount ref={creamBottleMountRef}>
                   <Section5AppsBottleImg
-                    src={BOTTLE_STAGES.section4}
+                    ref={creamBottleImgRef}
+                    src={BOTTLE_STAGES.sky}
                     alt=""
                   />
                 </Section5AppsBottleMount>
                 <Section5AppsBottleMount ref={ramp2BottleMountRef}>
-                  <Section5AppsBottleImg
-                    src={BOTTLE_STAGES.section4}
-                    alt=""
-                  />
+                  <Section5AppsBottleImg src={BOTTLE_STAGES.section4} alt="" />
                 </Section5AppsBottleMount>
               </Section5AppsBottleLayer>
               <Section5FoamMount
@@ -3250,7 +3340,10 @@ export function HomeScrollPrototype() {
                   style={plateCropImgStyle(FOAM_CROP)}
                 />
               </Section5FoamMount>
-              <Section5SplashLayer ref={section5SplashLayerRef} aria-hidden="true">
+              <Section5SplashLayer
+                ref={section5SplashLayerRef}
+                aria-hidden="true"
+              >
                 {SPLASH_PLATES.map(splash => (
                   <Section5SplashDrop
                     key={splash.id}
@@ -3276,9 +3369,7 @@ export function HomeScrollPrototype() {
                   ..., Breaking down plastics in trash and recycling bins,...
                 </Section5RecyclingLine>
                 <Section5AndMoreLine>...and more.</Section5AndMoreLine>
-                <Section5Cta>
-                  Discover more about Petabite.
-                </Section5Cta>
+                <Section5Cta>Discover more about Petabite.</Section5Cta>
               </Section5TextStack>
             </Section5Root>
 
@@ -3356,9 +3447,10 @@ const EndingBottleSlot = styled.div`
   z-index: 2;
   /* As big as the view allows while held mid-screen (frame is 1340×1060),
      leaving room for the hint under it. */
-  width: min(92vw, calc(78vh * 1340 / 1060));
-  width: min(92vw, calc(78svh * 1340 / 1060));
-  transform: translateX(-50%);
+  width: min(90vw, calc(74vh * 1340 / 1060));
+  width: min(90vw, calc(74svh * 1340 / 1060));
+  /* Nudged left: the labels reach further right than left (Entrepreneurship). */
+  transform: translateX(-53%);
   pointer-events: none;
 `
 
@@ -3418,6 +3510,38 @@ const Section5Layer = styled.img`
   height: auto;
   max-width: 100%;
   pointer-events: none;
+  user-select: none;
+`
+
+const crabBangBob = keyframes`
+  0%,
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  50% {
+    transform: translate3d(-50%, -5px, 0);
+  }
+`
+
+/** Sits just above the crab's head; moves with it when it scuttles. */
+const CrabBang = styled.span`
+  position: absolute;
+  display: block;
+  width: ${artPx(52)};
+  margin-top: ${artPx(-124)};
+  pointer-events: none;
+  animation: ${crabBangBob} 2.4s ease-in-out infinite;
+  transform: translate3d(-50%, 0, 0);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`
+
+const CrabBangImg = styled.img`
+  display: block;
+  width: 100%;
+  height: auto;
   user-select: none;
 `
 
@@ -3651,7 +3775,8 @@ const Section5BubbleIdle = styled.div`
   position: absolute;
   inset: 0;
   overflow: hidden;
-  animation: ${bubbleIdleFloat} ${({ $dur }) => $dur || 3.2}s ease-in-out infinite;
+  animation: ${bubbleIdleFloat} ${({ $dur }) => $dur || 3.2}s ease-in-out
+    infinite;
   animation-delay: ${({ $delay }) => `${$delay || 0}s`};
 
   @media (prefers-reduced-motion: reduce) {
@@ -3736,8 +3861,8 @@ const Section5AppsBottleImg = styled.img`
 `
 
 const ChuteBottleImg = styled(Section5AppsBottleImg)`
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
-    saturate(1.08) contrast(0.96);
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35)) saturate(1.08)
+    contrast(0.96);
 `
 
 const chuteSinkIdle = keyframes`
@@ -4425,6 +4550,7 @@ const shoreBottleRock = keyframes`
 `
 
 const ShoreBottleRock = styled.div`
+  position: relative;
   width: 100%;
   transform-origin: 50% 70%;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
@@ -4449,6 +4575,11 @@ const ShoreBottleImg = styled.img`
   height: auto;
   user-select: none;
   pointer-events: none;
+`
+
+const ShoreBottleRipples = styled(ShoreBottleImg)`
+  position: absolute;
+  inset: 0;
 `
 
 /** Scroll-scrubbed bottle: above forest animals, under bushes (z:30). */
@@ -4731,8 +4862,7 @@ const ForestRnalabMount = styled.div`
 
   p,
   button {
-    pointer-events: ${({ $interactive }) =>
-      $interactive ? "auto" : "none"};
+    pointer-events: ${({ $interactive }) => ($interactive ? "auto" : "none")};
   }
 
   ${phone} {

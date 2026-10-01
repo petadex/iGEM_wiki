@@ -168,7 +168,7 @@ const WeekTrigger = styled.button`
   background: transparent;
   font-family: var(--font-display);
   font-size: clamp(1.2rem, 2.2vw, 1.75rem);
-  font-weight: 400;
+  font-weight: 700;
   color: #06202b;
   cursor: pointer;
   padding: 0.15rem 0.35rem;
