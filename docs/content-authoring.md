@@ -22,14 +22,19 @@ section: "Project"
 path: "/project/description/"
 navTitle: "Project Description"
 order: 10
+---
+```
+
+`description`, `owners`, `updated`, and `status` are optional. You can add them to the same frontmatter block:
+
+```yaml
 description: "One sentence page summary."
 owners: ["Project Leads", "Dry Lab"]
 updated: "2026-05-16"
 status: "draft"
----
 ```
 
-Use `draft`, `review`, or `published` for `status`. Paths must start and end with `/`, and each path must be unique.
+When provided, `owners` must be a non-empty array, `updated` must use `YYYY-MM-DD`, and `status` must be `draft`, `review`, or `published`. Paths must start and end with `/`, and each path must be unique.
 
 ## Markdown
 
