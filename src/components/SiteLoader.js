@@ -70,13 +70,13 @@ export function SiteLoader({ handoff, always = false }) {
     []
   )
 
-  // Progress = share of the page's images that have loaded.
+  // Deferred images may not load until scrolling; only gate on eager images.
   useEffect(() => {
     if (state !== "loading") return undefined
-    const imgs = [...document.images]
-    const total = Math.max(1, imgs.length)
+    const imgs = [...document.images].filter(img => img.loading !== "lazy")
+    const total = imgs.length
     let loaded = imgs.filter(img => img.complete).length
-    setProgress(loaded / total)
+    setProgress(total === 0 ? 1 : loaded / total)
     const mark = () => {
       loaded += 1
       setProgress(Math.min(1, loaded / total))
