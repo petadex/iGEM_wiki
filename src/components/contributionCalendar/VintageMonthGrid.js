@@ -178,7 +178,7 @@ const DayNum = styled.span`
   display: block;
   font-family: var(--font-display);
   font-size: clamp(1.15rem, 2vw, 1.45rem);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   color: ${({ $sunday, $inBand, $outOfMonth }) => {
     if ($outOfMonth) return $inBand ? "rgba(6,32,43,0.55)" : "rgba(6,32,43,0.38)"

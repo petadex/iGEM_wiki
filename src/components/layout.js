@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
+import { SiteLoader } from "./SiteLoader.js"
 import { SponsorCarousel } from "./SponsorCarousel.js"
 import { WikiTopBar } from "./WikiTopBar.js"
 
@@ -12,6 +13,8 @@ const WikiLayout = ({
   hideTopBar = false,
   fullBleed = false,
   wideSideTabs = false,
+  /** Pages that render their own SiteLoader (the homepage hands off to its hero). */
+  hideLoader = false,
 }) => {
   const [showScrollTop, setShowScrollTop] = useState(false)
 
@@ -32,6 +35,7 @@ const WikiLayout = ({
   return (
     <>
       <GlobalStyle />
+      {!hideLoader && <SiteLoader />}
       <SiteWrapper>
 
         {!hideSiteChrome && !hideTopBar && <WikiTopBar sticky />}
@@ -265,6 +269,7 @@ const FooterSponsorSlot = styled.div`
 const FooterBrand = styled.p`
   font-family: var(--font-display);
   font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 700;
   color: var(--color-text);
   letter-spacing: 0.02em;
 `

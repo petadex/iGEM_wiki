@@ -785,7 +785,7 @@ const Chevron = styled.span`
 const GroupTitle = styled.span`
   font-family: ${({ $display }) => ($display ? "var(--font-display)" : "var(--font-body)")};
   font-size: ${({ $display }) => ($display ? "1rem" : "0.82rem")};
-  font-weight: ${({ $display }) => ($display ? 400 : 700)};
+  font-weight: 700;
   color: var(--color-text);
   line-height: 1.3;
   overflow-wrap: anywhere;
@@ -803,7 +803,7 @@ const SingleNode = styled.div`
       : "#fff"};
   font-family: ${({ $emphasized }) => ($emphasized ? "var(--font-display)" : "var(--font-body)")};
   font-size: ${({ $emphasized }) => ($emphasized ? "1rem" : "0.82rem")};
-  font-weight: ${({ $emphasized }) => ($emphasized ? 400 : 600)};
+  font-weight: ${({ $emphasized }) => ($emphasized ? 700 : 600)};
   overflow-wrap: anywhere;
   opacity: ${({ $dimmed }) => ($dimmed ? 0.28 : 1)};
   transition: opacity 0.2s ease;

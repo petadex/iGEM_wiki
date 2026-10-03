@@ -12,8 +12,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-accent:     #c92f3b;
 
     /* Typography */
-    --font-display: 'DM Serif Display', Georgia, serif;
     --font-body:    'DM Sans', system-ui, sans-serif;
+    /* Same as the body: the whole site uses DM Sans, like the homepage. */
+    --font-display: var(--font-body);
     --font-mono:    'DM Mono', monospace;
 
     /* Spacing scale */
@@ -58,7 +59,7 @@ export const GlobalStyle = createGlobalStyle`
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     line-height: 1.15;
-    font-weight: 400;
+    font-weight: 700;
   }
 
   a {
@@ -103,6 +104,7 @@ export const GlobalStyle = createGlobalStyle`
     margin-bottom: var(--space-md);
     font-family: var(--font-display);
     font-size: 2rem;
+    font-weight: 700;
     line-height: 1.15;
   }
 

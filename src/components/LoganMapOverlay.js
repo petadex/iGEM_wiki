@@ -484,6 +484,7 @@ const MapPin = styled.button`
   cursor: pointer;
   pointer-events: auto;
   overflow: hidden;
+  contain: layout style;
   transform: translate3d(-50%, -100%, 0)
     scale(${({ $active }) => ($active ? 1.12 : 1)});
   transform-origin: 50% 100%;
@@ -533,6 +534,7 @@ const PinCardTitle = styled.p`
   margin: 0;
   font-family: var(--font-display);
   font-size: 0.98rem;
+  font-weight: 700;
   line-height: 1.2;
 `
 
