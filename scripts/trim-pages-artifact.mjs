@@ -5,6 +5,22 @@ import sharp from "sharp"
 const root = process.cwd()
 const publicRoot = path.join(root, "public")
 
+// Legacy static assets still kept in the repository for authoring. Only omit
+// these known candidates when no generated HTML, CSS, JS or JSON references them.
+const legacyAssets = [
+  "hardware-notebook/requirements/image1.png",
+  "hardware-notebook/requirements/image2.png",
+  "hardware-notebook/requirements/image3.png",
+  "wiki-mockup/wiki-front-front.png",
+  "wiki-mockup/wiki-front-back.jpg",
+  "wiki-mockup/wiki-front-logo.png",
+  "wiki-mockup/wiki-front-bottle.png",
+  "wiki-mockup/wiki-front-pop-up.png",
+  "payload-media/campus.jpeg",
+  "images/petadex-petase.png",
+  "homepage/world-map-reference.png",
+]
+
 const removeGlobs = [
   [publicRoot, (file) => file.endsWith(".map")],
   [path.join(publicRoot, "~partytown", "debug"), () => true],
@@ -52,6 +68,19 @@ async function walk(dir, visitor) {
   )
 }
 
+async function artifactSize() {
+  let bytes = 0
+  let files = 0
+  await walk(publicRoot, async (filePath) => {
+    const stat = await fs.stat(filePath)
+    bytes += stat.size
+    files += 1
+  })
+  return { bytes, files }
+}
+
+const beforeArtifact = await artifactSize()
+
 for (const [dir, shouldRemove] of removeGlobs) {
   await walk(dir, async (filePath) => {
     if (shouldRemove(filePath)) {
@@ -61,6 +90,22 @@ for (const [dir, shouldRemove] of removeGlobs) {
 }
 
 await fs.rm(path.join(publicRoot, "webpack.stats.json"), { force: true })
+
+const referencedAssets = new Set()
+await walk(publicRoot, async (filePath) => {
+  if (!/\.(html|css|js|json|txt|xml|svg)$/.test(filePath)) return
+  const content = await fs.readFile(filePath, "utf8")
+  for (const asset of legacyAssets) {
+    // Checking the basename also catches prefixed, absolute and escaped URLs.
+    if (content.includes(path.basename(asset))) referencedAssets.add(asset)
+  }
+})
+for (const asset of legacyAssets) {
+  const filePath = path.join(publicRoot, asset)
+  if (referencedAssets.has(asset) || !(await exists(filePath))) continue
+  await fs.rm(filePath)
+  console.log(`Omitted unused deployment asset: ${asset}`)
+}
 
 for (const job of imageJobs) {
   const filePath = path.join(publicRoot, job.file)
@@ -82,3 +127,10 @@ for (const job of imageJobs) {
     await fs.rm(tempPath, { force: true })
   }
 }
+
+const afterArtifact = await artifactSize()
+const mib = (bytes) => (bytes / 1024 ** 2).toFixed(2)
+console.log(
+  `Pages artifact: ${beforeArtifact.files} files / ${mib(beforeArtifact.bytes)} MiB -> ` +
+  `${afterArtifact.files} files / ${mib(afterArtifact.bytes)} MiB (uncompressed)`
+)
