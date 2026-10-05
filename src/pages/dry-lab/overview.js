@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react"
 import styled from "styled-components"
 import WikiLayout from "../../components/layout.js"
-import DryLabScene from "../../components/DryLabScene.js"
+import SubpageScene from "../../components/SubpageScene.js"
+import { DRY_LAB_SCENE } from "../../components/subpageScenes.js"
 import AtlasMap from "../../components/AtlasMap.js"
 import EnzymeBattle from "../../components/EnzymeBattle.js"
 import Petadex from "../../components/Petadex.js"
@@ -13,7 +14,7 @@ const Page = () => {
 
   return (
     <WikiLayout fullBleed>
-      <DryLabScene title="Overview" sectionLabel="Dry Lab">
+      <SubpageScene scene={DRY_LAB_SCENE} title="Overview">
         <Blurb>
           The Dry Lab performs in-silico discovery, mining large-scale
           metagenomic data to identify and prioritize the most promising PETase
@@ -49,7 +50,7 @@ const Page = () => {
             </PetadexBottlePath>
           </GameWrap>
         </Section>
-      </DryLabScene>
+      </SubpageScene>
       <EnzymeBattle isOpen={battleOpen} onClose={() => setBattleOpen(false)} />
     </WikiLayout>
   )
