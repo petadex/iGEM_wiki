@@ -10,7 +10,11 @@ import ScrollProgress from "../components/scrollProgress.js"
 import TableOfContents from "../components/tableOfContents.js"
 import { TOCWrapper } from "../components/pageStyles.js"
 import SubpageScene from "../components/SubpageScene.js"
-import { DRY_LAB_SCENE, VENTURE_SCENE } from "../components/subpageScenes.js"
+import {
+  DRY_LAB_SCENE,
+  HP_SCENE,
+  VENTURE_SCENE,
+} from "../components/subpageScenes.js"
 
 const formatDate = (date) => {
   if (!date) return null
@@ -28,6 +32,8 @@ const sceneFor = frontmatter => {
   if (frontmatter.section === "Dry Lab") return DRY_LAB_SCENE
   if (frontmatter.path === "/beyond-the-bench/entrepreneurship/")
     return VENTURE_SCENE
+  if (frontmatter.path === "/beyond-the-bench/human-practices/")
+    return HP_SCENE
   return null
 }
 
@@ -292,7 +298,7 @@ const Article = styled.article`
   p,
   li,
   blockquote {
-    color: var(--color-muted);
+    color: var(--color-body);
   }
 
   p,
@@ -380,7 +386,7 @@ const Article = styled.article`
   }
 
   td {
-    color: var(--color-muted);
+    color: var(--color-body);
   }
 
   img {

@@ -333,6 +333,128 @@ function CoinBurstLayer({ plate, layer, sprites, children }) {
   )
 }
 
+/** Marks which ends of a scrollable list have more beyond them (for the fade). */
+function updateNavFade(nav) {
+  if (!nav) return
+  const above = nav.scrollTop > 2
+  const below = nav.scrollTop + nav.clientHeight < nav.scrollHeight - 2
+  const fade = above && below ? "both" : above ? "above" : below ? "below" : ""
+  if (nav.dataset.fade !== fade) nav.dataset.fade = fade
+}
+
+/** Full image offset so `box` of a `[W, H]` image fills its window. */
+function cropStyle([x0, y0, x1, y1], [W, H]) {
+  const w = x1 - x0
+  const h = y1 - y0
+  return {
+    width: `${(W / w) * 100}%`,
+    height: `${(H / h) * 100}%`,
+    left: `${(-x0 / w) * 100}%`,
+    top: `${(-y0 / h) * 100}%`,
+  }
+}
+
+/** Loop-the-loop a bird flies on every hover (tap on touch). */
+const BIRD_LOOP_MS = 1400
+/** Loop radius as a share of the bird's height. */
+const BIRD_LOOP_RADIUS = 0.8
+
+/**
+ * Keyframes for one vertical loop: forward, up and over, back down to the
+ * start, nose following the circle. `facing` -1 = left, 1 = right.
+ */
+function loopKeyframes(radius, facing) {
+  const steps = 24
+  return Array.from({ length: steps + 1 }, (_, i) => {
+    const t = (i / steps) * 2 * Math.PI
+    const x = facing * radius * Math.sin(t)
+    const y = -radius * (1 - Math.cos(t))
+    const turn = -facing * (i / steps) * 360
+    return {
+      transform: `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${turn.toFixed(1)}deg)`,
+    }
+  })
+}
+
+/**
+ * A bird reused from the homepage art: flaps between its two frames, bobs,
+ * and either sways in place or (with `cross`) keeps flying across the page,
+ * looping; it flies a loop-the-loop when hovered. `layer.flyer` points at the source
+ * image (any plate) and the window in it.
+ */
+function BirdLayer({ plate, layer }) {
+  const f = layer.flyer
+  const startleRef = useRef(null)
+  const startle = () => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return
+    const el = startleRef.current
+    if (!el) return
+    // Which way it's pointing on screen: the sprite's own facing, mirrored
+    // if the bird is flipped.
+    const facing = (f.faces ?? -1) * (f.flip ? -1 : 1)
+    el.animate(loopKeyframes(el.offsetHeight * BIRD_LOOP_RADIUS, facing), {
+      duration: BIRD_LOOP_MS,
+      easing: "cubic-bezier(0.4, 0, 0.3, 1)",
+    })
+  }
+  const crop = cropStyle(f.from, f.plate)
+  // Crossing: from just past one edge of the art to just past the other, in
+  // the direction the bird faces (dir 1 = rightward).
+  const cross = f.cross
+  const [x0, , x1] = layer.box
+  const crossVars = cross
+    ? {
+        "--cross-from": pp(cross.dir > 0 ? -x1 : plate.W - x0),
+        "--cross-to": pp(cross.dir > 0 ? plate.W - x0 : -x1),
+        "--cross-ms": `${cross.seconds * 1000}ms`,
+        // Start partway along, so they don't all enter at once.
+        "--cross-delay": `${-(cross.at ?? 0) * cross.seconds * 1000}ms`,
+      }
+    : {}
+  return (
+    <BirdWindow
+      data-layer={layer.name}
+      style={{
+        ...plate.windowStyle(layer.box),
+        "--flap": `${f.flapMs}ms`,
+        "--sway": pp(f.sway ?? 18),
+        "--sway-ms": `${f.swayMs ?? 7000}ms`,
+        "--bob-ms": `${f.bobMs ?? 3200}ms`,
+        "--phase": `${-(f.phaseMs ?? 0)}ms`,
+        ...crossVars,
+      }}
+      onMouseEnter={startle}
+      onPointerDown={event => {
+        if (event.pointerType !== "mouse") startle()
+      }}
+    >
+      <BirdSway $cross={!!cross}>
+        <BirdBob>
+          <BirdStartle ref={startleRef}>
+            <BirdCrop style={{ transform: f.flip ? "scaleX(-1)" : undefined }}>
+              <BirdFrame
+                src={f.a}
+                alt=""
+                draggable={false}
+                decoding="async"
+                style={crop}
+              />
+              <BirdFrame
+                src={f.b}
+                alt=""
+                draggable={false}
+                decoding="async"
+                style={crop}
+                $second
+              />
+            </BirdCrop>
+          </BirdStartle>
+        </BirdBob>
+      </BirdSway>
+    </BirdWindow>
+  )
+}
+
 function useHeaderHeight() {
   const [h, setH] = useState(0)
   useLayoutEffect(() => {
@@ -359,6 +481,11 @@ function sceneVars(scene, plate) {
     "--scene-bg": scene.background,
     "--header-color": scene.headerColor,
     "--link-color": scene.side.linkColor,
+    "--link-active": scene.side.activeLinkColor || scene.side.linkColor,
+    "--accent": scene.accent,
+    "--link-size": ax(scene.side.linkSize || 12.5),
+    "--link-pad-y": ax(scene.side.linkPadY || 10),
+    "--side-max": scene.side.maxHeight || "100vh",
     "--strip-color": scene.side.stripColor,
     "--crop-top": pp(crop),
     "--sky-h": pp(scene.skyBottom - crop),
@@ -375,6 +502,11 @@ function sceneVars(scene, plate) {
     "--pad-bottom": pp(H - scene.textEndY),
     "--side-h": pp(side[3] - side[1]),
     "--nav-top": pp(scene.side.navTop),
+    // Room left of the list for an icon hanging off the highlight (the coin),
+    // so the scrolling list doesn't clip it.
+    "--nav-bleed": scene.side.indicatorIcon
+      ? pp(scene.side.indicator.box[0] - scene.side.indicatorIcon.box[0])
+      : "0px",
     "--text-offset": pp(text[1] - side[1]),
     "--text-min-h": pp(scene.text.minH),
   }
@@ -385,21 +517,29 @@ export function SubpageScene({ scene, title, description, children }) {
   const { side, text } = scene
   const sceneRef = useRef(null)
   const artRef = useRef(null)
+  const frameRef = useRef(null)
   const textBoxRef = useRef(null)
   const bodyRef = useRef(null)
   const navRef = useRef(null)
   const headerH = useHeaderHeight()
   const [sections, setSections] = useState([])
   const [activeId, setActiveId] = useState(null)
+  const [activeSubId, setActiveSubId] = useState(null)
   const [indicator, setIndicator] = useState(null)
 
-  // Subsections = the h2s in the text box.
+  // Sections = the h2s in the text box, each with its h3 subsections.
   useEffect(() => {
-    const heads = Array.from(bodyRef.current?.querySelectorAll("h2") || [])
+    const heads = Array.from(
+      bodyRef.current?.querySelectorAll("h2, h3") || [],
+    ).filter(el => !el.closest("details"))
+    const list = []
     heads.forEach((el, i) => {
       if (!el.id) el.id = `section-${i + 1}`
+      const item = { id: el.id, label: el.textContent.trim() }
+      if (el.tagName === "H2") list.push({ ...item, subs: [] })
+      else list[list.length - 1]?.subs.push(item)
     })
-    setSections(heads.map(el => ({ id: el.id, label: el.textContent.trim() })))
+    setSections(list)
   }, [children])
 
   // Scroll-linked background + active subsection.
@@ -417,11 +557,21 @@ export function SubpageScene({ scene, title, description, children }) {
       const boxBottom = textBoxRef.current
         ? textBoxRef.current.getBoundingClientRect().bottom - rect.top
         : sceneEl.offsetHeight
-      // Art offset (from the scene top) once the text ends: its bottom on the
-      // scene's bottom, which puts textEndY on the box's bottom edge.
-      const endOffset = sceneEl.offsetHeight - art.offsetHeight - art.offsetTop
+      // The art sits in a sticky frame pinned under the header, so scrolling
+      // doesn't move it and the script only adds the slow parallax drift (no
+      // per-frame tug-of-war with the page). The frame is one screen plus the
+      // decorative ending tall, so it unpins exactly when the box's bottom
+      // edge reaches the screen bottom; the ending then scrolls natively.
+      const tail = sceneEl.offsetHeight - boxBottom
+      const frameH = Math.round(view + tail)
+      const frame = frameRef.current
+      if (frame && frame.offsetHeight !== frameH)
+        frame.style.height = `${frameH}px`
+      // Art offset once the text ends: its bottom on the frame's bottom, which
+      // puts textEndY on the box's bottom edge.
+      const endOffset = frameH - art.offsetHeight - art.offsetTop
       // Scrolled into the scene, from the page top to the box's bottom edge
-      // meeting the viewport bottom; past that the art rides with the page.
+      // meeting the viewport bottom.
       const start = -headerH
       const lockAt = boxBottom - vh
       const scrolled = -rect.top
@@ -431,16 +581,30 @@ export function SubpageScene({ scene, title, description, children }) {
           : 1
       art.style.transform = `translate3d(0, ${(progress * endOffset).toFixed(2)}px, 0)`
 
-      const heads = bodyRef.current?.querySelectorAll("h2") || []
+      const heads = Array.from(
+        bodyRef.current?.querySelectorAll("h2, h3") || [],
+      ).filter(el => !el.closest("details"))
       const line = headerH + view * 0.35
-      let current = heads[0]?.id ?? null
+      let current = heads.find(h => h.tagName === "H2")?.id ?? null
+      let currentSub = null
       for (const h of heads) {
-        if (h.getBoundingClientRect().top <= line) current = h.id
+        if (h.getBoundingClientRect().top > line) break
+        if (h.tagName === "H2") {
+          current = h.id
+          currentSub = null
+        } else currentSub = h.id
       }
       // Bottom of the page: the last section is the one being read.
-      if (rect.top + boxBottom <= vh + 2 && heads.length)
-        current = heads[heads.length - 1].id
+      const atEnd = rect.top + boxBottom <= vh + 2
+      if (atEnd) {
+        const lastTop = heads.filter(h => h.tagName === "H2").pop()
+        if (lastTop && lastTop.id !== current) {
+          current = lastTop.id
+          currentSub = null
+        }
+      }
       setActiveId(prev => (prev === current ? prev : current))
+      setActiveSubId(prev => (prev === currentSub ? prev : currentSub))
     }
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update)
@@ -479,14 +643,24 @@ export function SubpageScene({ scene, title, description, children }) {
         height: item.offsetHeight,
       })
     place()
-    // Keep the active item in view in the narrow (horizontal) list.
+    // Keep the active item in view when the list scrolls: sideways in the
+    // narrow strip, up/down when there are more sections than fit.
     if (nav.scrollWidth > nav.clientWidth) {
       nav.scrollTo({
         left: item.offsetLeft - nav.clientWidth / 2 + item.offsetWidth / 2,
         behavior: "smooth",
       })
+    } else if (nav.scrollHeight > nav.clientHeight) {
+      nav.scrollTo({
+        top: item.offsetTop - nav.clientHeight / 2 + item.offsetHeight / 2,
+        behavior: "smooth",
+      })
     }
-    const ro = new ResizeObserver(place)
+    updateNavFade(nav)
+    const ro = new ResizeObserver(() => {
+      place()
+      updateNavFade(nav)
+    })
     ro.observe(nav)
     return () => ro.disconnect()
   }, [activeId, sections])
@@ -503,7 +677,7 @@ export function SubpageScene({ scene, title, description, children }) {
     window.history.replaceState(null, "", `#${id}`)
   }
 
-  const [ix0, , ix1] = side.indicator.box
+  const [ix0, iy0, ix1, iy1] = side.indicator.box
   const icon = side.indicatorIcon
   const sideW = side.box[2] - side.box[0]
   // Narrow strip: plain colour, or the side box's stretchy middle on top of it.
@@ -524,64 +698,71 @@ export function SubpageScene({ scene, title, description, children }) {
       style={{ "--dl-header": `${headerH}px`, ...sceneVars(scene, plate) }}
     >
       <BgTrack aria-hidden>
-        <Art ref={artRef} style={{ aspectRatio: `${plate.W} / ${plate.H}` }}>
-          {scene.layers
-            .filter(l => !l.hidden)
-            .map(layer => {
-              const img = (
-                <CropImg
-                  src={plate.asset(layer.src || layer.name)}
-                  alt=""
-                  decoding="async"
-                  draggable={false}
-                  style={plate.imgStyle(layer.from || layer.box)}
-                />
-              )
-              if (layer.coinBurst) {
-                return (
-                  <CoinBurstLayer
-                    key={layer.name}
-                    plate={plate}
-                    layer={layer}
-                    sprites={scene.coinSprites}
-                  >
-                    {img}
-                  </CoinBurstLayer>
+        <BgFrame ref={frameRef}>
+          <Art ref={artRef} style={{ aspectRatio: `${plate.W} / ${plate.H}` }}>
+            {scene.layers
+              .filter(l => !l.hidden)
+              .map(layer => {
+                const img = (
+                  <CropImg
+                    src={plate.asset(layer.src || layer.name)}
+                    alt=""
+                    decoding="async"
+                    draggable={false}
+                    style={plate.imgStyle(layer.from || layer.box)}
+                  />
                 )
-              }
-              if (layer.patrol) {
-                return (
-                  <PatrolWindow
+                if (layer.flyer) {
+                  return (
+                    <BirdLayer key={layer.name} plate={plate} layer={layer} />
+                  )
+                }
+                if (layer.coinBurst) {
+                  return (
+                    <CoinBurstLayer
+                      key={layer.name}
+                      plate={plate}
+                      layer={layer}
+                      sprites={scene.coinSprites}
+                    >
+                      {img}
+                    </CoinBurstLayer>
+                  )
+                }
+                if (layer.patrol) {
+                  return (
+                    <PatrolWindow
+                      key={layer.name}
+                      data-layer={layer.name}
+                      $patrol={patrolFor(layer)}
+                      style={plate.windowStyle(layer.box)}
+                    >
+                      <CropWindow style={{ inset: 0 }}>{img}</CropWindow>
+                    </PatrolWindow>
+                  )
+                }
+                return layer.crab ? (
+                  <CrabScuttle
                     key={layer.name}
                     data-layer={layer.name}
-                    $patrol={patrolFor(layer)}
+                    plateW={plate.W}
+                    box={layer.box}
                     style={plate.windowStyle(layer.box)}
                   >
                     <CropWindow style={{ inset: 0 }}>{img}</CropWindow>
-                  </PatrolWindow>
+                  </CrabScuttle>
+                ) : (
+                  <CropWindow
+                    key={layer.name}
+                    data-layer={layer.name}
+                    style={plate.windowStyle(layer.box)}
+                  >
+                    {img}
+                  </CropWindow>
                 )
-              }
-              return layer.crab ? (
-                <CrabScuttle
-                  key={layer.name}
-                  data-layer={layer.name}
-                  plateW={plate.W}
-                  box={layer.box}
-                  style={plate.windowStyle(layer.box)}
-                >
-                  <CropWindow style={{ inset: 0 }}>{img}</CropWindow>
-                </CrabScuttle>
-              ) : (
-                <CropWindow
-                  key={layer.name}
-                  data-layer={layer.name}
-                  style={plate.windowStyle(layer.box)}
-                >
-                  {img}
-                </CropWindow>
-              )
-            })}
-        </Art>
+              })}
+          </Art>
+        </BgFrame>
       </BgTrack>
 
       {scene.header && (
@@ -599,7 +780,11 @@ export function SubpageScene({ scene, title, description, children }) {
               box={side.box}
               caps={side.caps}
             />
-            <SideNav ref={navRef} aria-label="Sections on this page">
+            <SideNav
+              ref={navRef}
+              aria-label="Sections on this page"
+              onScroll={e => updateNavFade(e.currentTarget)}
+            >
               {indicator && (
                 <Indicator
                   aria-hidden
@@ -617,21 +802,46 @@ export function SubpageScene({ scene, title, description, children }) {
                         left: `${((icon.box[0] - ix0) / (ix1 - ix0)) * 100}%`,
                         width: `${((icon.box[2] - icon.box[0]) / (ix1 - ix0)) * 100}%`,
                         aspectRatio: `${icon.box[2] - icon.box[0]} / ${icon.box[3] - icon.box[1]}`,
+                        // Centre offset from the highlight's, as drawn.
+                        marginTop: pp(
+                          (icon.box[1] + icon.box[3]) / 2 - (iy0 + iy1) / 2,
+                        ),
                       }}
                     />
                   )}
                 </Indicator>
               )}
               {sections.map(s => (
-                <SideLink
-                  key={s.id}
-                  href={`#${s.id}`}
-                  data-id={s.id}
-                  aria-current={s.id === activeId ? "location" : undefined}
-                  onClick={e => goTo(e, s.id)}
-                >
-                  {s.label}
-                </SideLink>
+                <React.Fragment key={s.id}>
+                  <SideLink
+                    href={`#${s.id}`}
+                    data-id={s.id}
+                    aria-current={
+                      s.id === activeId && !activeSubId ? "location" : undefined
+                    }
+                    $on={s.id === activeId}
+                    onClick={e => goTo(e, s.id)}
+                  >
+                    {s.label}
+                  </SideLink>
+                  {/* Subsections open under the section being read. */}
+                  {s.id === activeId && s.subs.length > 0 && (
+                    <SubList>
+                      {s.subs.map(sub => (
+                        <SubLink
+                          key={sub.id}
+                          href={`#${sub.id}`}
+                          aria-current={
+                            sub.id === activeSubId ? "location" : undefined
+                          }
+                          onClick={e => goTo(e, sub.id)}
+                        >
+                          {sub.label}
+                        </SubLink>
+                      ))}
+                    </SubList>
+                  )}
+                </React.Fragment>
               ))}
             </SideNav>
             {side.crab && (
@@ -685,8 +895,15 @@ const Scene = styled.div`
 const BgTrack = styled.div`
   position: absolute;
   inset: 0;
-  overflow: hidden;
   pointer-events: none;
+`
+
+/** Pinned under the header while reading (height set by the scroll handler). */
+const BgFrame = styled.div`
+  position: sticky;
+  top: var(--dl-header, 0px);
+  height: calc(100vh - var(--dl-header, 0px));
+  overflow: hidden;
 `
 
 /** Starts `cropTop` plate px up, so that strip of the art never shows. */
@@ -712,6 +929,102 @@ const PatrolWindow = styled.div`
 const CropWindow = styled.div`
   position: absolute;
   overflow: hidden;
+`
+
+const BirdWindow = styled.div`
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+`
+
+const birdSway = keyframes`
+  from {
+    transform: translate3d(calc(-1 * var(--sway)), 0, 0);
+  }
+  to {
+    transform: translate3d(var(--sway), 0, 0);
+  }
+`
+
+const birdBob = keyframes`
+  from {
+    transform: translate3d(0, -4%, 0);
+  }
+  to {
+    transform: translate3d(0, 4%, 0);
+  }
+`
+
+/** Frame A shows for the first half of each flap, frame B for the second. */
+const flapA = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+`
+const flapB = keyframes`
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+`
+
+const birdCross = keyframes`
+  from {
+    transform: translate3d(var(--cross-from), 0, 0);
+  }
+  to {
+    transform: translate3d(var(--cross-to), 0, 0);
+  }
+`
+
+const BirdSway = styled.div`
+  position: absolute;
+  inset: 0;
+  animation: ${birdSway} var(--sway-ms) ease-in-out var(--phase) infinite
+    alternate;
+
+  ${({ $cross }) =>
+    $cross &&
+    css`
+      animation: ${birdCross} var(--cross-ms) linear var(--cross-delay) infinite;
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`
+
+const BirdBob = styled.div`
+  position: absolute;
+  inset: 0;
+  animation: ${birdBob} var(--bob-ms) ease-in-out var(--phase) infinite
+    alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`
+
+const BirdStartle = styled.div`
+  position: absolute;
+  inset: 0;
+`
+
+const BirdCrop = styled.div`
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+`
+
+const BirdFrame = styled.img`
+  position: absolute;
+  display: block;
+  max-width: none;
+  user-select: none;
+  animation: ${({ $second }) => ($second ? flapB : flapA)} var(--flap)
+    steps(1, end) var(--phase) infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: ${({ $second }) => ($second ? 0 : 1)};
+  }
 `
 
 const CoinStage = styled.div`
@@ -914,12 +1227,19 @@ const SideBox = styled.div`
   top: calc(var(--dl-header, 0px) + 1.25rem);
   height: min(var(--side-h), calc(100vh - var(--dl-header, 0px) - 2.5rem));
   min-height: 14rem;
+  display: flex;
+  flex-direction: column;
 
-  /* Only as tall as its list, so the art beside the text stays in view. */
+  /* Only as tall as its list (up to the window), so the art beside the
+     text stays in view. */
   ${({ $fit }) =>
     $fit &&
     css`
       height: auto;
+      max-height: min(
+        var(--side-max),
+        calc(100vh - var(--dl-header, 0px) - 2.5rem)
+      );
       min-height: 0;
       padding-bottom: var(--nav-top);
     `}
@@ -964,17 +1284,48 @@ const SideBoxArt = styled(StretchBox)`
   }
 `
 
+/** Scrolls when the sections don't all fit; bleeds left (unseen) for the coin. */
 const SideNav = styled.nav`
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: var(--nav-top) ${ax(6)} 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  margin-left: calc(-1 * var(--nav-bleed));
+  padding: var(--nav-top) ${ax(6)} 0 calc(var(--nav-bleed) + ${ax(6)});
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fade the edge(s) with more list beyond them, so it reads as scrollable. */
+  &[data-fade="below"] {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 2rem), transparent);
+  }
+  &[data-fade="above"] {
+    mask-image: linear-gradient(to bottom, transparent, #000 2rem);
+  }
+  &[data-fade="both"] {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 2rem,
+      #000 calc(100% - 2rem),
+      transparent
+    );
+  }
 
   ${NARROW} {
     flex-direction: row;
     gap: 0.25rem;
+    margin-left: 0;
+    mask-image: none !important;
     padding: 0.35rem;
     overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -1011,15 +1362,17 @@ const IndicatorIcon = styled.span`
 const SideLink = styled.a`
   position: relative;
   display: block;
-  padding: ${ax(10)} ${ax(14)};
+  padding: var(--link-pad-y) ${ax(10)} var(--link-pad-y) ${ax(12)};
   color: var(--link-color);
   font-family: var(--font-body);
-  font-size: max(0.78rem, ${ax(12.5)});
+  font-size: max(0.75rem, var(--link-size));
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   line-height: 1.2;
   text-decoration: none;
-  overflow-wrap: anywhere;
+  /* Wrap between words; hyphenate a word that can't fit on its own line. */
+  overflow-wrap: break-word;
+  hyphens: auto;
   opacity: 0.85;
   transition: opacity 0.2s ease;
 
@@ -1027,6 +1380,13 @@ const SideLink = styled.a`
   &[aria-current] {
     opacity: 1;
   }
+
+  ${({ $on }) =>
+    $on &&
+    css`
+      opacity: 1;
+      color: var(--link-active);
+    `}
 
   &:focus-visible {
     outline: 2px solid var(--link-color);
@@ -1040,6 +1400,81 @@ const SideLink = styled.a`
     font-size: 0.8rem;
     white-space: nowrap;
     overflow-wrap: normal;
+  }
+`
+
+const subIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+`
+
+/** The open section's subsections, indented under it. */
+const SubList = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${ax(2)} 0 ${ax(8)} ${ax(22)};
+  animation: ${subIn} 0.25s ease both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+
+  ${NARROW} {
+    display: none;
+  }
+`
+
+const SubLink = styled.a`
+  position: relative;
+  display: block;
+  padding: ${ax(5)} ${ax(8)} ${ax(5)} ${ax(10)};
+  color: var(--link-color);
+  font-family: var(--font-body);
+  font-size: max(0.72rem, ${ax(11)});
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+  overflow-wrap: break-word;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+
+  /* Dot on the subsection being read. */
+  &::before {
+    content: "";
+    position: absolute;
+    left: ${ax(-3)};
+    top: 50%;
+    width: ${ax(5)};
+    height: ${ax(5)};
+    border-radius: 50%;
+    background: currentColor;
+    transform: translateY(-50%) scale(0);
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &[aria-current] {
+    opacity: 1;
+    font-weight: 700;
+
+    &::before {
+      transform: translateY(-50%) scale(1);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: -2px;
+    border-radius: 4px;
   }
 `
 
@@ -1066,6 +1501,10 @@ const TextBox = styled.div`
   }
 `
 
+/**
+ * Heading levels read as layers: h2 opens a section (rule above, largest),
+ * h3 is a subsection (accent bar), h4 a small label inside it.
+ */
 const TextInner = styled.div`
   position: relative;
   padding: max(1.5rem, ${ax(34)}) max(1.25rem, ${ax(36)}) max(2rem, ${ax(48)});
@@ -1073,6 +1512,27 @@ const TextInner = styled.div`
   h2,
   h3 {
     scroll-margin-top: calc(var(--dl-header, 0px) + 1.5rem);
+  }
+
+  && h2 {
+    margin-top: var(--space-xl);
+    font-size: clamp(1.9rem, 2.8vw, 2.6rem);
+  }
+
+  && h3 {
+    margin-top: 2.5rem;
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--accent);
+    font-size: clamp(1.3rem, 1.9vw, 1.6rem);
+  }
+
+  && h2 + h3 {
+    margin-top: var(--space-md);
+  }
+
+  && h4 {
+    margin-top: 1.75rem;
+    color: var(--accent);
   }
 `
 
@@ -1088,7 +1548,7 @@ const Title = styled.h1`
 
 const Lede = styled.p`
   margin: 0;
-  color: var(--color-muted);
+  color: var(--color-body);
   font-size: 1.05rem;
   line-height: 1.7;
 `

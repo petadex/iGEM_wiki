@@ -11,6 +11,8 @@ import { PageTab, PageTabs } from "../PageTabs.js"
 import { InteractiveGizmo } from "./interactive/InteractiveGizmo.js"
 import { PetAssayAnimation } from "./interactive/PetAssayAnimation.js"
 import { AntibioticSelectionAnimation, GfpBiosensorAnimation } from "./interactive/CopperReleaseAnimation.js"
+import { embedComponents } from "./embeds.js"
+import { Spreadsheet } from "./Spreadsheet.js"
 import Citation from "../Citation"
 import References from "../References"
 
@@ -72,6 +74,8 @@ export const mdxComponents = {
   GfpBiosensorAnimation,
   Citation,
   References,
+  ...embedComponents,
+  Spreadsheet,
 }
 
 const toneStyles = {
@@ -108,7 +112,7 @@ const CalloutBody = styled.div`
   }
 
   p {
-    color: var(--color-muted);
+    color: var(--color-body);
   }
 `
 

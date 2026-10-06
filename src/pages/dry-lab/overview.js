@@ -60,7 +60,7 @@ export default Page
 export const Head = () => <title>Dry Lab Overview — iGEM Toronto 2026</title>
 
 const Blurb = styled.p`
-  color: var(--color-muted);
+  color: var(--color-body);
   font-size: 1.05rem;
   line-height: 1.75;
   max-width: 52rem;
@@ -74,7 +74,7 @@ const Section = styled.section`
     color: var(--color-text);
   }
   p {
-    color: var(--color-muted);
+    color: var(--color-body);
     margin-bottom: var(--space-lg);
     line-height: 1.6;
   }
