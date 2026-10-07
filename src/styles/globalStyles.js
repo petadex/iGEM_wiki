@@ -9,6 +9,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-border:     #9bb8c5;
     --color-text:       #06202b;
     --color-muted:      #58717b;
+    /* Reading text (paragraphs, lists, tables): darker than muted so long
+       sections stay comfortable to read; muted is for captions and meta. */
+    --color-body:       #1f2f36;
     --color-accent:     #c92f3b;
 
     /* Typography */

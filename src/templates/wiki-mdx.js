@@ -9,7 +9,12 @@ import { WideSideTabProvider } from "../components/PageTabs.js"
 import ScrollProgress from "../components/scrollProgress.js"
 import TableOfContents from "../components/tableOfContents.js"
 import { TOCWrapper } from "../components/pageStyles.js"
-import DryLabScene from "../components/DryLabScene.js"
+import SubpageScene from "../components/SubpageScene.js"
+import {
+  DRY_LAB_SCENE,
+  HP_SCENE,
+  VENTURE_SCENE,
+} from "../components/subpageScenes.js"
 
 const formatDate = (date) => {
   if (!date) return null
@@ -22,23 +27,34 @@ const formatDate = (date) => {
   }).format(parsed)
 }
 
+/** Pages drawn on a parallax art scene instead of the plain article layout. */
+const sceneFor = frontmatter => {
+  if (frontmatter.section === "Dry Lab") return DRY_LAB_SCENE
+  if (frontmatter.path === "/beyond-the-bench/entrepreneurship/")
+    return VENTURE_SCENE
+  if (frontmatter.path === "/beyond-the-bench/human-practices/")
+    return HP_SCENE
+  return null
+}
+
 const WikiMdxTemplate = ({ data, children }) => {
   const { frontmatter } = data.mdx
   const owners = frontmatter.owners || []
   const updated = formatDate(frontmatter.updated)
 
-  if (frontmatter.section === "Dry Lab") {
+  const scene = sceneFor(frontmatter)
+  if (scene) {
     return (
       <WikiLayout fullBleed>
-        <DryLabScene
+        <SubpageScene
+          scene={scene}
           title={frontmatter.title}
-          sectionLabel={frontmatter.section}
           description={frontmatter.description}
         >
           <Article $wideProse>
             <MDXProvider components={mdxComponents}>{children}</MDXProvider>
           </Article>
-        </DryLabScene>
+        </SubpageScene>
       </WikiLayout>
     )
   }
@@ -282,7 +298,7 @@ const Article = styled.article`
   p,
   li,
   blockquote {
-    color: var(--color-muted);
+    color: var(--color-body);
   }
 
   p,
@@ -370,7 +386,7 @@ const Article = styled.article`
   }
 
   td {
-    color: var(--color-muted);
+    color: var(--color-body);
   }
 
   img {

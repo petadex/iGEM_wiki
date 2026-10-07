@@ -11,7 +11,9 @@ const LOGO_FRAME_URLS = Array.from(
     `https://static.igem.wiki/teams/6187/wiki/homepage-components/logo-animation-files/untitled-artwork-${i + 1}.avif`,
 )
 
-exports.onRenderBody = ({ setHeadComponents }) => {
+exports.onRenderBody = ({ setHeadComponents, setHtmlAttributes }) => {
+  // Screen readers and CSS hyphenation both need the page language.
+  setHtmlAttributes({ lang: "en" })
   setHeadComponents([
     React.createElement("link", {
       key: "favicon-svg",
