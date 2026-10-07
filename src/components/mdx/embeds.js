@@ -19,13 +19,13 @@ export const Dropdown = ({ title, open = false, children }) => (
 )
 
 /**
- * PDF in a scrollable frame. `compact` makes it smaller (secondary
- * verticals); `badge` labels it (e.g. "Primary vertical"). Until the PDF
- * exists, `cover` (its title page, AVIF) stands in for it.
+ * PDF in a scrollable frame; `badge` labels it (e.g. "Primary vertical").
+ * Until the PDF exists, `cover` (its title page, AVIF) stands in for it in
+ * the same frame.
  */
-export const PdfEmbed = ({ src, title, badge, cover, compact = false }) => (
-  <EmbedFigure $compact={compact}>
-    <EmbedHead $compact={compact}>
+export const PdfEmbed = ({ src, title, badge, cover }) => (
+  <EmbedFigure>
+    <EmbedHead>
       {badge && <Badge>{badge}</Badge>}
       {title && <EmbedTitle>{title}</EmbedTitle>}
       {src && (
@@ -35,9 +35,9 @@ export const PdfEmbed = ({ src, title, badge, cover, compact = false }) => (
       )}
     </EmbedHead>
     {src ? (
-      <PdfFrame src={src} title={title || "PDF"} $compact={compact} />
+      <PdfFrame src={src} title={title || "PDF"} />
     ) : cover ? (
-      <CoverCard $compact={compact}>
+      <CoverFrame>
         <CoverImg
           src={cover}
           alt={`${title || "Report"} cover page`}
@@ -45,15 +45,12 @@ export const PdfEmbed = ({ src, title, badge, cover, compact = false }) => (
           decoding="async"
         />
         <CoverTag>Full report coming soon</CoverTag>
-      </CoverCard>
+      </CoverFrame>
     ) : (
-      <Pending $compact={compact}>PDF coming soon</Pending>
+      <Pending>PDF coming soon</Pending>
     )}
   </EmbedFigure>
 )
-
-/** Side-by-side compact embeds (one column on narrow screens). */
-export const EmbedGrid = ({ children }) => <Grid>{children}</Grid>
 
 /** Spreadsheet frame (an iGEM-hosted export, e.g. HTML or PDF). */
 export const SheetEmbed = ({ src, title }) => (
@@ -139,7 +136,6 @@ export const embedComponents = {
   Dropdown,
   Photos,
   PdfEmbed,
-  EmbedGrid,
   SheetEmbed,
   VideoEmbed,
 }
@@ -220,12 +216,6 @@ const DropdownBody = styled.div`
 const EmbedFigure = styled.figure`
   margin: var(--space-lg) 0;
   min-width: 0;
-
-  ${({ $compact }) =>
-    $compact &&
-    css`
-      margin: 0;
-    `}
 `
 
 const EmbedHead = styled.div`
@@ -234,14 +224,6 @@ const EmbedHead = styled.div`
   align-items: center;
   gap: 0.35rem 0.75rem;
   margin-bottom: var(--space-sm);
-
-  /* Compact cards stack the badge over the title so the grid lines up. */
-  ${({ $compact }) =>
-    $compact &&
-    css`
-      flex-direction: column;
-      align-items: flex-start;
-    `}
 `
 
 const Badge = styled.span`
@@ -274,9 +256,11 @@ const frameBox = css`
   background: #f3f3f0;
 `
 
+const FRAME_H = "min(80vh, 56rem)"
+
 const PdfFrame = styled.iframe`
   ${frameBox}
-  height: ${({ $compact }) => ($compact ? "22rem" : "min(80vh, 56rem)")};
+  height: ${FRAME_H};
 `
 
 const VideoFrame = styled.iframe`
@@ -290,7 +274,7 @@ const Pending = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: ${({ $compact }) => ($compact ? "14rem" : "22rem")};
+  height: 22rem;
   border-style: dashed;
   color: var(--color-muted);
   font-size: 0.9rem;
@@ -304,26 +288,29 @@ const Pending = styled.div`
     `}
 `
 
-/** Title page standing in for a PDF; the primary one is larger. */
-const CoverCard = styled.div`
+/** Title page standing in for a PDF, laid out like a viewer's first page. */
+const CoverFrame = styled.div`
+  ${frameBox}
   position: relative;
-  width: 100%;
-  max-width: ${({ $compact }) => ($compact ? "none" : "26rem")};
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 6px 18px rgba(20, 30, 40, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Page-shaped on narrow screens, as tall as a PDF frame on wide ones. */
+  aspect-ratio: 1414 / 2000;
+  min-height: 0;
+  max-height: ${FRAME_H};
+  padding: var(--space-md);
 `
 
 const CoverImg = styled.img`
   && {
     display: block;
-    width: 100%;
+    width: auto;
     height: auto;
-    aspect-ratio: 1414 / 2000;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: 0;
+    box-shadow: 0 6px 18px rgba(20, 30, 40, 0.14);
   }
 `
 
@@ -337,13 +324,6 @@ const CoverTag = styled.span`
   color: #fff;
   font-size: 0.7rem;
   font-weight: 600;
-`
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  gap: var(--space-md);
-  margin: var(--space-lg) 0;
 `
 
 const PhotoRow = styled.div`

@@ -314,8 +314,8 @@ export const HP_SCENE = {
     linkPadY: 7,
     linkSize: 11.5,
     indicator: { name: "nav-bar-highlight", box: [136, 456, 289, 528] },
-    /** Feather riding on the left end of the highlight (sits a little high). */
-    indicatorIcon: { name: "nav-bar-icon", box: [94, 427, 168, 512] },
+    /** Feather riding on the left end of the highlight. */
+    indicatorIcon: { name: "new-nav-icon", box: [111, 453, 156, 523] },
     linkColor: "#2e4a3c",
     /** Light text on the dark green highlight. */
     activeLinkColor: "#ffffff",
