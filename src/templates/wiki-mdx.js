@@ -49,14 +49,11 @@ const WikiMdxTemplate = ({ data, children }) => {
     return (
       <WikiLayout
         fullBleed
-        footerArt={
-          scene.footerArt && {
-            ...scene.footerArt,
-            src: `${scene.assetBase}${scene.footerArt.name}.avif`,
-            size: scene.plate,
-            base: scene.background,
-          }
-        }
+        // The footer button takes the colours of the page's menu highlight.
+        footerButton={{
+          bg: scene.side.highlightColor,
+          text: scene.side.activeLinkColor || scene.side.linkColor,
+        }}
       >
         <SubpageScene
           scene={scene}

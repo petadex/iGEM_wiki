@@ -96,6 +96,8 @@ export const DRY_LAB_SCENE = {
     /** First item's distance below the box top (plate px). */
     navTop: 32,
     indicator: { name: "box-subsection-indicator", box: [88, 452, 241, 513] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#9c6e56",
     /** Crab sitting on the box's bottom edge. */
     crab: { name: "box-crab", box: [144, 804, 195, 860] },
     linkColor: "#fbf3ea",
@@ -161,6 +163,8 @@ export const VENTURE_SCENE = {
     maxHeight: "min(24rem, 52vh)",
     linkPadY: 7,
     indicator: { name: "nav-bar-highlight", box: [136, 456, 289, 528] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#f2b574",
     /** Coin that rides on the left end of the highlight. */
     indicatorIcon: { name: "navbar-icon", box: [100, 460, 160, 515] },
     linkColor: "#5b3a1a",
@@ -176,13 +180,6 @@ export const VENTURE_SCENE = {
   },
   /** Bottom of the mockup's text box; the river below is the ending. */
   textEndY: 3691,
-  /** Cliff and river painted behind the footer: light ink, dark halo. */
-  footerArt: {
-    name: "venturebottom",
-    box: [0, 1879, 1110, 2123],
-    ink: "#f3f7ff",
-    halo: "16, 24, 44",
-  },
 }
 
 /** Homepage art reused on the subpages (birds). */
@@ -321,6 +318,8 @@ export const HP_SCENE = {
     linkPadY: 7,
     linkSize: 11.5,
     indicator: { name: "nav-bar-highlight", box: [136, 456, 289, 528] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#689581",
     /** Feather riding on the left end of the highlight. */
     indicatorIcon: { name: "new-nav-icon", box: [111, 453, 156, 523] },
     linkColor: "#2e4a3c",
@@ -336,12 +335,6 @@ export const HP_SCENE = {
   },
   /** Bottom of the mockup's text box; the treeline below is the ending. */
   textEndY: 3691,
-  /** Forest painted behind the footer (sponsors and links). */
-  footerArt: {
-    name: "page-bottom-png",
-    box: [0, 1879, 1110, 2123],
-    ink: "#13261d",
-  },
 }
 
 /** Every Hardware page; each box is titled with its page's short name. */
@@ -387,6 +380,8 @@ export const HARDWARE_SCENE = {
     linkPadY: 7,
     linkSize: 11.5,
     indicator: { name: "nav-bar-highlight", box: [136, 458, 287, 517] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#877bc7",
     /** Crystal riding on the left end of the highlight. */
     indicatorIcon: { name: "navbaricon", box: [107, 452, 164, 520] },
     /** The crystal reaches further in than Venture's coin; clear its text. */
@@ -403,11 +398,4 @@ export const HARDWARE_SCENE = {
   },
   /** Bottom of the mockup's text box; the pool below is the ending. */
   textEndY: 3691,
-  /** Cave floor painted behind the footer: light ink, dark halo. */
-  footerArt: {
-    name: "hw-bottom",
-    box: [0, 1879, 1110, 2123],
-    ink: "#f1eeff",
-    halo: "14, 13, 26",
-  },
 }
