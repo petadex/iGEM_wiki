@@ -125,7 +125,7 @@ export function SponsorCarousel() {
             {count === 1 ? (
               <Slot key="only">
                 <SlotVisual $emphasize $center>
-                  <SponsorCard sponsor={SPONSORS[0]} $edge={false} />
+                  <SponsorCard key={SPONSORS[0].id} sponsor={SPONSORS[0]} $edge={false} />
                 </SlotVisual>
               </Slot>
             ) : (
@@ -136,7 +136,11 @@ export function SponsorCarousel() {
                 return (
                   <Slot key={pos}>
                     <SlotVisual $emphasize={emphasize} $center={isCenter}>
-                      <SponsorCard sponsor={sponsor} $edge={emphasize && !isCenter} />
+                      <SponsorCard
+                        key={sponsor.id}
+                        sponsor={sponsor}
+                        $edge={emphasize && !isCenter}
+                      />
                     </SlotVisual>
                   </Slot>
                 )
@@ -161,12 +165,45 @@ export function SponsorCarousel() {
   )
 }
 
+/** Logo URLs that failed to load, so a card that slides back in skips them. */
+const failedLogos = new Set()
+
 function SponsorCard({ sponsor, $edge }) {
-  const inner = sponsor.logoSrc ? (
-    <Logo src={sponsor.logoSrc} alt={sponsor.name} $edge={$edge} />
-  ) : (
-    <Name $edge={$edge}>{sponsor.name}</Name>
-  )
+  const { logoSrc, showName } = sponsor
+  const [logoFailed, setLogoFailed] = useState(() => failedLogos.has(logoSrc))
+  const logoRef = useRef(null)
+
+  const failLogo = useCallback(() => {
+    failedLogos.add(logoSrc)
+    setLogoFailed(true)
+  }, [logoSrc])
+
+  // A logo can fail before hydration attaches onError, so check once mounted.
+  useEffect(() => {
+    const img = logoRef.current
+    if (img && img.complete && img.naturalWidth === 0) failLogo()
+  }, [failLogo])
+
+  const inner =
+    logoSrc && !logoFailed ? (
+      <>
+        <Logo
+          ref={logoRef}
+          src={logoSrc}
+          alt={showName ? "" : sponsor.name}
+          onError={failLogo}
+          $edge={$edge}
+          $withName={showName}
+        />
+        {showName ? (
+          <Name $edge={$edge} $underLogo>
+            {sponsor.name}
+          </Name>
+        ) : null}
+      </>
+    ) : (
+      <Name $edge={$edge}>{sponsor.name}</Name>
+    )
 
   if (sponsor.href) {
     return (
@@ -282,6 +319,8 @@ const Arrow = styled.button`
 
 const cardBase = `
   display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -316,20 +355,22 @@ const CardStatic = styled.div`
   color: var(--color-muted);
 `
 
+/* Under a logo the name gets two small lines, so both fit the phone-size card. */
 const Name = styled.span`
-  font-size: ${(p) => (p.$edge ? "0.62rem" : "0.72rem")};
+  font-size: ${(p) => (p.$edge || p.$underLogo ? "0.62rem" : "0.72rem")};
   font-weight: 600;
   line-height: 1.2;
   word-break: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: ${(p) => (p.$underLogo ? 2 : 3)};
   -webkit-box-orient: vertical;
   overflow: hidden;
 `
 
 const Logo = styled.img`
   max-width: 100%;
-  max-height: ${(p) => (p.$edge ? "2rem" : "2.5rem")};
+  max-height: ${(p) =>
+    p.$withName ? (p.$edge ? "1rem" : "1.15rem") : p.$edge ? "2rem" : "2.5rem"};
   width: auto;
   height: auto;
   object-fit: contain;

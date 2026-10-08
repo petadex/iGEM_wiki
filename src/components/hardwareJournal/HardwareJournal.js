@@ -73,7 +73,6 @@ function JournalEntryPanel({ entry }) {
 }
 
 export function HardwareJournal() {
-  const rootRef = useRef(null)
   const readyRef = useRef(false)
   const firstId = HARDWARE_JOURNAL_ENTRIES[0]?.id ?? null
   const [activeId, setActiveId] = useState(firstId)
@@ -91,32 +90,16 @@ export function HardwareJournal() {
     }
   }, [])
 
-  const scrollToTop = useCallback((behavior = "auto") => {
-    if (firstId) {
-      const el = document.getElementById(journalHashForDate(firstId))
-      if (el) {
-        el.scrollIntoView({ behavior, block: "start" })
-      } else if (rootRef.current) {
-        rootRef.current.scrollIntoView({ behavior, block: "start" })
-      }
-      setActiveId(firstId)
-      if (typeof window !== "undefined") {
-        const base = window.location.pathname + window.location.search
-        window.history.replaceState(null, "", base)
-      }
-    }
-  }, [firstId])
-
   useEffect(() => {
     if (typeof window === "undefined") return undefined
 
     readyRef.current = false
     const hashId = parseJournalHash(window.location.hash)
+    // Only a link to an entry scrolls here; otherwise the page opens at its
+    // top (the journal is one section of the notebook page).
     const timer = window.setTimeout(() => {
       if (hashId) {
         scrollToEntry(hashId, { updateHash: false, behavior: "auto" })
-      } else {
-        scrollToTop("auto")
       }
       window.setTimeout(() => {
         readyRef.current = true
@@ -127,8 +110,6 @@ export function HardwareJournal() {
       const id = parseJournalHash(window.location.hash)
       if (id) {
         scrollToEntry(id, { updateHash: false })
-      } else {
-        scrollToTop("smooth")
       }
     }
 
@@ -138,7 +119,7 @@ export function HardwareJournal() {
       window.removeEventListener("hashchange", onHashChange)
       readyRef.current = false
     }
-  }, [scrollToEntry, scrollToTop])
+  }, [scrollToEntry])
 
   useEffect(() => {
     const entries = HARDWARE_JOURNAL_ENTRIES.map((entry) => ({
@@ -169,7 +150,7 @@ export function HardwareJournal() {
   }, [])
 
   return (
-    <JournalRoot ref={rootRef}>
+    <JournalRoot data-nav-skip>
       <Intro>
         Chronological hardware design notes from team meetings, newest first. Scroll through
         each entry below, or use the date list to jump to a session.
@@ -311,7 +292,15 @@ const EntryArticle = styled.article`
   scroll-margin-top: 6rem;
 `
 
-const EntryHeading = styled.h2`
+/** Under the page's "Journal" heading, so a level down. */
+const EntryHeading = styled.h3`
+  /* Beats page heading styles (e.g. a parallax page's h3 accent bar). */
+  &&& {
+    margin: 0 0 var(--space-md);
+    padding-left: 0;
+    border-left: 0;
+    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  }
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 2.5vw, 1.6rem);
   font-weight: 700;

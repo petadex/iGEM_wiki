@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 import { GlobalStyle } from "../styles/globalStyles.js"
 import { SiteLoader } from "./SiteLoader.js"
 import { SponsorCarousel } from "./SponsorCarousel.js"
@@ -15,6 +15,13 @@ const WikiLayout = ({
   wideSideTabs = false,
   /** Pages that render their own SiteLoader (the homepage hands off to its hero). */
   hideLoader = false,
+  /**
+   * Painting behind the footer: `box` [x0, y0, x1, y1] of a `size` [W, H]
+   * image at `src`, carrying on from the page art above at the same scale.
+   * `ink` is the text colour that reads on it, `halo` the "r, g, b" glow
+   * behind that text, and `base` a colour under it all.
+   */
+  footerArt = null,
 }) => {
   const [showScrollTop, setShowScrollTop] = useState(false)
 
@@ -66,7 +73,13 @@ const WikiLayout = ({
           </ScrollTopButton>
         )}
 
-        <Footer>
+        <Footer
+          $art={!!footerArt}
+          $ink={footerArt?.ink}
+          $halo={footerArt?.halo}
+          $base={footerArt?.base}
+        >
+            {footerArt && <FooterArtLayer art={footerArt} />}
             <FooterInner>
               <FooterTop>
                 <FooterIntro>
@@ -106,6 +119,41 @@ const WikiLayout = ({
 }
 
 export default WikiLayout
+
+/** Full image offset so `box` of a `[W, H]` image fills its window. */
+function cropStyle([x0, y0, x1, y1], [W, H]) {
+  const w = x1 - x0
+  const h = y1 - y0
+  return {
+    width: `${(W / w) * 100}%`,
+    height: `${(H / h) * 100}%`,
+    left: `${(-x0 / w) * 100}%`,
+    top: `${(-y0 / h) * 100}%`,
+  }
+}
+
+/** Painted rows at the strip's foot that stretch down a taller footer. */
+const FOOTER_TAIL_ROWS = 4
+
+/**
+ * The strip spans the full width at the page art's scale, so its top edge
+ * meets the art above at every window size. A footer taller than the strip
+ * (narrow windows) gets the strip's last rows stretched down below it.
+ */
+function FooterArtLayer({ art }) {
+  const [x0, y0, x1, y1] = art.box
+  const tail = [x0, y1 - 1 - FOOTER_TAIL_ROWS, x1, y1 - 1]
+  return (
+    <FooterArt aria-hidden>
+      <FooterArtTail>
+        <img src={art.src} alt="" decoding="async" style={cropStyle(tail, art.size)} />
+      </FooterArtTail>
+      <FooterArtStrip style={{ aspectRatio: `${x1 - x0} / ${y1 - y0}` }}>
+        <img src={art.src} alt="" decoding="async" style={cropStyle(art.box, art.size)} />
+      </FooterArtStrip>
+    </FooterArt>
+  )
+}
 
 /* ── Styled Components ── */
 
@@ -208,10 +256,30 @@ const Footer = styled.footer`
   position: relative;
   z-index: 100;
   margin-top: auto;
-  background: var(--color-bg);
+  background: ${({ $art, $base }) => ($art && $base) || "var(--color-bg)"};
   color: var(--color-text);
-  border-top: 1px solid var(--color-border);
+  border-top: ${({ $art }) => ($art ? "0" : "1px solid var(--color-border)")};
   padding: var(--space-xl) var(--page-padding) var(--space-lg);
+
+  /* On a painting, the footer's own text takes one ink with a soft halo of
+     the opposite tone, so it stands off the brushwork. The sponsor cards are
+     left alone: they keep the site's colours on their light faces. */
+  ${({ $art, $ink = "#14211b", $halo = "255, 255, 255" }) =>
+    $art &&
+    css`
+      ${FooterIntro}, ${FooterConnect}, ${FooterRule}, ${FooterMeta} {
+        --color-text: ${$ink};
+        --color-muted: ${$ink};
+        color: var(--color-text);
+        text-shadow:
+          0 0 0.2em rgba(${$halo}, 0.9),
+          0 0 0.7em rgba(${$halo}, 0.7);
+      }
+
+      ${FooterConnect} a, ${FooterMeta} a {
+        font-weight: 600;
+      }
+    `}
 
   @media (max-width: 720px) {
     padding: var(--space-lg) var(--page-padding) var(--space-md);
@@ -219,8 +287,37 @@ const Footer = styled.footer`
 `
 
 const FooterInner = styled.div`
+  position: relative;
   max-width: var(--max-width);
   margin: 0 auto;
+`
+
+const FooterArt = styled.div`
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  img {
+    position: absolute;
+    max-width: none;
+  }
+`
+
+/** The strip's last rows, stretched over the whole footer (seen below the strip). */
+const FooterArtTail = styled.div`
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+`
+
+/** The strip at the page art's scale: full width, its own shape, pinned to the top. */
+const FooterArtStrip = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
 `
 
 const FooterTop = styled.div`
@@ -275,6 +372,7 @@ const FooterBrand = styled.p`
 `
 
 const FooterButton = styled.a`
+  text-shadow: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;

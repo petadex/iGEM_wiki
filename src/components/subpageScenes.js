@@ -176,6 +176,13 @@ export const VENTURE_SCENE = {
   },
   /** Bottom of the mockup's text box; the river below is the ending. */
   textEndY: 3691,
+  /** Cliff and river painted behind the footer: light ink, dark halo. */
+  footerArt: {
+    name: "venturebottom",
+    box: [0, 1879, 1110, 2123],
+    ink: "#f3f7ff",
+    halo: "16, 24, 44",
+  },
 }
 
 /** Homepage art reused on the subpages (birds). */
@@ -329,4 +336,78 @@ export const HP_SCENE = {
   },
   /** Bottom of the mockup's text box; the treeline below is the ending. */
   textEndY: 3691,
+  /** Forest painted behind the footer (sponsors and links). */
+  footerArt: {
+    name: "page-bottom-png",
+    box: [0, 1879, 1110, 2123],
+    ink: "#13261d",
+  },
+}
+
+/** Every Hardware page; each box is titled with its page's short name. */
+export const HARDWARE_SCENE = {
+  header: "Hardware",
+  assetBase: "https://static.igem.wiki/teams/6187/wiki/hardware-notebook/",
+  plate: [1110, 4000],
+  background: "#20222e",
+  skyBottom: 400,
+  headerColor: "#e6e1ff",
+  /** Light title on the dark cave: a soft crystal glow instead of a highlight. */
+  headerShadow:
+    "0 0 0.4em rgba(135, 123, 199, 0.6), 0 0.08em 0.3em rgba(0, 0, 0, 0.5)",
+  accent: "#6b5cb5",
+  layers: [
+    { name: "bg", box: [0, 0, 1110, 4000] },
+    // Extra lighting: glints down the walls and pillars into the pool.
+    { name: "bottom-lightning-turtles", box: [127, 1985, 1088, 3942] },
+    // Hover (tap on touch) the turtle: it shivers and the lightning on
+    // zapzap crackles round it.
+    {
+      name: "turtle-1",
+      box: [76, 1815, 426, 2392],
+      hit: [125, 1865, 315, 2150],
+      zap: { name: "zapzap", box: [122, 1830, 352, 2133] },
+    },
+    // The turtle lying in the pool does the same with its own lightning.
+    {
+      name: "turtle-2",
+      box: [173, 3760, 566, 3961],
+      hit: [170, 3815, 569, 3950],
+      zap: { name: "zapzap", box: [164, 3819, 568, 4000] },
+    },
+  ],
+  // Side column and text box are flat rectangles on `text-space`.
+  side: {
+    name: "text-space",
+    box: [135, 412, 288, 1225],
+    caps: [4, 4],
+    navTop: 40,
+    fit: true,
+    maxHeight: "min(24rem, 52vh)",
+    linkPadY: 7,
+    linkSize: 11.5,
+    indicator: { name: "nav-bar-highlight", box: [136, 458, 287, 517] },
+    /** Crystal riding on the left end of the highlight. */
+    indicatorIcon: { name: "navbaricon", box: [107, 452, 164, 520] },
+    /** The crystal reaches further in than Venture's coin; clear its text. */
+    linkIndent: 20,
+    linkColor: "#2a2350",
+    activeLinkColor: "#ffffff",
+    stripColor: "#a39dcb",
+  },
+  text: {
+    name: "text-space",
+    box: [339, 412, 980, 3691],
+    caps: [4, 4],
+    minH: 2000,
+  },
+  /** Bottom of the mockup's text box; the pool below is the ending. */
+  textEndY: 3691,
+  /** Cave floor painted behind the footer: light ink, dark halo. */
+  footerArt: {
+    name: "hw-bottom",
+    box: [0, 1879, 1110, 2123],
+    ink: "#f1eeff",
+    halo: "14, 13, 26",
+  },
 }

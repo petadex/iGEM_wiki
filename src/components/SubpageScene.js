@@ -333,6 +333,80 @@ function CoinBurstLayer({ plate, layer, sprites, children }) {
   )
 }
 
+/** Shiver a zapped layer gives (around its middle). */
+const ZAP_JOLT = [
+  { transform: "translate(0, 0) rotate(0deg)" },
+  { transform: "translate(-1.5%, 0.5%) rotate(-2deg)", offset: 0.12 },
+  { transform: "translate(1.5%, -0.5%) rotate(2deg)", offset: 0.26 },
+  { transform: "translate(-1%, 0) rotate(-1.5deg)", offset: 0.4 },
+  { transform: "translate(1%, 0) rotate(1deg)", offset: 0.54 },
+  { transform: "translate(-0.5%, 0) rotate(-0.5deg)", offset: 0.7 },
+  { transform: "translate(0, 0) rotate(0deg)" },
+]
+const ZAP_JOLT_MS = 600
+
+/** Lightning: a few on/off flashes with a little crackle, then it fades. */
+const ZAP_FLICKER = [
+  { opacity: 0, transform: "translate(0, 0)" },
+  { opacity: 1, transform: "translate(1%, -1%)", offset: 0.06 },
+  { opacity: 0.15, transform: "translate(-1%, 0)", offset: 0.14 },
+  { opacity: 1, transform: "translate(0, 1%)", offset: 0.2 },
+  { opacity: 0.3, transform: "translate(1%, 0)", offset: 0.3 },
+  { opacity: 1, transform: "translate(0, 0)", offset: 0.36 },
+  { opacity: 0.85, transform: "translate(0, 0)", offset: 0.6 },
+  { opacity: 0, transform: "translate(0, 0)" },
+]
+const ZAP_FLICKER_MS = 1100
+
+/**
+ * A layer that gets zapped when hovered (tapped on touch): it shivers and
+ * `layer.zap` (lightning, hidden until then) flickers over it. Only
+ * `layer.hit` takes the hover, so its glow doesn't.
+ */
+function ZapLayer({ plate, layer, children }) {
+  const bodyRef = useRef(null)
+  const boltRef = useRef(null)
+  const zap = () => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return
+    bodyRef.current?.animate(ZAP_JOLT, {
+      duration: ZAP_JOLT_MS,
+      easing: "ease-out",
+    })
+    boltRef.current?.animate(ZAP_FLICKER, {
+      duration: ZAP_FLICKER_MS,
+      easing: "linear",
+    })
+  }
+  const bolt = layer.zap
+  return (
+    <>
+      <ZapBody
+        ref={bodyRef}
+        data-layer={layer.name}
+        style={plate.windowStyle(layer.box)}
+      >
+        {children}
+      </ZapBody>
+      <ZapBolt ref={boltRef} style={plate.windowStyle(bolt.box)}>
+        <CropImg
+          src={plate.asset(bolt.name)}
+          alt=""
+          decoding="async"
+          draggable={false}
+          style={plate.imgStyle(bolt.box)}
+        />
+      </ZapBolt>
+      <ZapHit
+        style={plate.windowStyle(layer.hit || layer.box)}
+        onMouseEnter={zap}
+        onPointerDown={event => {
+          if (event.pointerType !== "mouse") zap()
+        }}
+      />
+    </>
+  )
+}
+
 /** Marks which ends of a scrollable list have more beyond them (for the fade). */
 function updateNavFade(nav) {
   if (!nav) return
@@ -480,11 +554,15 @@ function sceneVars(scene, plate) {
     "--px": `calc(var(--art-w, 100vw) / ${W})`,
     "--scene-bg": scene.background,
     "--header-color": scene.headerColor,
+    "--header-shadow":
+      scene.headerShadow ||
+      "0 0.04em 0 rgba(255, 255, 255, 0.55), 0 0.1em 0.35em rgba(0, 0, 0, 0.2)",
     "--link-color": scene.side.linkColor,
     "--link-active": scene.side.activeLinkColor || scene.side.linkColor,
     "--accent": scene.accent,
     "--link-size": ax(scene.side.linkSize || 12.5),
     "--link-pad-y": ax(scene.side.linkPadY || 10),
+    "--link-indent": ax(scene.side.linkIndent || 12),
     "--side-max": scene.side.maxHeight || "100vh",
     "--strip-color": scene.side.stripColor,
     "--crop-top": pp(crop),
@@ -531,7 +609,7 @@ export function SubpageScene({ scene, title, description, children }) {
   useEffect(() => {
     const heads = Array.from(
       bodyRef.current?.querySelectorAll("h2, h3") || [],
-    ).filter(el => !el.closest("details"))
+    ).filter(el => !el.closest("details, [data-nav-skip]"))
     const list = []
     heads.forEach((el, i) => {
       if (!el.id) el.id = `section-${i + 1}`
@@ -568,8 +646,12 @@ export function SubpageScene({ scene, title, description, children }) {
       if (frame && frame.offsetHeight !== frameH)
         frame.style.height = `${frameH}px`
       // Art offset once the text ends: its bottom on the frame's bottom, which
-      // puts textEndY on the box's bottom edge.
-      const endOffset = frameH - art.offsetHeight - art.offsetTop
+      // puts textEndY on the box's bottom edge. Exact (sub-pixel) size and top,
+      // so the art meets the footer's painting without a hairline gap.
+      const endOffset =
+        frameH -
+        art.getBoundingClientRect().height -
+        parseFloat(getComputedStyle(art).top)
       // Scrolled into the scene, from the page top to the box's bottom edge
       // meeting the viewport bottom.
       const start = -headerH
@@ -583,7 +665,7 @@ export function SubpageScene({ scene, title, description, children }) {
 
       const heads = Array.from(
         bodyRef.current?.querySelectorAll("h2, h3") || [],
-      ).filter(el => !el.closest("details"))
+      ).filter(el => !el.closest("details, [data-nav-skip]"))
       const line = headerH + view * 0.35
       let current = heads.find(h => h.tagName === "H2")?.id ?? null
       let currentSub = null
@@ -717,6 +799,13 @@ export function SubpageScene({ scene, title, description, children }) {
                     <BirdLayer key={layer.name} plate={plate} layer={layer} />
                   )
                 }
+                if (layer.zap) {
+                  return (
+                    <ZapLayer key={layer.name} plate={plate} layer={layer}>
+                      {img}
+                    </ZapLayer>
+                  )
+                }
                 if (layer.coinBurst) {
                   return (
                     <CoinBurstLayer
@@ -773,7 +862,12 @@ export function SubpageScene({ scene, title, description, children }) {
 
       <Content>
         <SideColumn>
-          <SideBox $stripCss={stripCss} $fit={side.fit}>
+          {/* A page with no sections yet has nothing to list. */}
+          <SideBox
+            $stripCss={stripCss}
+            $fit={side.fit}
+            style={sections.length ? undefined : { display: "none" }}
+          >
             <SideBoxArt
               plate={plate}
               name={side.name}
@@ -1041,6 +1135,26 @@ const CoinTrigger = styled.div`
   cursor: pointer;
 `
 
+const ZapBody = styled.div`
+  position: absolute;
+  overflow: hidden;
+  transform-origin: 50% 40%;
+`
+
+/** Lightning over a zapped layer; invisible until it flickers. */
+const ZapBolt = styled.div`
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+`
+
+const ZapHit = styled.div`
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+`
+
 const coinX = keyframes`
   from {
     transform: translate3d(-50%, -50%, 0);
@@ -1137,9 +1251,7 @@ const SectionTitle = styled.p`
   font-size: min(max(3.25rem, ${ax(108)}), var(--title-fit));
   line-height: 0.95;
   letter-spacing: -0.025em;
-  text-shadow:
-    0 0.04em 0 rgba(255, 255, 255, 0.55),
-    0 0.1em 0.35em rgba(0, 0, 0, 0.2);
+  text-shadow: var(--header-shadow);
 `
 
 const scuttleKeyframes = sign => keyframes`
@@ -1362,7 +1474,7 @@ const IndicatorIcon = styled.span`
 const SideLink = styled.a`
   position: relative;
   display: block;
-  padding: var(--link-pad-y) ${ax(10)} var(--link-pad-y) ${ax(12)};
+  padding: var(--link-pad-y) ${ax(10)} var(--link-pad-y) var(--link-indent);
   color: var(--link-color);
   font-family: var(--font-body);
   font-size: max(0.75rem, var(--link-size));
@@ -1507,6 +1619,8 @@ const TextBox = styled.div`
  */
 const TextInner = styled.div`
   position: relative;
+  /* Full-bleed components (e.g. the sticky-note board) stay inside the box. */
+  --page-padding: 0px;
   padding: max(1.5rem, ${ax(34)}) max(1.25rem, ${ax(36)}) max(2rem, ${ax(48)});
 
   h2,

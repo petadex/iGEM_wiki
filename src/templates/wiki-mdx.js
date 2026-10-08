@@ -12,6 +12,7 @@ import { TOCWrapper } from "../components/pageStyles.js"
 import SubpageScene from "../components/SubpageScene.js"
 import {
   DRY_LAB_SCENE,
+  HARDWARE_SCENE,
   HP_SCENE,
   VENTURE_SCENE,
 } from "../components/subpageScenes.js"
@@ -30,6 +31,7 @@ const formatDate = (date) => {
 /** Pages drawn on a parallax art scene instead of the plain article layout. */
 const sceneFor = frontmatter => {
   if (frontmatter.section === "Dry Lab") return DRY_LAB_SCENE
+  if (frontmatter.section === "Hardware") return HARDWARE_SCENE
   if (frontmatter.path === "/beyond-the-bench/entrepreneurship/")
     return VENTURE_SCENE
   if (frontmatter.path === "/beyond-the-bench/human-practices/")
@@ -45,10 +47,21 @@ const WikiMdxTemplate = ({ data, children }) => {
   const scene = sceneFor(frontmatter)
   if (scene) {
     return (
-      <WikiLayout fullBleed>
+      <WikiLayout
+        fullBleed
+        footerArt={
+          scene.footerArt && {
+            ...scene.footerArt,
+            src: `${scene.assetBase}${scene.footerArt.name}.avif`,
+            size: scene.plate,
+            base: scene.background,
+          }
+        }
+      >
         <SubpageScene
           scene={scene}
-          title={frontmatter.title}
+          // The header names the section, so the box takes the short name.
+          title={frontmatter.navTitle || frontmatter.title}
           description={frontmatter.description}
         >
           <Article $wideProse>
@@ -370,6 +383,14 @@ const Article = styled.article`
     width: 100%;
     border-collapse: collapse;
     font-size: 0.95rem;
+  }
+
+  /* Wide tables scroll sideways on phones instead of widening the page. */
+  @media (max-width: 640px) {
+    table {
+      display: block;
+      overflow-x: auto;
+    }
   }
 
   th,
