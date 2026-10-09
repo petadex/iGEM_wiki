@@ -114,8 +114,52 @@ const WORLD_MAP_HEIGHT = (2834 - 2644) / FRONT_ART_HEIGHT
 const FOREST_BAND_TOP = 2660 / FRONT_ART_HEIGHT
 const FOREST_BAND_BOT = 3503 / FRONT_ART_HEIGHT
 const FOREST_BAND_HEIGHT = FOREST_BAND_BOT - FOREST_BAND_TOP
-const CREAM_PAD_TOP = FOREST_BAND_BOT
-const CREAM_PAD_HEIGHT = 1 - CREAM_PAD_TOP
+
+/**
+ * Section 4, the lab: a 1004×4000 plate between the forest and the WWTP. Its
+ * row 0 sits on front-plate row 3422.3, so it covers the old cream pad and its
+ * top tucks under the jungle's bush fringe, which is redrawn over it.
+ */
+const SECTION4_PLATE = { w: 1004, h: 4000 }
+const SECTION4_FRONT_ROW = 3422.3
+/** Front-plate row where the bush fringe ends. */
+const SECTION4_FRINGE_END_ROW = 3522
+const SECTION4_ASSETS = {
+  bg: "https://static.igem.wiki/teams/6187/wiki/homepage-components/section-4-bg.avif",
+  umap: "https://static.igem.wiki/teams/6187/wiki/homepage-components/umap-data.avif",
+  sand: "https://static.igem.wiki/teams/6187/wiki/homepage-components/sand.avif",
+  enzyme:
+    "https://static.igem.wiki/teams/6187/wiki/homepage-components/enzyme-replacing-bottle.avif",
+}
+/** Section-4 row the "1,000,000-fold" line centres on: above the UMAP screen. */
+const SECTION4_TEXT_ROW = 255
+/**
+ * The enzyme's painted box on the section-4 plate (%). It fades in there,
+ * follows the reader (held at ENZYME_FOLLOW_VIEW_Y), then fades out just
+ * before the bottle rolls in, wearing it.
+ */
+const SECTION4_ENZYME_CROP = {
+  x: (441 / 1004) * 100,
+  y: (1233 / 4000) * 100,
+  w: (109 / 1004) * 100,
+  h: (125 / 4000) * 100,
+}
+/** Its painted size (px), for the cut-out's shape. */
+const SECTION4_ENZYME_PX = { w: 109, h: 125 }
+const ENZYME_FOLLOW_VIEW_Y = 0.5
+/** Scroll (share of vh) over which the enzyme fades out, ending as the bottle starts rolling in. */
+const ENZYME_FADE_OUT_VH = 0.35
+/**
+ * Section-4 rows of the bottle's roll-in cue: a little above the sand (3464),
+ * so the bottle rolls in over the sand and is centred in time for the ramp.
+ */
+const SECTION4_BOTTLE_CUE = [3250, 3350]
+/** Front / bush plate offset so their fringe rows fill Section4Fringe. */
+const SECTION4_FRINGE_IMG_STYLE = {
+  left: 0,
+  width: "100%",
+  top: `${(-SECTION4_FRONT_ROW / (SECTION4_FRINGE_END_ROW - SECTION4_FRONT_ROW)) * 100}%`,
+}
 
 /**
  * Scroll-driven bottle: enter from left after shore float, descend the map→forest
@@ -174,10 +218,10 @@ const MAP_BOTTLE_WALK_FALL_END = 0.4
 const MAP_BOTTLE_SETTLE_END = 0.17
 
 /**
- * Section4 bottle (after bushes): barrel-rolls in from the right as the cream-pad
- * “advisory lab” copy enters, sticks at viewport center, parks under “Some
- * applications include…”, then after a short hold tilts onto the WWTP ramp and
- * slides off down-left.
+ * Section4 bottle (enzyme attached): barrel-rolls in from the right as the lab's
+ * sand comes up (SECTION4_BOTTLE_CUE), sticks at viewport center, parks under
+ * “Some applications include…”, then after a short hold tilts onto the WWTP
+ * ramp and slides off down-left.
  */
 const CREAM_BOTTLE_LEFT_ENTER = 120
 const CREAM_BOTTLE_LEFT_CENTER = 50
@@ -191,14 +235,14 @@ const CREAM_BOTTLE_STAGE3_AT = 0.45
 /** Gap from the apps lead bottom to the bottle top while parked (px). */
 const CREAM_BOTTLE_PARK_GAP_PX = 28
 /**
- * Cream-text top vs viewport height: roll starts / reaches center.
+ * Cue top vs viewport height: roll starts / reaches center.
  * Wider gap (lower end frac) = slower approach to center.
  */
 const CREAM_BOTTLE_ROLL_START_FRAC = 0.95
 const CREAM_BOTTLE_ROLL_END_FRAC = 0.05
 /**
- * Entry Y as a fraction down the cream-text box (1 = bottom edge).
- * Higher = farther below the advisory-lab copy.
+ * Entry Y as a fraction down the cue box (1 = bottom edge).
+ * Higher = farther below the cue.
  */
 const CREAM_BOTTLE_ENTER_TEXT_FRAC = 1.55
 /** Ease on horizontal travel — >1 keeps it right longer, then eases into center. */
@@ -239,7 +283,7 @@ const RAMP2_END_Y_PCT = 28.5
  */
 const RAMP2_ARM_AT = 0.28
 /** Scroll span (see artScrollSpan) for the start → end traversal. Larger = slower. */
-const RAMP2_SLIDE_VH = 0.9
+const RAMP2_SLIDE_VH = 1.5
 
 /**
  * Section-5 chute bottle (stage 5, then 6 at the fish): starts inside the WWTP pipe (behind layer
@@ -1084,7 +1128,9 @@ export function HomeScrollPrototype() {
   const mapBottleImgRef = useRef(null)
   /** Band progress when forest walk begins — ease from here to the crab hold. */
   const mapBottleWalkStartPRef = useRef(null)
-  const creamPadTextRef = useRef(null)
+  const section4CueRef = useRef(null)
+  const section4EnzymeLaneRef = useRef(null)
+  const section4EnzymeRef = useRef(null)
   const section5RootRef = useRef(null)
   const section5LeadRef = useRef(null)
   const creamBottleMountRef = useRef(null)
@@ -1852,18 +1898,39 @@ export function HomeScrollPrototype() {
         mapMount.style.visibility = opacity > 0.02 ? "visible" : "hidden"
       }
 
-      // Section4 bottle: barrel-roll in over advisory-lab copy → sticky center →
-      // park under “Some applications include…” → hold → tilt + slide down WWTP ramp.
+      // Lab enzyme: fades in at its painted spot, follows the reader (sticky),
+      // then fades out just before the bottle starts rolling in.
+      const enzymeLane = section4EnzymeLaneRef.current
+      const enzyme = section4EnzymeRef.current
+      const bottleCue = section4CueRef.current
+      if (enzymeLane && enzyme && bottleCue) {
+        const vh = window.innerHeight
+        const laneTop = enzymeLane.getBoundingClientRect().top
+        const cueTop = bottleCue.getBoundingClientRect().top
+        const fadeIn = clamp01(
+          (vh - laneTop) / Math.max(1, vh * (1 - ENZYME_FOLLOW_VIEW_Y)),
+        )
+        const fadeOut = clamp01(
+          (cueTop - vh * CREAM_BOTTLE_ROLL_START_FRAC) /
+            Math.max(1, vh * ENZYME_FADE_OUT_VH),
+        )
+        const opacity = Math.min(fadeIn, fadeOut)
+        enzyme.style.opacity = String(opacity)
+        enzyme.style.visibility = opacity > 0.01 ? "visible" : "hidden"
+      }
+
+      // Section4 bottle (enzyme attached): barrel-roll in as the lab's sand comes
+      // up → sticky center → park under “Some applications include…” → hold →
+      // tilt + slide down WWTP ramp.
       const creamBottle = creamBottleMountRef.current
-      const creamText = creamPadTextRef.current
       const appsLead = section5LeadRef.current
-      if (creamBottle && creamText) {
+      if (creamBottle && bottleCue) {
         const vh = window.innerHeight
         const vw = window.innerWidth
-        const cream = creamText.getBoundingClientRect()
+        const cue = bottleCue.getBoundingClientRect()
         const startY = vh * CREAM_BOTTLE_ROLL_START_FRAC
         const endY = vh * CREAM_BOTTLE_ROLL_END_FRAC
-        let rollP = (startY - cream.top) / Math.max(1, startY - endY)
+        let rollP = (startY - cue.top) / Math.max(1, startY - endY)
         rollP = Math.max(0, Math.min(1, rollP))
 
         const lead = appsLead ? appsLead.getBoundingClientRect() : null
@@ -1949,7 +2016,7 @@ export function HomeScrollPrototype() {
           leftPx = (CREAM_BOTTLE_LEFT_ENTER / 100) * vw
           topPx = Math.min(
             vh * 0.82,
-            cream.top + cream.height * CREAM_BOTTLE_ENTER_TEXT_FRAC,
+            cue.top + cue.height * CREAM_BOTTLE_ENTER_TEXT_FRAC,
           )
           opacity = 0
           creamBottle.style.transform = `translate3d(-50%, -50%, 0) rotate(0deg)`
@@ -1961,7 +2028,7 @@ export function HomeScrollPrototype() {
           leftPx = (leftPct / 100) * vw
           const fromTop = Math.min(
             vh * 0.82,
-            cream.top + cream.height * CREAM_BOTTLE_ENTER_TEXT_FRAC,
+            cue.top + cue.height * CREAM_BOTTLE_ENTER_TEXT_FRAC,
           )
           topPx = fromTop + (vh * 0.5 - fromTop) * rollP
           rotateDeg = rollP * baseRotate
@@ -2013,9 +2080,23 @@ export function HomeScrollPrototype() {
           }
 
           const ramp2Start = ramp2StartScrollYRef.current
-          const ramp2Span = artScrollSpan(
-            RAMP2_SLIDE_VH,
-            section5RootRef.current?.offsetWidth || window.innerWidth,
+          // Capped so it's off the ramp before the chute bottle leaves the
+          // pipe (on phones the chute comes sooner after ramp 2 starts).
+          const s5Box = section5.getBoundingClientRect()
+          const chuteArmScroll =
+            y +
+            s5Box.top +
+            (CHUTE_KEYS[0].y / 100) * s5Box.height -
+            window.innerHeight * CHUTE_ARM_VIEW_Y
+          const ramp2Span = Math.max(
+            1,
+            Math.min(
+              artScrollSpan(
+                RAMP2_SLIDE_VH,
+                section5RootRef.current?.offsetWidth || window.innerWidth,
+              ),
+              ramp2Start == null ? Infinity : chuteArmScroll - ramp2Start,
+            ),
           )
           const ramp2P = ramp2Start == null ? 0 : (y - ramp2Start) / ramp2Span
 
@@ -3171,17 +3252,30 @@ export function HomeScrollPrototype() {
             <BushLayer>
               <RailImg src={ASSETS.bush} alt="" />
             </BushLayer>
-
-            <ArtBand $top={CREAM_PAD_TOP} $height={CREAM_PAD_HEIGHT} $z={4}>
-              <CreamPadTextMount ref={creamPadTextRef}>
-                <CreamPadBody>
-                  A 1,000,000‑fold increase from the enzyme landscape previously
-                  known.
-                </CreamPadBody>
-              </CreamPadTextMount>
-            </ArtBand>
           </CompositionRoot>
         </WalkTrack>
+
+        <Section4Root>
+          <RailImg src={SECTION4_ASSETS.bg} alt="" />
+          <Section4Layer $z={2} src={SECTION4_ASSETS.umap} alt="" />
+          <Section4Layer $z={2} src={SECTION4_ASSETS.sand} alt="" />
+          <Section4Fringe aria-hidden="true">
+            <PlateCropImg src={ASSETS.front} alt="" style={SECTION4_FRINGE_IMG_STYLE} />
+            <PlateCropImg src={ASSETS.bush} alt="" style={SECTION4_FRINGE_IMG_STYLE} />
+          </Section4Fringe>
+          <Section4TextMount>
+            <Section4Body>
+              A 1,000,000‑fold increase from the enzyme landscape previously
+              known.
+            </Section4Body>
+          </Section4TextMount>
+          <Section4EnzymeLane ref={section4EnzymeLaneRef} aria-hidden="true">
+            <Section4EnzymeFollow ref={section4EnzymeRef}>
+              <EnzymeSprite />
+            </Section4EnzymeFollow>
+          </Section4EnzymeLane>
+          <Section4BottleCue ref={section4CueRef} aria-hidden="true" />
+        </Section4Root>
 
         <EndingHoldTrack ref={endingHoldTrackRef}>
           <EndingHoldSticky ref={endingHoldStickyRef}>
@@ -3223,6 +3317,7 @@ export function HomeScrollPrototype() {
                       src={BOTTLE_STAGES.section5}
                       alt=""
                     />
+                    <BottleEnzyme />
                   </ChuteBottleIdle>
                 </ChuteBottleMount>
               </Section5ChuteBottleLayer>
@@ -3323,9 +3418,11 @@ export function HomeScrollPrototype() {
                     src={BOTTLE_STAGES.sky}
                     alt=""
                   />
+                  <BottleEnzyme />
                 </Section5AppsBottleMount>
                 <Section5AppsBottleMount ref={ramp2BottleMountRef}>
                   <Section5AppsBottleImg src={BOTTLE_STAGES.section4} alt="" />
+                  <BottleEnzyme />
                 </Section5AppsBottleMount>
               </Section5AppsBottleLayer>
               <Section5FoamMount
@@ -3431,8 +3528,10 @@ const EndingHoldTrack = styled.div`
  * Sticks (top set in the tick) when the ending bottle reaches mid-view, for
  * as long as EndingHoldSpacer lasts. Clips the pieces flying in from the sides.
  */
+/** Above the lab (Section4Root), so the WWTP's fixed bottles roll in over its sand. */
 const EndingHoldSticky = styled.div`
   position: sticky;
+  z-index: 2;
   width: 100%;
   min-width: 0;
   overflow-x: clip;
@@ -3884,6 +3983,7 @@ const chuteSinkIdle = keyframes`
 `
 
 const ChuteBottleIdle = styled.div`
+  position: relative;
   width: 100%;
   transform-origin: 50% 70%;
 
@@ -4881,24 +4981,47 @@ const ForestRnalabMount = styled.div`
 `
 
 /** RNAlab copy on the cream pad below the bushes. */
-const CreamPadTextMount = styled.div`
+/** The lab, pulled up over the old cream pad so its row 0 sits on front row SECTION4_FRONT_ROW. */
+const Section4Root = styled.div`
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  margin-top: ${(-(FRONT_ART_HEIGHT - SECTION4_FRONT_ROW) / FRONT_ART_WIDTH) * 100}%;
+`
+
+/** Same full-plate overlay as the WWTP's layers. */
+const Section4Layer = Section5Layer
+
+/** The jungle's bottom fringe (front + bush plates), redrawn over the lab wall's top. */
+const Section4Fringe = styled.div`
   position: absolute;
-  top: 18%;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 100%;
+  aspect-ratio: ${FRONT_ART_WIDTH} / ${SECTION4_FRINGE_END_ROW - SECTION4_FRONT_ROW};
+  overflow: hidden;
+  pointer-events: none;
+`
+
+const Section4TextMount = styled.div`
+  position: absolute;
+  top: ${(SECTION4_TEXT_ROW / SECTION4_PLATE.h) * 100}%;
   left: 50%;
-  transform: translate3d(-50%, 0, 0);
+  z-index: 4;
+  transform: translate3d(-50%, -50%, 0);
   width: ${artPx(768)};
   box-sizing: border-box;
   pointer-events: auto;
   text-align: center;
 
-  /* Phones: lower, making room for the forest lines above it. */
   ${phone} {
-    top: 40%;
     width: 88%;
   }
 `
 
-const CreamPadBody = styled.p`
+const Section4Body = styled.p`
   margin: 0;
   color: #0a0a0a;
   font-family: var(--font-body);
@@ -4910,6 +5033,74 @@ const CreamPadBody = styled.p`
   ${phone} {
     font-size: 0.9rem;
   }
+`
+
+/** From the enzyme's painted centre down to the bottle cue: where it follows the reader. */
+const Section4EnzymeLane = styled.div`
+  position: absolute;
+  z-index: 5;
+  left: ${SECTION4_ENZYME_CROP.x}%;
+  width: ${SECTION4_ENZYME_CROP.w}%;
+  top: ${SECTION4_ENZYME_CROP.y + SECTION4_ENZYME_CROP.h / 2}%;
+  bottom: ${(1 - SECTION4_BOTTLE_CUE[0] / SECTION4_PLATE.h) * 100}%;
+  pointer-events: none;
+`
+
+/** Sticks with its centre at ENZYME_FOLLOW_VIEW_Y; the scroll handler fades it. */
+const Section4EnzymeFollow = styled.div`
+  position: sticky;
+  top: ${ENZYME_FOLLOW_VIEW_Y * 100}vh;
+  transform: translate3d(0, -50%, 0);
+  opacity: 0;
+  visibility: hidden;
+  will-change: opacity;
+`
+
+/** Invisible box the bottle's roll-in is timed against. */
+const Section4BottleCue = styled.div`
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: ${(SECTION4_BOTTLE_CUE[0] / SECTION4_PLATE.h) * 100}%;
+  height: ${((SECTION4_BOTTLE_CUE[1] - SECTION4_BOTTLE_CUE[0]) / SECTION4_PLATE.h) * 100}%;
+  visibility: hidden;
+  pointer-events: none;
+`
+
+/** The lab enzyme cut from its plate, as wide as its parent. */
+function EnzymeSprite({ className }) {
+  return (
+    <EnzymeWindow
+      className={className}
+      style={{ aspectRatio: `${SECTION4_ENZYME_PX.w} / ${SECTION4_ENZYME_PX.h}` }}
+    >
+      <PlateCropImg
+        src={SECTION4_ASSETS.enzyme}
+        alt=""
+        style={plateCropImgStyle(SECTION4_ENZYME_CROP)}
+      />
+    </EnzymeWindow>
+  )
+}
+
+const EnzymeWindow = styled.div`
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+`
+
+/**
+ * The enzyme riding a WWTP bottle: about as wide as the bottle, sitting over its
+ * top end (the bottle spans 16–84% of its image), with a shadow to lift it off.
+ */
+const BottleEnzyme = styled(EnzymeSprite)`
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  width: 48%;
+  transform: translate3d(-50%, -50%, 0);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 `
 
 const ConditionImageRow = styled.div`

@@ -57,6 +57,7 @@ export const PLATE_CROPS = {
   "ending-petamon-eating-bottle/wetlabbluehol.avif": { size: [1440, 3831], box: [533, 2413, 878, 2779] },
   "ending-petamon-eating-bottle/wlmonch.avif": { size: [1440, 3831], box: [613, 2632, 795, 2794] },
   "ending-petamon-eating-bottle/wlpetamon.avif": { size: [1440, 3831], box: [597, 2653, 804, 2827] },
+  "enzyme-replacing-bottle.avif": { size: [1004, 4000], box: [438, 1230, 562, 1363] },
   "exclamation.avif": { size: [260, 216], box: [46, 18, 212, 182] },
   "human/exclamation.avif": { size: [2238, 3132], box: [73, 477, 674, 1155] },
   "human/human-1.avif": { size: [2238, 3132], box: [694, 526, 2050, 2754] },
@@ -77,6 +78,7 @@ export const PLATE_CROPS = {
   "noorine-section-5-layers/6-water-stream-gush-thing.avif": { size: [946, 4000], box: [0, 1332, 946, 3416] },
   "noorine-section-5-layers/7-wwtp.avif": { size: [946, 4000], box: [0, 0, 946, 1852] },
   "noorine-section-5-layers/8-fishes-that-can-move-around.avif": { size: [946, 4000], box: [238, 3165, 418, 3290] },
+  "sand.avif": { size: [1004, 4000], box: [0, 3394, 1004, 4000] },
   "section-2-animals/crab-section-2-a-2.avif": { size: [2238, 3132], box: [1438, 214, 1650, 410] },
   "section-2-animals/crab-section-2-a.avif": { size: [2238, 3132], box: [1438, 214, 1650, 415] },
   "section-2-animals/crab-section-2-b-2.avif": { size: [2238, 3132], box: [1710, 342, 1858, 523] },
@@ -102,6 +104,7 @@ export const PLATE_CROPS = {
   "splash/splash4.avif": { size: [946, 4000], box: [465, 2013, 562, 2059] },
   "splash/splash5.avif": { size: [946, 4000], box: [511, 1880, 565, 1979] },
   "turtle.avif": { size: [563, 4000], box: [0, 1128, 130, 1234] },
+  "umap-data.avif": { size: [1004, 4000], box: [113, 330, 864, 850] },
   "wiki-front-page-bush.avif": { size: [563, 4000], box: [0, 3307, 563, 3530] },
   "wiki-front-page-top-new.avif": { size: [563, 4000], box: [0, 310, 563, 3515] },
 }
