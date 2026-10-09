@@ -27,7 +27,7 @@ const prefersReducedMotion = () =>
 
 /** Current point in the logo loop (ms), read off the first frame's animation. */
 function loopPhase(root) {
-  const anim = root?.querySelector("img")?.getAnimations?.()[0]
+  const anim = root?.querySelector("[data-logo-frame]")?.getAnimations?.()[0]
   const t = anim?.currentTime
   return typeof t === "number" ? t % LOGO_FRAME_TIMING.cycleMs : 0
 }
@@ -218,7 +218,7 @@ const Logo = styled.div`
   width: min(72vw, 40rem);
   aspect-ratio: ${LOGO_BOX.w} / ${LOGO_BOX.h};
 
-  &[data-frozen="1"] img {
+  &[data-frozen="1"] [data-logo-frame] {
     animation-play-state: paused;
   }
 `

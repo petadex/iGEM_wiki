@@ -8,6 +8,7 @@ import React, {
 import { Link, navigate } from "gatsby"
 import styled from "styled-components"
 import { inputCopyCss, phone } from "./artScale.js"
+import { PlateImg, drawPlateRegion } from "./PlateImg.js"
 
 const CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/ending-petamon-eating-bottle"
@@ -262,28 +263,17 @@ function hitStyle(hit) {
   }
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = "anonymous"
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = src
-  })
-}
-
 /** Opaque pixels of the piece + its petamon, cropped to CROP. */
 async function buildMask(piece) {
-  const imgs = await Promise.all(
-    [piece.hol, piece.pet].map(name => loadImage(`${CDN}/${name}`))
-  )
   const canvas = document.createElement("canvas")
   canvas.width = MASK_W
   canvas.height = MASK_H
   const ctx = canvas.getContext("2d", { willReadFrequently: true })
-  for (const img of imgs) {
-    ctx.drawImage(img, CROP.x, CROP.y, CROP.w, CROP.h, 0, 0, MASK_W, MASK_H)
-  }
+  await Promise.all(
+    [piece.hol, piece.pet].map(name =>
+      drawPlateRegion(ctx, `${CDN}/${name}`, CROP, MASK_W, MASK_H),
+    ),
+  )
   const { data } = ctx.getImageData(0, 0, MASK_W, MASK_H)
   const mask = new Uint8Array(MASK_W * MASK_H)
   for (let i = 0; i < mask.length; i++) mask[i] = data[i * 4 + 3] > ALPHA_MIN
@@ -943,7 +933,7 @@ const Pop = styled.div`
   }
 `
 
-const WinImg = styled.img`
+const WinImg = styled(PlateImg)`
   position: absolute;
   display: block;
   height: auto;

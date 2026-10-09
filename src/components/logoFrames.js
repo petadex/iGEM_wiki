@@ -1,4 +1,5 @@
 import styled, { css, keyframes } from "styled-components"
+import { PlateImg } from "./PlateImg.js"
 
 /** Nine-frame PETABITE logo loop (same slot + idle float as the old static logo). */
 const LOGO_FRAME_COUNT = 9
@@ -67,8 +68,11 @@ export const LOGO_PLATE = { w: 2360, h: 1640 }
 /** Painted area across all frames (plate px), padded. */
 export const LOGO_BOX = { x: 180, y: 420, w: 2180, h: 848 }
 
-/** One frame of the loop; frame 0 sizes the stack, the rest sit on top. */
-export const LogoFrame = styled.img`
+/**
+ * One frame of the loop; frame 0 sizes the stack, the rest sit on top. Find
+ * frames by [data-logo-frame] (each is a PlateImg, not necessarily an <img>).
+ */
+export const LogoFrame = styled(PlateImg).attrs({ "data-logo-frame": "" })`
   display: block;
   width: 100%;
   height: auto;

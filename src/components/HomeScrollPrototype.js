@@ -14,6 +14,7 @@ import { ExplainTerm } from "./ExplainTermPopover.js"
 import EndingPetamonBottle from "./EndingPetamonBottle.js"
 import { ART_REF_W, ART_WIDTH_VAR, artFont, artPx, phone } from "./artScale.js"
 import { LOGO_BOX, LOGO_FRAMES, LOGO_PLATE, LogoFrame } from "./logoFrames.js"
+import { PlateImg } from "./PlateImg.js"
 import { SiteLoader } from "./SiteLoader.js"
 
 /**
@@ -1285,12 +1286,14 @@ export function HomeScrollPrototype() {
         }
       },
       onLand: phaseMs => {
-        heroLogoRef.current?.querySelectorAll("img").forEach(img => {
-          img.style.animation = "none"
-          void img.offsetWidth
-          img.style.animation = ""
-          img.style.animationDelay = `-${Math.round(phaseMs)}ms`
-        })
+        heroLogoRef.current
+          ?.querySelectorAll("[data-logo-frame]")
+          .forEach(frame => {
+            frame.style.animation = "none"
+            void frame.offsetWidth
+            frame.style.animation = ""
+            frame.style.animationDelay = `-${Math.round(phaseMs)}ms`
+          })
         setLogoLanded(true)
       },
     }),
@@ -3473,7 +3476,7 @@ const HexFieldOverlap = styled.div`
   pointer-events: none;
 `
 
-const HexFieldImg = styled.img`
+const HexFieldImg = styled(PlateImg)`
   display: block;
   width: 100%;
   height: auto;
@@ -3500,7 +3503,7 @@ const Section5Sizer = styled.div`
   pointer-events: none;
 `
 
-const Section5Layer = styled.img`
+const Section5Layer = styled(PlateImg)`
   position: absolute;
   left: 0;
   top: 0;
@@ -3538,7 +3541,7 @@ const CrabBang = styled.span`
   }
 `
 
-const CrabBangImg = styled.img`
+const CrabBangImg = styled(PlateImg)`
   display: block;
   width: 100%;
   height: auto;
@@ -3596,7 +3599,7 @@ const Section5SplashDrop = styled.div`
 `
 
 /** Full-plate sprite inside a plateCropStyle window (offsets come from style). */
-const PlateCropImg = styled.img`
+const PlateCropImg = styled(PlateImg)`
   position: absolute;
   display: block;
   height: auto;
@@ -4422,7 +4425,7 @@ const crabFlapB = keyframes`
   }
 `
 
-const CrabFrame = styled.img`
+const CrabFrame = styled(PlateImg)`
   position: absolute;
   left: 0;
   top: 0;
@@ -4457,7 +4460,7 @@ const CrabFrame = styled.img`
   }
 `
 
-const StaticPlateImg = styled.img`
+const StaticPlateImg = styled(PlateImg)`
   display: block;
   width: 100%;
   height: auto;
@@ -4569,7 +4572,7 @@ const ShoreBottleRock = styled.div`
   }
 `
 
-const ShoreBottleImg = styled.img`
+const ShoreBottleImg = styled(PlateImg)`
   display: block;
   width: 100%;
   height: auto;
@@ -4624,7 +4627,7 @@ const MapBottleRock = styled.div`
   }
 `
 
-const MapBottleImg = styled.img`
+const MapBottleImg = styled(PlateImg)`
   display: block;
   width: 100%;
   height: auto;
@@ -5030,7 +5033,7 @@ const ConditionCaption = styled.figcaption`
   }
 `
 
-const RailImg = styled.img`
+const RailImg = styled(PlateImg)`
   display: block;
   width: 100%;
   height: auto;
@@ -5108,7 +5111,7 @@ const TurtleFloat = styled.div`
   }
 `
 
-const TurtleImg = styled.img`
+const TurtleImg = styled(PlateImg)`
   position: absolute;
   display: block;
   height: auto;
@@ -5233,7 +5236,7 @@ const BirdFlapper = styled.div`
   inset: 0;
 `
 
-const BirdFrame = styled.img`
+const BirdFrame = styled(PlateImg)`
   position: absolute;
   left: 0;
   top: 0;
