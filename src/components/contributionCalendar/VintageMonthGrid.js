@@ -6,11 +6,15 @@ import {
   getMonthGrid,
   weekIdForDate,
 } from "../../data/contributionCalendar/calendarUtils.js"
-import { SUBTEAM_BY_ID } from "../../data/subteamTracks.js"
+import {
+  SUBTEAM_BY_ID,
+  trackColor,
+  trackTextColor,
+} from "../../data/subteamTracks.js"
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-function MilestoneLabel({ ms }) {
+function MilestoneLabel({ ms, lines }) {
   const [open, setOpen] = useState(false)
   const track = SUBTEAM_BY_ID[ms.subteamId]
   const dateLabel = formatDayShort(ms.date)
@@ -24,8 +28,9 @@ function MilestoneLabel({ ms }) {
       onBlur={() => setOpen(false)}
     >
       <MilestoneBadge
-        $color={track?.color ?? "#6de4c0"}
-        $text={track?.textColor ?? "#06202b"}
+        $color={track ? trackColor(track) : "#6de4c0"}
+        $text={track ? trackTextColor(track) : "#06202b"}
+        $lines={lines}
         tabIndex={0}
         aria-label={aria}
       >
@@ -99,14 +104,24 @@ export function VintageMonthGrid({
                   {dayNum}
                 </DayNum>
                 <MilestoneSlot>
+                  {/* A lone milestone gets two lines; two share the space. */}
                   {milestones.slice(0, 2).map((ms) => (
-                    <MilestoneLabel key={`${ymd}-${ms.label}`} ms={ms} />
+                    <MilestoneLabel
+                      key={`${ymd}-${ms.label}`}
+                      ms={ms}
+                      lines={milestones.length > 1 ? 1 : 2}
+                    />
                   ))}
                 </MilestoneSlot>
               </Cell>
             )
           })}
         </WeekRow>
+      ))}
+      {/* Every month takes six rows of room, so changing month doesn't
+          change the calendar's height (or move the page). */}
+      {Array.from({ length: Math.max(0, 6 - rows.length) }, (_, i) => (
+        <RowSpacer key={`spacer-${i}`} aria-hidden />
       ))}
     </GridWrap>
   )
@@ -133,7 +148,7 @@ const Weekday = styled.div`
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #2d9194;
+  color: var(--cal-accent, #2d9194);
   padding: 0.35rem 0;
 `
 
@@ -144,18 +159,33 @@ const WeekRow = styled.div`
   margin-bottom: clamp(6px, 0.9vw, 10px);
 `
 
+const RowSpacer = styled.div`
+  min-height: clamp(5.25rem, 9vw, 7rem);
+  margin-bottom: clamp(6px, 0.9vw, 10px);
+`
+
 const Cell = styled.div`
   position: relative;
   min-height: clamp(5.25rem, 9vw, 7rem);
   padding: 0.55rem 0.5rem 0.4rem;
   background: ${({ $inBand, $outOfMonth }) => {
-    if ($inBand) return $outOfMonth ? "#dceee8" : "#6de4c0"
-    return $outOfMonth ? "#f3f3f0" : "#ffffff"
+    if ($inBand)
+      return $outOfMonth
+        ? "var(--cal-band-out, #dceee8)"
+        : "var(--cal-band, #6de4c0)"
+    return $outOfMonth
+      ? "var(--cal-cell-out, #f3f3f0)"
+      : "var(--cal-cell, #ffffff)"
   }};
   border: 1px solid
     ${({ $inBand, $outOfMonth }) => {
-      if ($inBand) return $outOfMonth ? "rgba(45,145,148,0.35)" : "#2d9194"
-      return $outOfMonth ? "rgba(6,32,43,0.08)" : "rgba(6,32,43,0.14)"
+      if ($inBand)
+        return $outOfMonth
+          ? "var(--cal-band-out-line, rgba(45,145,148,0.35))"
+          : "var(--cal-band-line, #2d9194)"
+      return $outOfMonth
+        ? "var(--cal-cell-out-line, rgba(6,32,43,0.08))"
+        : "var(--cal-cell-line, rgba(6,32,43,0.14))"
     }};
   cursor: pointer;
   transition: background 0.15s ease;
@@ -163,7 +193,7 @@ const Cell = styled.div`
   &:hover {
     ${({ $inBand, $outOfMonth }) =>
       !$inBand
-        ? `background: ${$outOfMonth ? "#ebebe6" : "#f5f5f2"};`
+        ? `background: ${$outOfMonth ? "var(--cal-cell-out-hover, #ebebe6)" : "var(--cal-cell-hover, #f5f5f2)"};`
         : ""}
   }
 
@@ -181,9 +211,10 @@ const DayNum = styled.span`
   font-weight: 700;
   line-height: 1;
   color: ${({ $sunday, $inBand, $outOfMonth }) => {
-    if ($outOfMonth) return $inBand ? "rgba(6,32,43,0.55)" : "rgba(6,32,43,0.38)"
-    if ($inBand) return "#06202b"
-    return $sunday ? "#c44" : "#06202b"
+    if ($outOfMonth)
+      return `color-mix(in srgb, var(--cal-ink, #06202b) ${$inBand ? 55 : 38}%, transparent)`
+    if ($inBand) return "var(--cal-ink, #06202b)"
+    return $sunday ? "var(--cal-sunday, #c44)" : "var(--cal-ink, #06202b)"
   }};
 `
 
@@ -216,11 +247,25 @@ const MilestoneBadge = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  ${({ $lines }) =>
+    $lines > 1 &&
+    `
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: ${$lines};
+    white-space: normal;
+    overflow-wrap: anywhere;
+    /* Clipping stops at the padding, so a third line would peek into it;
+       a same-colour border pads the bottom instead. */
+    padding-bottom: 0;
+    border-bottom: 3px solid transparent;
+  `}
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   cursor: help;
 
   &:focus-visible {
-    outline: 2px solid #2d9194;
+    outline: 2px solid var(--cal-accent, #2d9194);
     outline-offset: 1px;
   }
 `
@@ -235,7 +280,7 @@ const MilestoneTooltip = styled.div`
   max-width: min(16rem, 42vw);
   padding: 0.45rem 0.55rem;
   border-radius: 6px;
-  background: #06202b;
+  background: var(--cal-ink, #06202b);
   color: #fff;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
   pointer-events: none;

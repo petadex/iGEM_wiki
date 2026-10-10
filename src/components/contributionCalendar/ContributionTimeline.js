@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
-import { SUBTEAM_IDS } from "../../data/subteamTracks.js"
 import {
   CONTRIBUTION_WEEK_BY_ID,
   CONTRIBUTION_WEEKS,
@@ -45,7 +44,8 @@ export function ContributionTimeline({ embedded = false }) {
 
   const [monthKey, setMonthKey] = useState(initialMonth)
   const [selectedWeekId, setSelectedWeekId] = useState(initialWeekId)
-  const [activeSubteams, setActiveSubteams] = useState(() => new Set(SUBTEAM_IDS))
+  // Subteam filters start off; turning one on shows its progress.
+  const [activeSubteams, setActiveSubteams] = useState(() => new Set())
   /** @type {[HiddenPanel, function]} */
   const [hiddenPanel, setHiddenPanel] = useState(null)
 
@@ -227,6 +227,8 @@ const TimelineRoot = styled.div`
   max-width: ${({ $embedded }) => ($embedded ? "100%" : "96rem")};
   min-width: 0;
   margin-inline: auto;
+  /* Stacks by its own width, so it also fits a narrow text box. */
+  container-type: inline-size;
   padding-inline: ${({ $embedded }) => ($embedded ? "0" : "clamp(0.75rem, 2vw, 1.5rem)")};
   box-sizing: border-box;
   position: relative;
@@ -243,10 +245,10 @@ const TimelineRoot = styled.div`
 const SubteamNavRow = styled.div`
   width: 100%;
   margin-bottom: 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cal-line, var(--color-border));
   border-radius: 8px 8px 0 0;
   border-bottom: none;
-  background: #fff;
+  background: var(--cal-surface, #fff);
   box-sizing: border-box;
 `
 
@@ -255,12 +257,12 @@ const SplitContainer = styled.div`
   flex-direction: row;
   align-items: stretch;
   min-height: 72vh;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cal-line, var(--color-border));
   border-radius: 0 0 8px 8px;
   overflow: hidden;
   width: 100%;
 
-  @media (max-width: 900px) {
+  @container (max-width: 720px) {
     flex-direction: column;
     min-height: auto;
   }
@@ -275,7 +277,7 @@ const DetailHalf = styled.div`
   max-width: ${({ $full, $split }) =>
     $full ? "100%" : $split ? "var(--detail-split)" : "none"};
 
-  @media (max-width: 900px) {
+  @container (max-width: 720px) {
     flex: 1 1 auto;
     max-width: 100%;
   }
@@ -284,20 +286,30 @@ const DetailHalf = styled.div`
 const WeekNavBar = styled.div`
   flex-shrink: 0;
   padding: var(--space-sm) var(--space-md) var(--space-md);
-  background: #fff;
+  background: var(--cal-surface, #fff);
 `
 
 const DetailScroll = styled.div`
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  /* Its content doesn't size the panels: beside the calendar it takes the
+     calendar's height and scrolls, so picking a week or a subteam never
+     changes the page's length. */
+  contain: size;
+
+  /* Stacked over the calendar: a fixed height of its own. */
+  @container (max-width: 720px) {
+    flex: none;
+    height: min(24rem, 55vh);
+  }
 `
 
 const ResizeDivider = styled.div`
   flex: 0 0 8px;
   width: 8px;
   cursor: col-resize;
-  background: var(--color-border);
+  background: var(--cal-line, var(--color-border));
   position: relative;
   touch-action: none;
   user-select: none;
@@ -311,13 +323,13 @@ const ResizeDivider = styled.div`
     width: 4px;
     height: 2.5rem;
     border-radius: 2px;
-    background: #2d9194;
+    background: var(--cal-accent, #2d9194);
     opacity: 0.5;
   }
 
   &:hover,
   &:focus-visible {
-    background: #2d9194;
+    background: var(--cal-accent, #2d9194);
 
     &::after {
       opacity: 1;
@@ -325,7 +337,7 @@ const ResizeDivider = styled.div`
     }
   }
 
-  @media (max-width: 900px) {
+  @container (max-width: 720px) {
     display: none;
   }
 `
@@ -335,16 +347,16 @@ const CalendarHalf = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  border-left: ${({ $full }) => ($full ? "none" : "1px solid var(--color-border)")};
+  border-left: ${({ $full }) => ($full ? "none" : "1px solid var(--cal-line, var(--color-border))")};
 
-  @media (max-width: 900px) {
+  @container (max-width: 720px) {
     border-left: none;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--cal-line, var(--color-border));
   }
 `
 
 const CalendarPanel = styled.div`
-  background: #fff;
+  background: var(--cal-surface, #fff);
   padding: var(--space-md) clamp(1.25rem, 3.5vw, 2.75rem) var(--space-lg);
   min-height: 68vh;
   flex: 1;

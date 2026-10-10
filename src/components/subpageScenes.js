@@ -399,3 +399,135 @@ export const HARDWARE_SCENE = {
   /** Bottom of the mockup's text box; the pool below is the ending. */
   textEndY: 3691,
 }
+
+/**
+ * Project › Contribution: a greenhouse. The page is one big season calendar,
+ * so there's no section list and the text box is wide, ending just above the
+ * petamons on the steps (they and the pool below are the ending).
+ */
+export const CONTRIBUTION_SCENE = {
+  header: "Contribution",
+  boxTitle: "Overview",
+  assetBase: "https://static.igem.wiki/teams/6187/wiki/contributions/",
+  plate: [1110, 4000],
+  background: "#c0dad3",
+  skyBottom: 400,
+  headerColor: "#2e5247",
+  accent: "#46725f",
+  layers: [
+    { name: "bg", box: [0, 0, 1110, 4000] },
+    // Seedlings in the planter, behind the Dry Lab bug.
+    { name: "sprouts", box: [70, 2997, 290, 3090] },
+    // Each subteam's petamon on the steps, one file each so they can move
+    // on their own. Four do what their subteam's critters do on hover (tap
+    // on touch): the kangaroo throws Venture's coins, the bird loops like
+    // the Human Practices birds, the crab scuttles like Dry Lab's, and the
+    // turtle gets Hardware's lightning.
+    { name: "venpetamon", coinBurst: true, box: [0, 2800, 196, 3362] },
+    // Faces us; looping "rightward" rolls it counterclockwise.
+    { name: "hppetamon", loop: { facing: 1 }, box: [120, 2724, 348, 2822] },
+    { name: "orpetamon", box: [222, 2806, 396, 3005] },
+    { name: "webpetamon", box: [371, 2755, 644, 3004] },
+    { name: "wlpetamon", box: [604, 2783, 805, 2910] },
+    { name: "dlpetamon", crab: true, box: [161, 3046, 290, 3148] },
+    {
+      name: "hwpetamon",
+      box: [300, 3006, 541, 3210],
+      hit: [304, 3012, 534, 3202],
+      // The standing turtle's lightning on the Hardware plate, stretched
+      // over this one.
+      zap: {
+        name: `${HARDWARE_SCENE.assetBase}zapzap.avif`,
+        from: [122, 1830, 352, 2133],
+        box: [288, 2984, 552, 3218],
+      },
+    },
+  ],
+  /** Loose coins on Venture's coins.avif, for the kangaroo (same plate size). */
+  coinSprites: VENTURE_SCENE.coinSprites.map(coin => ({
+    ...coin,
+    name: `${VENTURE_SCENE.assetBase}${coin.name}.avif`,
+  })),
+  side: null,
+  /** No menu highlight to match, so the footer button takes the accent. */
+  footerButton: { bg: "#46725f", text: "#ffffff" },
+  /** Not painted: a flat box in the greenhouse's paper colour. */
+  text: {
+    fill: "#fdf9f0",
+    box: [90, 412, 1020, 2690],
+    minH: 900,
+  },
+  textEndY: 2690,
+  /**
+   * The calendar in greenhouse colours: paper panels, sandstone lines, sage
+   * for what's selected, terracotta Sundays. Subteams take the team's painted
+   * swatches (Hardware, Venture and Human Practices match their pages' menu
+   * highlights), each with a dark label that reads on it.
+   */
+  vars: {
+    "--cal-surface": "#fffdf7",
+    "--cal-chrome": "#f3ecdc",
+    "--cal-line": "#d9c9a8",
+    "--cal-ink": "#2b3a30",
+    "--cal-muted": "#6a6650",
+    "--cal-accent": "#46725f",
+    "--cal-hover": "#f1ead9",
+    "--cal-tint": "rgba(70, 114, 95, 0.12)",
+    "--cal-cell": "#fffdf7",
+    "--cal-cell-hover": "#f5eee0",
+    "--cal-cell-line": "rgba(120, 96, 60, 0.2)",
+    "--cal-cell-out": "#f1eadb",
+    "--cal-cell-out-hover": "#e8dfcc",
+    "--cal-cell-out-line": "rgba(120, 96, 60, 0.1)",
+    "--cal-band": "#bcdccf",
+    "--cal-band-out": "#dce9e1",
+    "--cal-band-line": "#46725f",
+    "--cal-band-out-line": "rgba(70, 114, 95, 0.35)",
+    "--cal-sunday": "#b0543c",
+    "--cal-team-wetLab": "#76b8c8",
+    "--cal-team-wetLab-text": "#0c2a32",
+    "--cal-team-dryLab": "#f5e5b2",
+    "--cal-team-dryLab-text": "#3d3112",
+    "--cal-team-hardware": "#877bc3",
+    "--cal-team-hardware-text": "#17122e",
+    "--cal-team-humanPractices": "#648b80",
+    "--cal-team-humanPractices-text": "#0b1d18",
+    "--cal-team-outreach": "#cd7261",
+    "--cal-team-outreach-text": "#2a0d08",
+    "--cal-team-venture": "#eab781",
+    "--cal-team-venture-text": "#3a230e",
+    "--cal-team-web": "#afbc90",
+    "--cal-team-web-text": "#1f2914",
+  },
+}
+
+/**
+ * Attributions: a sunset over the Toronto skyline. No section list yet; the
+ * box ends above the buildings, which (with the birds) are the ending.
+ */
+export const ATTRIBUTIONS_SCENE = {
+  header: "Attributions",
+  boxTitle: "Overview",
+  assetBase: "https://static.igem.wiki/teams/6187/wiki/attributions/",
+  plate: [1110, 4000],
+  background: "#c0c0be",
+  skyBottom: 400,
+  headerColor: "#4f4159",
+  accent: "#8a4f60",
+  layers: [
+    { name: "bg", box: [0, 0, 1110, 4000] },
+    // Loop-the-loop on hover (tap on touch), counterclockwise like the
+    // Contribution bird.
+    { name: "birds", loop: { facing: 1 }, box: [1020, 3388, 1108, 3484] },
+  ],
+  side: null,
+  /** No menu highlight to match: the skyline's purple. */
+  footerButton: { bg: "#584960", text: "#ffffff" },
+  /** Not painted: a flat, faintly warm box on the sunset. */
+  text: {
+    fill: "#fffbf7",
+    box: [140, 412, 970, 3400],
+    minH: 2000,
+  },
+  textEndY: 3400,
+}

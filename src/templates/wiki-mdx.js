@@ -11,6 +11,8 @@ import TableOfContents from "../components/tableOfContents.js"
 import { TOCWrapper } from "../components/pageStyles.js"
 import SubpageScene from "../components/SubpageScene.js"
 import {
+  ATTRIBUTIONS_SCENE,
+  CONTRIBUTION_SCENE,
   DRY_LAB_SCENE,
   HARDWARE_SCENE,
   HP_SCENE,
@@ -36,6 +38,12 @@ const sceneFor = frontmatter => {
     return VENTURE_SCENE
   if (frontmatter.path === "/beyond-the-bench/human-practices/")
     return HP_SCENE
+  if (frontmatter.path === "/project/contribution/") return CONTRIBUTION_SCENE
+  if (
+    frontmatter.path === "/team/attributions/" ||
+    frontmatter.path === "/attributions/"
+  )
+    return ATTRIBUTIONS_SCENE
   return null
 }
 
@@ -50,10 +58,12 @@ const WikiMdxTemplate = ({ data, children }) => {
       <WikiLayout
         fullBleed
         // The footer button takes the colours of the page's menu highlight.
-        footerButton={{
-          bg: scene.side.highlightColor,
-          text: scene.side.activeLinkColor || scene.side.linkColor,
-        }}
+        footerButton={
+          scene.footerButton || {
+            bg: scene.side.highlightColor,
+            text: scene.side.activeLinkColor || scene.side.linkColor,
+          }
+        }
       >
         <SubpageScene
           scene={scene}

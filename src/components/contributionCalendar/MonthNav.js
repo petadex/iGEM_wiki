@@ -113,10 +113,10 @@ const Header = styled.div`
 const ArrowBtn = styled.button`
   width: 2.25rem;
   height: 2.25rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--cal-line, var(--color-border));
   border-radius: 6px;
-  background: #fff;
-  color: #2d9194;
+  background: var(--cal-surface, #fff);
+  color: var(--cal-accent, #2d9194);
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
@@ -131,8 +131,8 @@ const ArrowBtn = styled.button`
   }
 
   &:hover:not(:disabled) {
-    background: #f5f5f2;
-    border-color: #2d9194;
+    background: var(--cal-hover, #f5f5f2);
+    border-color: var(--cal-accent, #2d9194);
   }
 
   &:focus-visible {
@@ -155,13 +155,13 @@ const MonthTrigger = styled.button`
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 2.5vw, 1.75rem);
   font-weight: 700;
-  color: #06202b;
+  color: var(--cal-ink, #06202b);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
 
   &:hover {
-    color: #2d9194;
+    color: var(--cal-accent, #2d9194);
   }
 
   &:focus-visible {
@@ -173,13 +173,13 @@ const MonthTrigger = styled.button`
 const YearSpan = styled.span`
   font-family: var(--font-body);
   font-size: 0.85rem;
-  color: var(--color-muted);
+  color: var(--cal-muted, var(--color-muted));
   font-weight: 500;
 `
 
 const Chevron = styled.span`
   font-size: 0.75rem;
-  color: #2d9194;
+  color: var(--cal-accent, #2d9194);
   margin-left: 0.15rem;
   transform: ${({ $open }) => ($open ? "rotate(180deg)" : "none")};
   transition: transform 0.15s ease;
@@ -191,8 +191,8 @@ const MonthDropdown = styled.div`
   left: 50%;
   transform: translateX(-50%);
   min-width: 11rem;
-  background: #fff;
-  border: 1px solid var(--color-border);
+  background: var(--cal-surface, #fff);
+  border: 1px solid var(--cal-line, var(--color-border));
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 0.35rem;
@@ -205,8 +205,8 @@ const MonthDropdown = styled.div`
 const MonthOption = styled.button`
   text-align: left;
   border: none;
-  background: ${({ $active }) => ($active ? "rgba(45,145,148,0.12)" : "transparent")};
-  color: ${({ $active }) => ($active ? "#2d9194" : "#06202b")};
+  background: ${({ $active }) => ($active ? "var(--cal-tint, rgba(45, 145, 148, 0.12))" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--cal-accent, #2d9194)" : "var(--cal-ink, #06202b)")};
   font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
@@ -215,8 +215,8 @@ const MonthOption = styled.button`
   cursor: pointer;
 
   &:hover {
-    background: rgba(45, 145, 148, 0.1);
-    color: #2d9194;
+    background: var(--cal-tint, rgba(45, 145, 148, 0.1));
+    color: var(--cal-accent, #2d9194);
   }
 
   &:focus-visible {

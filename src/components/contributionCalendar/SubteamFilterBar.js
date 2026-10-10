@@ -1,6 +1,10 @@
 import React from "react"
 import styled from "styled-components"
-import { SUBTEAM_TRACKS } from "../../data/subteamTracks.js"
+import {
+  SUBTEAM_TRACKS,
+  trackColor,
+  trackTextColor,
+} from "../../data/subteamTracks.js"
 
 export function SubteamFilterBar({ activeIds, onToggle, layout = "inline" }) {
   const isNavbar = layout === "navbar"
@@ -15,8 +19,8 @@ export function SubteamFilterBar({ activeIds, onToggle, layout = "inline" }) {
             <Chip
               key={track.id}
               type="button"
-              $color={track.color}
-              $text={track.textColor}
+              $color={trackColor(track)}
+              $text={trackTextColor(track)}
               $on={on}
               $navbar={isNavbar}
               aria-pressed={on}
@@ -38,8 +42,8 @@ const FilterRoot = styled.div`
     $navbar &&
     `
     padding: var(--space-sm) var(--space-md);
-    background: #fff;
-    border-bottom: 2px solid #2d9194;
+    background: var(--cal-surface, #fff);
+    border-bottom: 2px solid var(--cal-accent, #2d9194);
   `}
 `
 
@@ -47,7 +51,7 @@ const FilterLabel = styled.p`
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--cal-muted, var(--color-muted));
   font-weight: 600;
   margin-bottom: var(--space-sm);
 `
@@ -61,9 +65,9 @@ const ChipRow = styled.div`
 `
 
 const Chip = styled.button`
-  border: 2px solid ${({ $on, $color }) => ($on ? $color : "var(--color-border)")};
+  border: 2px solid ${({ $on, $color }) => ($on ? $color : "var(--cal-line, var(--color-border))")};
   background: ${({ $on, $color }) => ($on ? $color : "transparent")};
-  color: ${({ $on, $text }) => ($on ? $text : "var(--color-text)")};
+  color: ${({ $on, $text }) => ($on ? $text : "var(--cal-ink, var(--color-text))")};
   font-family: var(--font-body);
   font-size: ${({ $navbar }) => ($navbar ? "0.78rem" : "0.72rem")};
   font-weight: 600;
