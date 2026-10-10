@@ -93,7 +93,7 @@ const WikiLayout = ({
                   This work is licensed under CC BY 4.0
                 </MetaLink>
                 <MetaSep aria-hidden>·</MetaSep>
-                <MetaLink href="https://gitlab.com" target="_blank" rel="noopener noreferrer">
+                <MetaLink href="https://gitlab.igem.org/2026/toronto" target="_blank" rel="noopener noreferrer">
                   Source on GitLab
                 </MetaLink>
               </FooterMeta>

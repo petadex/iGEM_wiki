@@ -23,6 +23,14 @@ export const Callout = ({ tone = "note", title, children }) => (
   </CalloutBox>
 )
 
+/** Marks draft copy that still has to be replaced before the page is published. */
+export const Placeholder = ({ label = "Placeholder text", children }) => (
+  <PlaceholderBox>
+    <PlaceholderLabel>{label}</PlaceholderLabel>
+    <CalloutBody>{children}</CalloutBody>
+  </PlaceholderBox>
+)
+
 export const Figure = ({ src, alt = "", caption, credit, children }) => (
   <FigureWrap>
     {src && <img src={src} alt={alt} />}
@@ -55,6 +63,7 @@ export const ContributionCalendar = ({ title, caption }) => (
 
 export const mdxComponents = {
   Callout,
+  Placeholder,
   Figure,
   ImageGrid,
   DataTable,
@@ -114,6 +123,24 @@ const CalloutBody = styled.div`
   p {
     color: var(--color-body);
   }
+`
+
+const PlaceholderBox = styled.div`
+  max-width: 48rem;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px dashed var(--color-muted);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.24);
+`
+
+const PlaceholderLabel = styled.p`
+  color: var(--color-muted) !important;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-xs);
 `
 
 const FigureWrap = styled.figure`

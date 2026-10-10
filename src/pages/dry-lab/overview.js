@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react"
+import { Link } from "gatsby"
 import styled from "styled-components"
 import WikiLayout from "../../components/layout.js"
 import SubpageScene from "../../components/SubpageScene.js"
 import { DRY_LAB_SCENE } from "../../components/subpageScenes.js"
-import AtlasMap from "../../components/AtlasMap.js"
 import EnzymeBattle from "../../components/EnzymeBattle.js"
 import Petadex from "../../components/Petadex.js"
 import PetadexBottlePath from "../../components/PetadexBottlePath.js"
@@ -23,16 +23,10 @@ const Page = () => {
           the Wet Lab for experimental validation, forming the analytical core
           of the project's enzyme discovery pipeline.
         </Blurb>
-        <Section>
-          <h2>Protein Family Atlas</h2>
-          <p>
-            Interactive UMAP visualization of protein families. Use the controls
-            to color by taxonomic domain, phylum, or structural component.
-            Search for specific families or organisms using the search bar.
-            Scroll to zoom and drag to pan.
-          </p>
-          <AtlasMap />
-        </Section>
+        <PageLinks aria-label="Dry Lab pages">
+          <Link to="/model/">Model</Link>
+          <Link to="/software/">Software</Link>
+        </PageLinks>
         <Section>
           <h2>PETadex</h2>
           <p>
@@ -65,6 +59,26 @@ const Blurb = styled.p`
   line-height: 1.75;
   max-width: 52rem;
   margin-bottom: var(--space-xl);
+`
+
+const PageLinks = styled.nav`
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+
+  a {
+    padding: 0.5rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  a:hover {
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
 `
 
 const Section = styled.section`

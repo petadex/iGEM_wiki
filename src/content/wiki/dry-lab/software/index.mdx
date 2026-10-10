@@ -5,18 +5,164 @@ path: "/dry-lab/software/"
 navTitle: "Software"
 order: 30
 description: "Software tools and workflows built for computational PETase discovery."
-owners: ["Dry Lab", "Web Team"]
-updated: "2026-05-16"
+owners: ["Dry Lab"]
+updated: "2026-10-10"
 status: "draft"
 ---
 
-This page will document software produced by the project, including PETadex-facing tools, internal pipelines, and reusable scripts.
+{/*
+  WRITER NOTES — not rendered. Delete each block as its section is written.
 
-<DataTable caption="Software inventory">
+  Source of truth: Obsidian "IGEM Wiki/03 Build/MVP Build Plan.md" §3 and §4.
+  Target ~2,500 words, general audience, minimal jargon. Everything inside
+  <Placeholder> is stand-in copy: replace it with human-written prose and
+  remove the wrapper. Every number must come from Numbers.md, which is why
+  the placeholder copy carries none.
 
-| Tool | Purpose | Audience |
-| --- | --- | --- |
-| PETadex | Explore PETase candidate data. | Researchers and project members |
-| Wiki MDX pipeline | Publish team-written content without editing React pages. | iGEM Toronto subteams |
+  One title per product. Each product section covers, under its single
+  heading: what it does and why, how it works, how to install or use it, and
+  its demo. LOBSTER leads.
 
-</DataTable>
+  Demos are frozen-data and client-side: no network calls, no CDN scripts.
+  Each ships with a static fallback image and a caption saying what the full
+  tool does differently.
+
+  Best Software Tool eligibility gates, all still open:
+    - OSI-approved licence applied
+    - source mirrored to gitlab.igem.org/2026/software-tools/
+    - team confirmed not in the Software & AI Village
+*/}
+
+<Callout title="Page in progress">
+This page is being written. Text in dashed boxes is placeholder copy that shows what each section will cover.
+</Callout>
+
+{/*
+  ~150 words. Short overview for a general audience, no heading.
+*/}
+
+<Placeholder>
+
+We built four pieces of software while searching for plastic-degrading enzymes. Each is useful outside our own project, and each is described below with a small demo that runs in this page.
+
+</Placeholder>
+
+## LOBSTER
+
+{/*
+  Demo D1 (MVP). ~900 words.
+  Covers: the sequence purchasing problem; design decisions and trade-offs
+  (fragment libraries assembling into full-length sequences via Golden Gate
+  with built-in degeneracy); validation, including the IsPETase/LCC
+  literature controls; install and run, step by step.
+  Demo: one preselected cluster of 8 to 12 sequences, slider over degeneracy
+  or fragment count, output fragment library table, variant count, naive
+  cost vs LOBSTER cost. Frozen JSON from a real pipeline run, under 200 KB.
+  VERIFY the ">50% nucleotide savings" figure before publishing it.
+*/}
+
+<Placeholder>
+
+Testing a family of related enzymes means buying a DNA sequence for each one, and synthesis cost grows with every variant added. LOBSTER designs a library of shorter fragments that assemble into the full-length sequences, with variation built into the fragments, so that many variants can be made from far less synthesised DNA.
+
+This section will explain the purchasing problem, how the algorithm chooses fragments, how we checked its output against enzymes with known activity, and how to install and run it on your own sequences.
+
+</Placeholder>
+
+<Placeholder label="Placeholder demo">
+
+LOBSTER on one enzyme cluster: adjust the degeneracy and see the fragment library, the number of variants it encodes, and its cost against ordering every sequence in full.
+
+</Placeholder>
+
+## Sharded DIAMOND search
+
+{/*
+  Demo D2 (MVP). ~500 words.
+  Covers: what the search is for; architecture (sharded database, serverless
+  fan-out, object-store-backed shards, persistent and shareable result
+  URLs); how to run a search on petadex.net.
+  Demo: 3 to 5 precomputed queries, IsPETase and LCC among them, real hit
+  table, sortable and filterable, under 300 KB. Present it as a real result
+  from the live tool, not as live search, and link out to petadex.net.
+*/}
+
+<Placeholder>
+
+The search tool lets anyone compare a protein sequence against our full corpus from a web browser. The database is split into shards that are searched in parallel and merged, so a query over the whole corpus returns in under a minute, and each result has a permanent link that can be shared.
+
+This section will explain how the search is built and how to use it.
+
+</Placeholder>
+
+<Placeholder label="Placeholder demo">
+
+Search results for a handful of well-known enzymes: a real hit table from the live tool that can be sorted and filtered.
+
+</Placeholder>
+
+## Sequence record card
+
+{/*
+  Demo D3 (MVP, cheapest, build first). ~350 words. Shared with the Model
+  page, where it sits under Sequence Annotation.
+  Covers: the data model behind a sequence page on petadex.net and how the
+  annotation layers are stored and retrieved.
+  Demo: one candidate ORF with every annotation layer stacked: domains,
+  structure, BioSample metadata, cluster membership, predicted activity.
+  Around 50 KB.
+*/}
+
+<Placeholder>
+
+Every sequence in the corpus has a record that gathers everything we know about it in one place: its domains, its predicted structure, the environment it was sampled from, the cluster it belongs to and its predicted activity.
+
+This section will explain how a record is assembled and how to look one up.
+
+</Placeholder>
+
+<Placeholder label="Placeholder demo">
+
+One candidate enzyme's record, with each annotation layer shown in turn.
+
+</Placeholder>
+
+## ESM Atlas
+
+{/*
+  Demo D4 (High, build only if D1 to D3 land early). ~350 words.
+  Covers: what the atlas shows, how the map is produced from protein
+  language model embeddings, metadata search, links through to sequence
+  pages.
+  Demo: family centroids downsampled to about 2,000, canvas scatter, hover
+  for metadata, colour by one axis. Under 500 KB.
+*/}
+
+<Placeholder>
+
+The atlas is a map of the enzyme families in the corpus, laid out so that families a protein language model considers similar sit close together. It can be searched by metadata, and each point links through to the sequences behind it.
+
+This section will explain how the map is made and how to read it.
+
+</Placeholder>
+
+<Placeholder label="Placeholder demo">
+
+A sample of the atlas: hover over a point to see the family it represents.
+
+</Placeholder>
+
+## Availability and licensing
+
+{/*
+  ~250 words. Licensing and repository pointer for all four products, plus
+  the open data and model release (public buckets, PlasticESM and its
+  training set on Hugging Face, bulk downloads). PlasticESM is covered here
+  as a released artifact; how it was built is on the Model page.
+*/}
+
+<Placeholder>
+
+This section will list where the source code for each tool lives, the open-source licence it is released under, and where the datasets and trained model can be downloaded.
+
+</Placeholder>

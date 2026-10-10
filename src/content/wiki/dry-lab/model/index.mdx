@@ -1,17 +1,210 @@
 ---
-title: "Generalized Model"
+title: "Model"
 section: "Dry Lab"
 path: "/dry-lab/model/"
-navTitle: "Generalized Model"
+navTitle: "Model"
 order: 20
 description: "Modeling approach and assumptions used to analyze PETase candidates."
 owners: ["Dry Lab"]
-updated: "2026-05-16"
+updated: "2026-10-10"
 status: "draft"
 ---
 
-This page will explain the generalized model used by the Dry Lab team, including its assumptions, inputs, outputs, and known limitations.
+{/*
+  WRITER NOTES — not rendered. Delete each block as its section is written.
 
-## Model Documentation
+  Source of truth: Obsidian "IGEM Wiki/03 Build/MVP Build Plan.md" §2.
+  Target ~3,000 words, scientific register. Everything inside <Placeholder>
+  is stand-in copy: replace it with human-written prose and remove the
+  wrapper. Every number must come from Numbers.md, which is why the
+  placeholder copy carries none.
 
-Describe what the model is meant to answer, what data it needs, and how results should be interpreted by wet lab or hardware teammates.
+  Page flow: Motivation, then what the model does (its components), then the
+  specifics of each component.
+
+  Best Model ballot (2026):
+    Q1 How impressive is the modeling or computational approach?
+    Q2 Did it help the team understand, predict, or design a part, device, or system?
+    Q3 Did the team use experimental or other relevant data to develop, train, or validate it?
+    Q4 Does it provide a good example for others?
+
+  The page must read as one model with its inputs, not four co-equal projects.
+*/}
+
+<Callout title="Page in progress">
+This page is being written. Text in dashed boxes is placeholder copy that shows what each section will cover.
+</Callout>
+
+## Motivation
+
+{/*
+  ~200 words. Answers Q1. No figure.
+  Why a model is needed at all: the question it has to answer.
+*/}
+
+<Placeholder>
+
+Known PET-degrading enzymes are few, and each one took years of bench work to find and characterise. Public sequence databases hold far more candidate enzymes than any lab could ever test, so the limiting step is choosing which ones to make.
+
+We built a model to make that choice. Given a sequence that has never been expressed, it estimates how likely the enzyme is to break down plastic, so that wet lab effort goes to the candidates most likely to work.
+
+</Placeholder>
+
+## What Our Model Does
+
+{/*
+  ~450 words. Answers Q2. Figures: pipeline overview; DBTL cycle.
+  This section carries the prize. State in the first paragraph that PETai's
+  ranking became the library wet lab ordered, then close the loop: prediction
+  ranks the library, wet lab tests it, results retrain the model.
+  Introduce the four components here in the order they are detailed below.
+*/}
+
+<Placeholder>
+
+Our model ranks candidate enzymes by predicted plastic-degrading activity. That ranking decided which sequences wet lab ordered and tested, and the assay results feed back in as new training data.
+
+It is built from four components, each described in its own section below:
+
+- **Dataset Generation** builds the corpus of candidate sequences the model ranks.
+- **Sequence Annotation** describes each sequence with the features the model can learn from.
+- **Activity Data Extraction** collects measured activity from the literature as training labels.
+- **Machine Learning** learns from the labelled sequences and scores the rest of the corpus.
+
+</Placeholder>
+
+<Placeholder label="Placeholder figure">
+
+Pipeline overview: corpus, features and labels feeding the model, and the model's ranking feeding the wet lab library.
+
+</Placeholder>
+
+## Dataset Generation
+
+{/*
+  ~500 words. Answers Q3. Figure: corpus funnel, 495 to final count.
+  Open with a line tying the corpus back to the model as its input.
+  Must cover: plasticome reference curation; component assignment;
+  homology expansion into NCBI nr; Logan query extraction.
+  Should cover: seed MSAs and catalytic HMMs; clustering and corpus structure.
+*/}
+
+<Placeholder>
+
+The corpus is the set of sequences the model scores. We start from the enzymes already reported to degrade plastic, curated and reconciled across the public reference databases, and group them into families by sequence similarity.
+
+From each family we search outward, first into the NCBI protein database and then into assembled public sequencing data through Logan, using profile models that require the catalytic residues to be present. The sequences recovered are clustered at several identity thresholds so the corpus can be sampled without redundancy.
+
+</Placeholder>
+
+<Placeholder label="Placeholder figure">
+
+Corpus funnel: from the known reference enzymes to the full candidate corpus.
+
+</Placeholder>
+
+## Sequence Annotation
+
+{/*
+  ~500 words. Answers Q3. Figure: annotation coverage per axis.
+  Open with a line tying the features back to the model as its input.
+  Must cover: BioSample metadata annotations (temperature, pH); domain
+  annotation; predicted structures.
+  Should cover: metadata profiles; localization and signal peptides; novel
+  accessory domains; biochemical properties and reconstructions.
+  Demo D3 (sequence record card) is shared with the Software page.
+*/}
+
+<Placeholder>
+
+Annotation supplies the features the model learns from. A raw sequence says little on its own, so we attach to each one what can be inferred about it: the environment its source sample came from, including growth temperature and pH; its domain architecture; its predicted three-dimensional structure; and where in the cell it is likely to be sent.
+
+Each layer is computed across the corpus by its own pipeline, and coverage differs from layer to layer. We report that coverage here because a feature the model cannot see for most sequences cannot inform most predictions.
+
+</Placeholder>
+
+<Placeholder label="Placeholder demo">
+
+Sequence record card: one candidate enzyme with every annotation layer stacked.
+
+</Placeholder>
+
+## Activity Data Extraction
+
+{/*
+  ~400 words. Answers Q3. Figure: human vs LLM agreement.
+  Open with a line tying the labels back to the model as its input.
+  Must cover: schema design and protocol (no-LLM rule for human extractors,
+  replicate design); human vs LLM agreement and what it licenses.
+  Should cover: LLM extraction pipeline; kinetics dataset.
+*/}
+
+<Placeholder>
+
+Labels tell the model which enzymes are known to work. Measured activity is scattered across the published literature in inconsistent formats, so we designed an extraction schema and a protocol for pulling it out of papers.
+
+Human extractors worked through the papers in replicate without language-model assistance, and a language-model pipeline extracted the same fields independently. We measured how often the two agree, and that agreement is what tells us whether automated extraction can be trusted at a scale people cannot reach.
+
+</Placeholder>
+
+<Placeholder label="Placeholder figure">
+
+Agreement between human and language-model extraction.
+
+</Placeholder>
+
+## Machine Learning
+
+{/*
+  ~700 words. Answers Q1 and Q2. Figures: architecture; controls result.
+  Lead with the controls, not the architecture: does the embedding space
+  encode anything beyond taxonomy?
+  Must cover: domain-adapted ESM-LoRA (PlasticESM), how it was built and
+  whether it works (its release is documented on the Software page);
+  embedding the corpus; embedding controls.
+  Should cover: activity prediction (PETai).
+  Cuttable: manifold method comparison.
+*/}
+
+<Placeholder>
+
+Before trusting any prediction, we tested whether the model's internal representation of a sequence carries information beyond which organism it came from. This section opens with those controls and what they showed.
+
+The representation comes from a protein language model that we adapted to plastic-degrading enzyme families and then used to embed the corpus. An activity classifier trained on the labelled sequences sits on top of it. We compare the adapted model against its unadapted base, and test whether adding annotation features improves on sequence alone.
+
+</Placeholder>
+
+<Placeholder label="Placeholder figure">
+
+Model architecture, and the result of the embedding controls.
+
+</Placeholder>
+
+## Limitations
+
+{/*
+  ~300 words. Answers Q3. No figure. Not optional.
+  Candidates: BacDive means are unweighted and contested; TED cutoffs are
+  provisional; inactives in the labelled pool are thin; wet lab has a
+  single round.
+*/}
+
+<Placeholder>
+
+This section states what the model has not been shown to do. It covers the annotation choices that remain provisional, the shortage of confirmed inactive enzymes among the training labels, and the fact that experimental validation so far comes from a single round of assays.
+
+</Placeholder>
+
+## Reproducibility and reuse
+
+{/*
+  ~200 words. Answers Q4. No figure.
+  Open release, documented pipeline, notebooks linked as the primary record
+  (github.com/petadex/igem-toronto), generalization to other enzyme families.
+*/}
+
+<Placeholder>
+
+This section points to the released model and training set, the analysis notebooks that record each step, and the parts of the pipeline another team could reuse for a different enzyme family.
+
+</Placeholder>

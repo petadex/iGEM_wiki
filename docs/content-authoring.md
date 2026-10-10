@@ -64,6 +64,24 @@ Ask the relevant lead to check this claim before marking the page as published.
 
 Optional tones: `note`, `success`, `warning`.
 
+### Placeholder
+
+Marks stand-in copy that still has to be replaced. It renders as a dashed box with a label, so an unfinished section is obvious to any reader, not just the author.
+
+```mdx
+<Placeholder>
+Known PET-degrading enzymes are few, and each one took years of bench work to characterise.
+</Placeholder>
+
+<Placeholder label="Placeholder figure">
+Corpus funnel: from the known reference enzymes to the full candidate corpus.
+</Placeholder>
+```
+
+`label` defaults to `Placeholder text`; use `Placeholder figure` or `Placeholder demo` for a figure or interactive slot that is not built yet.
+
+Replace the copy and delete the wrapper when the real content lands. Before a page is published, `grep -rn Placeholder src/content/wiki` should return nothing for it.
+
 ### Figure
 
 ```mdx

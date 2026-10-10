@@ -6,9 +6,8 @@ export const wikiNav = [
   { to: "/", label: "Home" },
   { label: "Dry Lab", children: [
     { to: "/dry-lab/overview/", label: "Overview" },
-    { to: "/model/", label: "Generalized Model" },
+    { to: "/model/", label: "Model" },
     { to: "/software/", label: "Software" },
-    { to: "/dry-lab/software-specs/", label: "Software Specs" },
   ]},
   { label: "Wet Lab", children: [
     { to: "/wet-lab/overview/", label: "Experimental Overview" },

@@ -350,7 +350,7 @@ const WEEK_CONTENT_OVERRIDES = {
       dryLab: {
         summary: "Software documentation locked.",
         detail: "Install guide and API docs reviewed for judges.",
-        link: "/dry-lab/software-specs/",
+        link: "/software/",
       },
       hardware: {
         summary: "Demo script rehearsed.",
