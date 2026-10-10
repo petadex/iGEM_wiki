@@ -11,6 +11,7 @@ import { PageTab, PageTabs } from "../PageTabs.js"
 import { InteractiveGizmo } from "./interactive/InteractiveGizmo.js"
 import { PetAssayAnimation } from "./interactive/PetAssayAnimation.js"
 import { AntibioticSelectionAnimation, GfpBiosensorAnimation } from "./interactive/CopperReleaseAnimation.js"
+import Dropdown, { CodeDropdown } from "../Dropdown.js";
 import Citation from "../Citation"
 import References from "../References"
 
@@ -70,6 +71,8 @@ export const mdxComponents = {
   PetAssayAnimation,
   AntibioticSelectionAnimation,
   GfpBiosensorAnimation,
+  CodeDropdown,
+  Dropdown,
   Citation,
   References,
 }

@@ -95,6 +95,63 @@ Reusable subsystem validation protocols (temperature, pump, OD). Use these as li
 **Purpose.** Find stir speeds / sensor heights that minimize stir-bar interference and measure any collection-time delay.
 
 ![OD validation diagram](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/experiments/doe-od-diagram.avif)
+</PageTab>
+
+<PageTab id="source-code" label="Source Code">
+
+Firmware and software files for the bioreactor, organized by subsystem. Expand a file to inspect its source code and use Copy to copy it.
+
+## Integration
+
+Shared firmware and integration tests for the AS7343 optical-density sensors and bioreactor hardware.
+
+<CodeDropdown file="AS7343Soft.h" description="AS7343 sensor / SoftWire header" />
+
+<CodeDropdown file="Integration_Aug11.ino" description="Integration firmware — August 11" />
+
+<CodeDropdown file="Integration_Oct 5 (not tested).ino" description="Integration firmware — October 5; untested" />
+
+## Optical density (OD)
+
+OD sensing firmware and software-I²C implementations.
+
+{/* Add these after the corresponding files have been placed in hardware-code/OD. */}
+
+## Pumps
+
+Peristaltic pump control firmware.
+
+<CodeDropdown file="pump_code.ino" description="Pump code" />
+
+## Temperature control
+
+Temperature sensor reading, heater control, and PID experiments.
+
+<CodeDropdown file="Read_DS18B20.ino" description="DS18B20 temperature sensor" />
+
+<CodeDropdown file="Temperature.ino" description="Temperature monitoring" />
+
+<CodeDropdown file="Custom_PID.ino" description="Custom PID controller" />
+
+<CodeDropdown file="Temperature_PID.txt" description="Temperature PID notes" />
+
+## Python UI and simulation
+
+Python-based interface, simulation, and data files for the bioreactor.
+
+<CodeDropdown file="main.py" description="Application entry point" />
+
+<CodeDropdown file="demo_with_bioreactor.py" description="Bioreactor UI demonstration" />
+
+<CodeDropdown file="simulation.py" description="Bioreactor simulation" />
+
+<CodeDropdown file="requirements.txt" description="Python dependencies" />
+
+<CodeDropdown file="simulation.jsonl" description="Simulation data / event log" />
+
+<CodeDropdown file="data.csv" description="Application data" />
+
+<CodeDropdown file="README.md" description="Python UI documentation" />
 
 </PageTab>
 
