@@ -23,6 +23,10 @@ status: "draft"
   heading: what it does and why, how it works, how to install or use it, and
   its demo. LOBSTER leads.
 
+  Written paragraphs, Owner lines and "Placeholder:" notes were moved here
+  from the Dry Lab Overview so that they sit on the standard /software URL.
+  Delete the Owner lines before publishing.
+
   Demos are frozen-data and client-side: no network calls, no CDN scripts.
   Each ships with a static fallback image and a caption saying what the full
   tool does differently.
@@ -61,11 +65,11 @@ We built four pieces of software while searching for plastic-degrading enzymes. 
   VERIFY the ">50% nucleotide savings" figure before publishing it.
 */}
 
+To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER utilizes golden gate fragment assembly and degenerate codons to create efficient fragment pool designs that can be combinatorially assembled to form a library of full-length cores. LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage. To keep the generated libraries experimentally feasible, this coverage optimization is run subject to nucleotide quantity and library size constraints. Additionally, since the full cores are combinatorially assembled, golden gate assembly will create cores not found in the PETadex. While these chimeras of naturally-occurring mutations were not identified through natural sequencing, it is still plausible that they show plastic-degrading activity. This further expands our Wet Lab validation space of potentially active PETases.
+
 <Placeholder>
 
-Testing a family of related enzymes means buying a DNA sequence for each one, and synthesis cost grows with every variant added. LOBSTER designs a library of shorter fragments that assemble into the full-length sequences, with variation built into the fragments, so that many variants can be made from far less synthesised DNA.
-
-This section will explain the purchasing problem, how the algorithm chooses fragments, how we checked its output against enzymes with known activity, and how to install and run it on your own sequences.
+This section will also explain how the algorithm chooses fragments, how we checked its output against enzymes with known activity, and how to install and run it on your own sequences.
 
 </Placeholder>
 
@@ -95,6 +99,10 @@ This section will explain how the search is built and how to use it.
 
 </Placeholder>
 
+*Owner: Dennis*
+
+Placeholder: 32-shard zstd, Lambda fan-out, ~44 s end to end, shareable URLs.
+
 <Placeholder label="Placeholder demo">
 
 Search results for a handful of well-known enzymes: a real hit table from the live tool that can be sorted and filtered.
@@ -121,6 +129,10 @@ This section will explain how a record is assembled and how to look one up.
 
 </Placeholder>
 
+*Owner: Dennis / Sara / Lisa*
+
+Placeholder: data model, Postgres RDS, byte-offset retrieval, Next.js rebuild.
+
 <Placeholder label="Placeholder demo">
 
 One candidate enzyme's record, with each annotation layer shown in turn.
@@ -131,6 +143,8 @@ One candidate enzyme's record, with each annotation layer shown in turn.
 
 {/*
   Demo D4 (High, build only if D1 to D3 land early). ~350 words.
+  <AtlasMap /> below is the live atlas and calls the petadex.net API. Swap it
+  for the frozen-data version if the external content check rejects it.
   Covers: what the atlas shows, how the map is produced from protein
   language model embeddings, metadata search, links through to sequence
   pages.
@@ -138,19 +152,9 @@ One candidate enzyme's record, with each annotation layer shown in turn.
   for metadata, colour by one axis. Under 500 KB.
 */}
 
-<Placeholder>
+To allow for exploration of PETadex enzymes in a more intuitive manner than alignment search, we built an Atlas of UMAPed embeddings of PETadex enzymes, modelled off of https://biohub.ai/esm/protein/atlas. This atlas provides an accessible way for users to see the scale of PETadex, even for those not familiar with biology. The embeddings capture rich information about the proteins themselves: colouring along metadata terms shows clustering along CATH domains, domains, and phylum, showcasing the diversity of PETadex. Clicking on any point on the atlas takes the user to a page for that family (for example https://petadex.net/family/23828/) providing a quick summary glance of that 30% cluster, including metadata terms associated with its centroid.
 
-The atlas is a map of the enzyme families in the corpus, laid out so that families a protein language model considers similar sit close together. It can be searched by metadata, and each point links through to the sequences behind it.
-
-This section will explain how the map is made and how to read it.
-
-</Placeholder>
-
-<Placeholder label="Placeholder demo">
-
-A sample of the atlas: hover over a point to see the family it represents.
-
-</Placeholder>
+<AtlasMap />
 
 ## Availability and licensing
 
@@ -166,3 +170,7 @@ A sample of the atlas: hover over a point to see the family it represents.
 This section will list where the source code for each tool lives, the open-source licence it is released under, and where the datasets and trained model can be downloaded.
 
 </Placeholder>
+
+*Owner: Purav*
+
+Placeholder: S3, Hugging Face, bulk downloads, licensing.
