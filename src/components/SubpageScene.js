@@ -36,7 +36,9 @@ const CRAB_SCUTTLE_MS = 480
 /** Plate geometry + asset URLs for one scene. */
 function plateOf(scene) {
   const [W, H] = scene.plate
-  const asset = name => `${scene.assetBase}${name}.avif`
+  // A full URL borrows art from another scene's plate (same size).
+  const asset = name =>
+    name.includes("/") ? name : `${scene.assetBase}${name}.avif`
 
   return {
     W,
@@ -333,6 +335,81 @@ function CoinBurstLayer({ plate, layer, sprites, children }) {
   )
 }
 
+/** Shiver a zapped layer gives (around its middle). */
+const ZAP_JOLT = [
+  { transform: "translate(0, 0) rotate(0deg)" },
+  { transform: "translate(-1.5%, 0.5%) rotate(-2deg)", offset: 0.12 },
+  { transform: "translate(1.5%, -0.5%) rotate(2deg)", offset: 0.26 },
+  { transform: "translate(-1%, 0) rotate(-1.5deg)", offset: 0.4 },
+  { transform: "translate(1%, 0) rotate(1deg)", offset: 0.54 },
+  { transform: "translate(-0.5%, 0) rotate(-0.5deg)", offset: 0.7 },
+  { transform: "translate(0, 0) rotate(0deg)" },
+]
+const ZAP_JOLT_MS = 600
+
+/** Lightning: a few on/off flashes with a little crackle, then it fades. */
+const ZAP_FLICKER = [
+  { opacity: 0, transform: "translate(0, 0)" },
+  { opacity: 1, transform: "translate(1%, -1%)", offset: 0.06 },
+  { opacity: 0.15, transform: "translate(-1%, 0)", offset: 0.14 },
+  { opacity: 1, transform: "translate(0, 1%)", offset: 0.2 },
+  { opacity: 0.3, transform: "translate(1%, 0)", offset: 0.3 },
+  { opacity: 1, transform: "translate(0, 0)", offset: 0.36 },
+  { opacity: 0.85, transform: "translate(0, 0)", offset: 0.6 },
+  { opacity: 0, transform: "translate(0, 0)" },
+]
+const ZAP_FLICKER_MS = 1100
+
+/**
+ * A layer that gets zapped when hovered (tapped on touch): it shivers and
+ * `layer.zap` (lightning, hidden until then) flickers over it. Only
+ * `layer.hit` takes the hover, so its glow doesn't.
+ */
+function ZapLayer({ plate, layer, children }) {
+  const bodyRef = useRef(null)
+  const boltRef = useRef(null)
+  const zap = () => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return
+    bodyRef.current?.animate(ZAP_JOLT, {
+      duration: ZAP_JOLT_MS,
+      easing: "ease-out",
+    })
+    boltRef.current?.animate(ZAP_FLICKER, {
+      duration: ZAP_FLICKER_MS,
+      easing: "linear",
+    })
+  }
+  const bolt = layer.zap
+  return (
+    <>
+      <ZapBody
+        ref={bodyRef}
+        data-layer={layer.name}
+        style={plate.windowStyle(layer.box)}
+      >
+        {children}
+      </ZapBody>
+      <ZapBolt ref={boltRef} style={plate.windowStyle(bolt.box)}>
+        <CropImg
+          src={plate.asset(bolt.name)}
+          alt=""
+          decoding="async"
+          draggable={false}
+          // `from`: lightning drawn for another spot, stretched over `box`.
+          style={plate.imgStyle(bolt.from || bolt.box)}
+        />
+      </ZapBolt>
+      <ZapHit
+        style={plate.windowStyle(layer.hit || layer.box)}
+        onMouseEnter={zap}
+        onPointerDown={event => {
+          if (event.pointerType !== "mouse") zap()
+        }}
+      />
+    </>
+  )
+}
+
 /** Marks which ends of a scrollable list have more beyond them (for the fade). */
 function updateNavFade(nav) {
   if (!nav) return
@@ -455,6 +532,39 @@ function BirdLayer({ plate, layer }) {
   )
 }
 
+/**
+ * A still layer (no flap frames) that flies the birds' loop-the-loop when
+ * hovered (tapped on touch). `layer.loop.facing`: -1 left (default), 1 right.
+ */
+function LoopLayer({ plate, layer, children }) {
+  const ref = useRef(null)
+  const loop = () => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return
+    const el = ref.current
+    if (!el) return
+    el.animate(
+      loopKeyframes(
+        el.offsetHeight * BIRD_LOOP_RADIUS,
+        layer.loop.facing ?? -1,
+      ),
+      { duration: BIRD_LOOP_MS, easing: "cubic-bezier(0.4, 0, 0.3, 1)" },
+    )
+  }
+  return (
+    <LoopWindow
+      ref={ref}
+      data-layer={layer.name}
+      style={plate.windowStyle(layer.box)}
+      onMouseEnter={loop}
+      onPointerDown={event => {
+        if (event.pointerType !== "mouse") loop()
+      }}
+    >
+      {children}
+    </LoopWindow>
+  )
+}
+
 function useHeaderHeight() {
   const [h, setH] = useState(0)
   useLayoutEffect(() => {
@@ -472,25 +582,45 @@ function useHeaderHeight() {
 /** Scene-specific sizes as CSS variables on the scene root. */
 function sceneVars(scene, plate) {
   const { W, H } = plate
-  const side = scene.side.box
   const text = scene.text.box
   const pct = n => `${((n / W) * 100).toFixed(4)}%`
   const crop = scene.cropTop || 0
-  return {
+  const shared = {
     "--px": `calc(var(--art-w, 100vw) / ${W})`,
     "--scene-bg": scene.background,
     "--header-color": scene.headerColor,
-    "--link-color": scene.side.linkColor,
-    "--link-active": scene.side.activeLinkColor || scene.side.linkColor,
+    "--header-shadow":
+      scene.headerShadow ||
+      "0 0.04em 0 rgba(255, 255, 255, 0.55), 0 0.1em 0.35em rgba(0, 0, 0, 0.2)",
     "--accent": scene.accent,
-    "--link-size": ax(scene.side.linkSize || 12.5),
-    "--link-pad-y": ax(scene.side.linkPadY || 10),
-    "--side-max": scene.side.maxHeight || "100vh",
-    "--strip-color": scene.side.stripColor,
     "--crop-top": pp(crop),
     "--sky-h": pp(scene.skyBottom - crop),
     // Long headers shrink to stay inside ~88% of the width (≈0.6em a letter).
     "--title-fit": `calc(var(--art-w, 100vw) * ${(0.88 / ((scene.header || "").length * 0.6 || 1)).toFixed(5)})`,
+    "--pad-bottom": pp(H - scene.textEndY),
+    "--text-min-h": pp(scene.text.minH),
+    // Anything else the scene themes (e.g. the contribution calendar).
+    ...scene.vars,
+  }
+  // No section list: just the text box, where the scene draws it.
+  if (!scene.side) {
+    return {
+      ...shared,
+      "--grid-cols": [pct(text[0]), pct(text[2] - text[0]), "1fr"].join(" "),
+      "--pad-top": pp(text[1] - crop),
+      "--text-offset": "0px",
+    }
+  }
+  const side = scene.side.box
+  return {
+    ...shared,
+    "--link-color": scene.side.linkColor,
+    "--link-active": scene.side.activeLinkColor || scene.side.linkColor,
+    "--link-size": ax(scene.side.linkSize || 12.5),
+    "--link-pad-y": ax(scene.side.linkPadY || 10),
+    "--link-indent": ax(scene.side.linkIndent || 12),
+    "--side-max": scene.side.maxHeight || "100vh",
+    "--strip-color": scene.side.stripColor,
     "--grid-cols": [
       pct(side[0]),
       pct(side[2] - side[0]),
@@ -499,7 +629,6 @@ function sceneVars(scene, plate) {
       "1fr",
     ].join(" "),
     "--pad-top": pp(side[1] - crop),
-    "--pad-bottom": pp(H - scene.textEndY),
     "--side-h": pp(side[3] - side[1]),
     "--nav-top": pp(scene.side.navTop),
     // Room left of the list for an icon hanging off the highlight (the coin),
@@ -508,7 +637,6 @@ function sceneVars(scene, plate) {
       ? pp(scene.side.indicator.box[0] - scene.side.indicatorIcon.box[0])
       : "0px",
     "--text-offset": pp(text[1] - side[1]),
-    "--text-min-h": pp(scene.text.minH),
   }
 }
 
@@ -531,7 +659,7 @@ export function SubpageScene({ scene, title, description, children }) {
   useEffect(() => {
     const heads = Array.from(
       bodyRef.current?.querySelectorAll("h2, h3") || [],
-    ).filter(el => !el.closest("details"))
+    ).filter(el => !el.closest("details, [data-nav-skip]"))
     const list = []
     heads.forEach((el, i) => {
       if (!el.id) el.id = `section-${i + 1}`
@@ -548,6 +676,19 @@ export function SubpageScene({ scene, title, description, children }) {
     const art = artRef.current
     if (!sceneEl || !art) return undefined
     let raf = 0
+    // Where the browser has scroll timelines, the drift runs as a
+    // scroll-driven animation: the compositor moves the art in step with the
+    // scroll, so it never trails it. The script only keeps the keyframes up
+    // to date; elsewhere it moves the art itself.
+    const timeline =
+      typeof window.ScrollTimeline === "function"
+        ? new window.ScrollTimeline({
+            source: document.documentElement,
+            axis: "block",
+          })
+        : null
+    let drift = null
+    let driftKey = ""
 
     const update = () => {
       raf = 0
@@ -562,28 +703,74 @@ export function SubpageScene({ scene, title, description, children }) {
       // per-frame tug-of-war with the page). The frame is one screen plus the
       // decorative ending tall, so it unpins exactly when the box's bottom
       // edge reaches the screen bottom; the ending then scrolls natively.
-      const tail = sceneEl.offsetHeight - boxBottom
+      const sceneH = sceneEl.offsetHeight
+      const tail = sceneH - boxBottom
       const frameH = Math.round(view + tail)
-      const frame = frameRef.current
-      if (frame && frame.offsetHeight !== frameH)
-        frame.style.height = `${frameH}px`
       // Art offset once the text ends: its bottom on the frame's bottom, which
-      // puts textEndY on the box's bottom edge.
-      const endOffset = frameH - art.offsetHeight - art.offsetTop
+      // puts textEndY on the box's bottom edge. Exact (sub-pixel) size and top,
+      // so the art meets the footer's painting without a hairline gap.
+      const endOffset =
+        frameH -
+        art.getBoundingClientRect().height -
+        parseFloat(getComputedStyle(art).top)
       // Scrolled into the scene, from the page top to the box's bottom edge
       // meeting the viewport bottom.
       const start = -headerH
       const lockAt = boxBottom - vh
       const scrolled = -rect.top
+      const range = lockAt - start
       const progress =
-        lockAt > start
-          ? Math.min(1, Math.max(0, (scrolled - start) / (lockAt - start)))
-          : 1
-      art.style.transform = `translate3d(0, ${(progress * endOffset).toFixed(2)}px, 0)`
+        range > 0 ? Math.min(1, Math.max(0, (scrolled - start) / range)) : 1
+      // A short box over a long stretch of art (e.g. Contribution) moves the
+      // art about as fast as the page or faster, and a script-moved layer
+      // that fast visibly trails the scroll. Then the frame scrolls with the
+      // page instead and the script adds only the difference: same art
+      // position, far less to catch up each frame.
+      const native = range > 0 && -endOffset / range > 0.5
+      const frame = frameRef.current
+      if (frame) {
+        const h = native ? sceneH : frameH
+        if (frame.offsetHeight !== h) frame.style.height = `${h}px`
+        frame.style.position = native ? "relative" : ""
+        frame.style.top = native ? "0px" : ""
+      }
+      // Pinned, the frame is what the page scrolls past; scrolling with the
+      // page, the art also takes back that scroll (until the box ends).
+      const ride = native ? Math.min(range, Math.max(0, scrolled - start)) : 0
+      const maxScroll = document.documentElement.scrollHeight - vh
+      if (timeline && maxScroll > 0) {
+        // Still from the page top to the drift's start (y0), linear to its
+        // end (y1), still after: as page scroll offsets along the timeline.
+        const y0 = window.scrollY + rect.top + start
+        const y1 = y0 + Math.max(0, range)
+        const endY = range > 0 ? (native ? range : 0) + endOffset : endOffset
+        const key = [y0, y1, endY, maxScroll].map(n => n.toFixed(1)).join()
+        if (key !== driftKey) {
+          driftKey = key
+          drift?.cancel()
+          const at = y => Math.min(1, Math.max(0, y / maxScroll))
+          const still = "translate3d(0, 0, 0)"
+          const moved = `translate3d(0, ${endY.toFixed(2)}px, 0)`
+          drift = art.animate(
+            [
+              { transform: range > 0 ? still : moved, offset: 0 },
+              { transform: range > 0 ? still : moved, offset: at(y0) },
+              { transform: moved, offset: Math.max(at(y0), at(y1)) },
+              { transform: moved, offset: 1 },
+            ],
+            { timeline, fill: "both" },
+          )
+        }
+      } else {
+        art.style.transform = `translate3d(0, ${(ride + progress * endOffset).toFixed(2)}px, 0)`
+      }
+
+      // No section list, nothing to track.
+      if (!side) return
 
       const heads = Array.from(
         bodyRef.current?.querySelectorAll("h2, h3") || [],
-      ).filter(el => !el.closest("details"))
+      ).filter(el => !el.closest("details, [data-nav-skip]"))
       const line = headerH + view * 0.35
       let current = heads.find(h => h.tagName === "H2")?.id ?? null
       let currentSub = null
@@ -617,10 +804,13 @@ export function SubpageScene({ scene, title, description, children }) {
     setArtWidth()
     const ro = new ResizeObserver(setArtWidth)
     ro.observe(sceneEl)
+    // The page's length sets where the drift falls along the scroll.
+    ro.observe(document.body)
     window.addEventListener("scroll", schedule, { passive: true })
     window.addEventListener("resize", schedule, { passive: true })
     return () => {
       if (raf) cancelAnimationFrame(raf)
+      drift?.cancel()
       ro.disconnect()
       window.removeEventListener("scroll", schedule)
       window.removeEventListener("resize", schedule)
@@ -677,11 +867,11 @@ export function SubpageScene({ scene, title, description, children }) {
     window.history.replaceState(null, "", `#${id}`)
   }
 
-  const [ix0, iy0, ix1, iy1] = side.indicator.box
-  const icon = side.indicatorIcon
-  const sideW = side.box[2] - side.box[0]
+  const [ix0, iy0, ix1, iy1] = side?.indicator.box ?? []
+  const icon = side?.indicatorIcon
+  const sideW = side ? side.box[2] - side.box[0] : 0
   // Narrow strip: plain colour, or the side box's stretchy middle on top of it.
-  const stripCss = side.stripTexture
+  const stripCss = side?.stripTexture
     ? cssObject(
         plate.bg(side.name, [
           side.box[0],
@@ -715,6 +905,20 @@ export function SubpageScene({ scene, title, description, children }) {
                 if (layer.flyer) {
                   return (
                     <BirdLayer key={layer.name} plate={plate} layer={layer} />
+                  )
+                }
+                if (layer.loop) {
+                  return (
+                    <LoopLayer key={layer.name} plate={plate} layer={layer}>
+                      {img}
+                    </LoopLayer>
+                  )
+                }
+                if (layer.zap) {
+                  return (
+                    <ZapLayer key={layer.name} plate={plate} layer={layer}>
+                      {img}
+                    </ZapLayer>
                   )
                 }
                 if (layer.coinBurst) {
@@ -772,103 +976,117 @@ export function SubpageScene({ scene, title, description, children }) {
       )}
 
       <Content>
-        <SideColumn>
-          <SideBox $stripCss={stripCss} $fit={side.fit}>
-            <SideBoxArt
-              plate={plate}
-              name={side.name}
-              box={side.box}
-              caps={side.caps}
-            />
-            <SideNav
-              ref={navRef}
-              aria-label="Sections on this page"
-              onScroll={e => updateNavFade(e.currentTarget)}
+        {side && (
+          <SideColumn>
+            {/* A page with no sections yet has nothing to list. */}
+            <SideBox
+              $stripCss={stripCss}
+              $fit={side.fit}
+              style={sections.length ? undefined : { display: "none" }}
             >
-              {indicator && (
-                <Indicator
+              <SideBoxArt
+                plate={plate}
+                name={side.name}
+                box={side.box}
+                caps={side.caps}
+              />
+              <SideNav
+                ref={navRef}
+                aria-label="Sections on this page"
+                onScroll={e => updateNavFade(e.currentTarget)}
+              >
+                {indicator && (
+                  <Indicator
+                    aria-hidden
+                    style={{
+                      ...plate.bg(side.indicator.name, side.indicator.box),
+                      transform: `translate(${indicator.left}px, ${indicator.top}px)`,
+                      width: indicator.width,
+                      height: indicator.height,
+                    }}
+                  >
+                    {icon && (
+                      <IndicatorIcon
+                        style={{
+                          ...plate.bg(icon.name, icon.box),
+                          left: `${((icon.box[0] - ix0) / (ix1 - ix0)) * 100}%`,
+                          width: `${((icon.box[2] - icon.box[0]) / (ix1 - ix0)) * 100}%`,
+                          aspectRatio: `${icon.box[2] - icon.box[0]} / ${icon.box[3] - icon.box[1]}`,
+                          // Centre offset from the highlight's, as drawn.
+                          marginTop: pp(
+                            (icon.box[1] + icon.box[3]) / 2 - (iy0 + iy1) / 2,
+                          ),
+                        }}
+                      />
+                    )}
+                  </Indicator>
+                )}
+                {sections.map(s => (
+                  <React.Fragment key={s.id}>
+                    <SideLink
+                      href={`#${s.id}`}
+                      data-id={s.id}
+                      aria-current={
+                        s.id === activeId && !activeSubId
+                          ? "location"
+                          : undefined
+                      }
+                      $on={s.id === activeId}
+                      onClick={e => goTo(e, s.id)}
+                    >
+                      {s.label}
+                    </SideLink>
+                    {/* Subsections open under the section being read. */}
+                    {s.id === activeId && s.subs.length > 0 && (
+                      <SubList>
+                        {s.subs.map(sub => (
+                          <SubLink
+                            key={sub.id}
+                            href={`#${sub.id}`}
+                            aria-current={
+                              sub.id === activeSubId ? "location" : undefined
+                            }
+                            onClick={e => goTo(e, sub.id)}
+                          >
+                            {sub.label}
+                          </SubLink>
+                        ))}
+                      </SubList>
+                    )}
+                  </React.Fragment>
+                ))}
+              </SideNav>
+              {side.crab && (
+                <SideCrab
                   aria-hidden
                   style={{
-                    ...plate.bg(side.indicator.name, side.indicator.box),
-                    transform: `translate(${indicator.left}px, ${indicator.top}px)`,
-                    width: indicator.width,
-                    height: indicator.height,
+                    left: `${((side.crab.box[0] - side.box[0]) / sideW) * 100}%`,
+                    bottom: pp(side.box[3] - side.crab.box[3]),
+                    width: `${((side.crab.box[2] - side.crab.box[0]) / sideW) * 100}%`,
+                    aspectRatio: `${side.crab.box[2] - side.crab.box[0]} / ${side.crab.box[3] - side.crab.box[1]}`,
                   }}
                 >
-                  {icon && (
-                    <IndicatorIcon
-                      style={{
-                        ...plate.bg(icon.name, icon.box),
-                        left: `${((icon.box[0] - ix0) / (ix1 - ix0)) * 100}%`,
-                        width: `${((icon.box[2] - icon.box[0]) / (ix1 - ix0)) * 100}%`,
-                        aspectRatio: `${icon.box[2] - icon.box[0]} / ${icon.box[3] - icon.box[1]}`,
-                        // Centre offset from the highlight's, as drawn.
-                        marginTop: pp(
-                          (icon.box[1] + icon.box[3]) / 2 - (iy0 + iy1) / 2,
-                        ),
-                      }}
-                    />
-                  )}
-                </Indicator>
+                  <CrabScuttle plateW={plate.W} box={side.crab.box}>
+                    <CrabArt style={plate.bg(side.crab.name, side.crab.box)} />
+                  </CrabScuttle>
+                </SideCrab>
               )}
-              {sections.map(s => (
-                <React.Fragment key={s.id}>
-                  <SideLink
-                    href={`#${s.id}`}
-                    data-id={s.id}
-                    aria-current={
-                      s.id === activeId && !activeSubId ? "location" : undefined
-                    }
-                    $on={s.id === activeId}
-                    onClick={e => goTo(e, s.id)}
-                  >
-                    {s.label}
-                  </SideLink>
-                  {/* Subsections open under the section being read. */}
-                  {s.id === activeId && s.subs.length > 0 && (
-                    <SubList>
-                      {s.subs.map(sub => (
-                        <SubLink
-                          key={sub.id}
-                          href={`#${sub.id}`}
-                          aria-current={
-                            sub.id === activeSubId ? "location" : undefined
-                          }
-                          onClick={e => goTo(e, sub.id)}
-                        >
-                          {sub.label}
-                        </SubLink>
-                      ))}
-                    </SubList>
-                  )}
-                </React.Fragment>
-              ))}
-            </SideNav>
-            {side.crab && (
-              <SideCrab
-                aria-hidden
-                style={{
-                  left: `${((side.crab.box[0] - side.box[0]) / sideW) * 100}%`,
-                  bottom: pp(side.box[3] - side.crab.box[3]),
-                  width: `${((side.crab.box[2] - side.crab.box[0]) / sideW) * 100}%`,
-                  aspectRatio: `${side.crab.box[2] - side.crab.box[0]} / ${side.crab.box[3] - side.crab.box[1]}`,
-                }}
-              >
-                <CrabScuttle plateW={plate.W} box={side.crab.box}>
-                  <CrabArt style={plate.bg(side.crab.name, side.crab.box)} />
-                </CrabScuttle>
-              </SideCrab>
-            )}
-          </SideBox>
-        </SideColumn>
+            </SideBox>
+          </SideColumn>
+        )}
 
-        <TextBox ref={textBoxRef}>
-          <StretchBox
-            plate={plate}
-            name={text.name}
-            box={text.box}
-            caps={text.caps}
-          />
+        <TextBox ref={textBoxRef} $solo={!side}>
+          {/* A box the art doesn't paint is a flat colour. */}
+          {text.fill ? (
+            <TextFill aria-hidden style={{ background: text.fill }} />
+          ) : (
+            <StretchBox
+              plate={plate}
+              name={text.name}
+              box={text.box}
+              caps={text.caps}
+            />
+          )}
           <TextInner ref={bodyRef}>
             <TitleBlock>
               <Title>{scene.boxTitle || title}</Title>
@@ -933,6 +1151,13 @@ const CropWindow = styled.div`
 
 const BirdWindow = styled.div`
   position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+`
+
+const LoopWindow = styled.div`
+  position: absolute;
+  overflow: hidden;
   pointer-events: auto;
   cursor: pointer;
 `
@@ -1041,6 +1266,26 @@ const CoinTrigger = styled.div`
   cursor: pointer;
 `
 
+const ZapBody = styled.div`
+  position: absolute;
+  overflow: hidden;
+  transform-origin: 50% 40%;
+`
+
+/** Lightning over a zapped layer; invisible until it flickers. */
+const ZapBolt = styled.div`
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+`
+
+const ZapHit = styled.div`
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+`
+
 const coinX = keyframes`
   from {
     transform: translate3d(-50%, -50%, 0);
@@ -1137,9 +1382,7 @@ const SectionTitle = styled.p`
   font-size: min(max(3.25rem, ${ax(108)}), var(--title-fit));
   line-height: 0.95;
   letter-spacing: -0.025em;
-  text-shadow:
-    0 0.04em 0 rgba(255, 255, 255, 0.55),
-    0 0.1em 0.35em rgba(0, 0, 0, 0.2);
+  text-shadow: var(--header-shadow);
 `
 
 const scuttleKeyframes = sign => keyframes`
@@ -1278,6 +1521,13 @@ const SliceMid = styled.div`
   margin: -1px 0;
 `
 
+const TextFill = styled.div`
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+`
+
 const SideBoxArt = styled(StretchBox)`
   ${NARROW} {
     display: none;
@@ -1362,7 +1612,7 @@ const IndicatorIcon = styled.span`
 const SideLink = styled.a`
   position: relative;
   display: block;
-  padding: var(--link-pad-y) ${ax(10)} var(--link-pad-y) ${ax(12)};
+  padding: var(--link-pad-y) ${ax(10)} var(--link-pad-y) var(--link-indent);
   color: var(--link-color);
   font-family: var(--font-body);
   font-size: max(0.75rem, var(--link-size));
@@ -1490,7 +1740,7 @@ const SideCrab = styled.span`
 const TextBox = styled.div`
   pointer-events: auto;
   position: relative;
-  grid-column: 4;
+  grid-column: ${({ $solo }) => ($solo ? 2 : 4)};
   min-height: var(--text-min-h);
   margin-top: var(--text-offset);
 
@@ -1507,6 +1757,8 @@ const TextBox = styled.div`
  */
 const TextInner = styled.div`
   position: relative;
+  /* Full-bleed components (e.g. the sticky-note board) stay inside the box. */
+  --page-padding: 0px;
   padding: max(1.5rem, ${ax(34)}) max(1.25rem, ${ax(36)}) max(2rem, ${ax(48)});
 
   h2,

@@ -15,6 +15,11 @@ const WikiLayout = ({
   wideSideTabs = false,
   /** Pages that render their own SiteLoader (the homepage hands off to its hero). */
   hideLoader = false,
+  /**
+   * Colours for the footer's "Visit iGEM Toronto" button, `{ bg, text }`, so
+   * it matches the page's own menu highlight. The site accent otherwise.
+   */
+  footerButton = null,
 }) => {
   const [showScrollTop, setShowScrollTop] = useState(false)
 
@@ -66,7 +71,12 @@ const WikiLayout = ({
           </ScrollTopButton>
         )}
 
-        <Footer>
+        <Footer
+          style={{
+            "--footer-button-bg": footerButton?.bg,
+            "--footer-button-text": footerButton?.text,
+          }}
+        >
             <FooterInner>
               <FooterTop>
                 <FooterIntro>
@@ -274,15 +284,18 @@ const FooterBrand = styled.p`
   letter-spacing: 0.02em;
 `
 
+/** In the page's menu-highlight colours when it has them (see footerButton). */
 const FooterButton = styled.a`
+  --button-bg: var(--footer-button-bg, var(--color-accent));
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.625rem 1.125rem;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--button-bg);
   border-radius: 999px;
-  color: var(--color-text);
-  background: var(--color-accent);
+  color: var(--footer-button-text, var(--color-text));
+  background: var(--button-bg);
   font-family: var(--font-body);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -300,11 +313,11 @@ const FooterButton = styled.a`
   &:hover {
     background: transparent;
     color: var(--color-text);
-    box-shadow: 0 0 0 1px var(--color-accent);
+    box-shadow: 0 0 0 1px var(--button-bg);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--button-bg);
     outline-offset: 3px;
   }
 `

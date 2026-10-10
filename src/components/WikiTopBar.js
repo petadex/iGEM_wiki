@@ -4,6 +4,13 @@ import styled from "styled-components"
 
 export const wikiNav = [
   { to: "/", label: "Home" },
+  { label: "Project", children: [
+    { to: "/project/description/", label: "Project Description" },
+    { to: "/engineering/", label: "Engineering" },
+    { to: "/wiki/", label: "Wiki" },
+    { to: "/finance/", label: "Finance" },
+    { to: "/safety-and-security/", label: "Safety" },
+  ]},
   { label: "Dry Lab", children: [
     { to: "/dry-lab/overview/", label: "Overview" },
     { to: "/model/", label: "Generalized Model" },
@@ -27,15 +34,10 @@ export const wikiNav = [
   { to: "/beyond-the-bench/outreach/", label: "Outreach" },
   { to: "/entrepreneurship/", label: "Entrepreneurship" },
   { label: "Team", children: [
-    { to: "/project/description/", label: "Project Description" },
     { to: "/contribution/", label: "Contribution" },
-    { to: "/engineering/", label: "Engineering" },
-    { to: "/finance/", label: "Finance" },
     { to: "/education/", label: "Education Toolkit" },
-    { to: "/safety-and-security/", label: "Safety" },
     { to: "/team/", label: "Meet the Team" },
     { to: "/team/attributions/", label: "Attributions" },
-    { to: "/wiki/", label: "Wiki" },
   ]},
 ]
 

@@ -75,6 +75,15 @@ export const GlobalStyle = createGlobalStyle`
     display: block;
   }
 
+  /* PlateImg's stand-in for an <img>: block, the plate's own width, height
+     from its aspect ratio. Zero specificity, so a component's styles win. */
+  :where(.plate-img) {
+    position: relative;
+    display: block;
+    width: var(--plate-w);
+    max-width: 100%;
+  }
+
   .citation a,
   [id^="citation-"] a {
     color: var(--color-accent);

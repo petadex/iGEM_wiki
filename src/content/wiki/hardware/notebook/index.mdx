@@ -16,29 +16,25 @@ wideProse: true
 
 Engineering notes on this page are current through **27 August 2026** (Hardware team dump: journal, DoE protocols, V1 reflection, and wiring).
 
-<PageTabs defaultTab="bioreactor">
-
-<PageTab id="stickies" label="Stickies">
+## Stickies
 
 Drag the sticky notes anywhere on the page to explore hardware ideas. Positions are saved in your browser for this prototype.
 
 <HardwareNotebookSandbox />
 
-</PageTab>
-
-<PageTab id="bioreactor" label="Bioreactor Build">
+## Bioreactor Build
 
 Design requirements for the centralized living hardware (bioreactor) system.
 
 <BioreactorRequirements />
 
-</PageTab>
+## Experiments
 
-<PageTab id="experiments" label="Experiments">
+Reusable subsystem validation protocols (temperature, pump, OD). Use these as living RRF / DoE references — dated bench work lives in the Journal section below.
 
-Reusable subsystem validation protocols (temperature, pump, OD). Use these as living RRF / DoE references — dated bench work lives in the Journal tab.
+### Temperature
 
-**Temperature — Experiment 1: Sensor accuracy (25–90 °C)**
+#### Experiment 1: Sensor accuracy (25–90 °C)
 
 **Purpose.** Validate and calibrate candidate temperature sensors across the bioreactor operating range.
 
@@ -53,7 +49,7 @@ Reusable subsystem validation protocols (temperature, pump, OD). Use these as li
 
 ![Temperature sensor validation setup](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/experiments/doe-temp-sensor-setup.avif)
 
-**Temperature — Experiment 2: Heater performance**
+#### Experiment 2: Heater performance
 
 **Purpose.** Measure whether a heater can bring ~35 mL in a 40 mL vial to a set point (40–80 °C) in a representative housing.
 
@@ -68,43 +64,45 @@ Reusable subsystem validation protocols (temperature, pump, OD). Use these as li
 
 ![Heater performance test setup](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/experiments/doe-heater-setup.avif)
 
-**Pump — Experiment 1: Mass-flow consistency**
+### Pump
+
+#### Experiment 1: Mass-flow consistency
 
 **Purpose.** Confirm peristaltic mass flow stays consistent across repeated trials at fixed PWM.
 
-**Pump — Experiment 2: Flow vs PWM**
+#### Experiment 2: Flow vs PWM
 
 **Purpose.** Map flow rate against PWM duty cycle to set UI / firmware limits.
 
-**Pump — Experiment 3: Small-volume input**
+#### Experiment 3: Small-volume input
 
 **Purpose.** Check accuracy when dispensing small liquid volumes (relevant to assay top-ups).
 
 ![Pump validation setup](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/experiments/doe-pump-setup.avif)
 
-**OD — Experiment 1: Dye concentration series**
+### OD
+
+#### Experiment 1: Dye concentration series
 
 **Purpose.** Assess OD sensor range, min/max readable density, and collection time needed for stable readings using dye standards.
 
-**OD — Experiment 2: OD vs temperature**
+#### Experiment 2: OD vs temperature
 
 **Purpose.** Check OD accuracy across the temperature sweep the bioreactor will run.
 
-**OD — Experiment 3: OD vs stir-bar speed**
+#### Experiment 3: OD vs stir-bar speed
 
 **Purpose.** Find stir speeds / sensor heights that minimize stir-bar interference and measure any collection-time delay.
 
 ![OD validation diagram](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/experiments/doe-od-diagram.avif)
 
-</PageTab>
+## V1
 
-<PageTab id="v1" label="V1">
-
-**What V1 set out to prove**
+### What V1 set out to prove
 
 V1 focused on a cheap, offline-friendly, multi-unit-friendly bioreactor using common components: temperature control, pumping, OD sensing, and basic user control — without requiring Bluetooth or expensive commercial platforms.
 
-**Cost and power snapshot (HP inputs)**
+### Cost and power snapshot (HP inputs)
 
 | Item | Peak power (approx.) | Notes |
 | --- | --- | --- |
@@ -118,7 +116,7 @@ Assembly / cost goals under discussion: **&lt;100 minutes** to assemble and **&l
 
 ![V1 post-mortem overview](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/v1/v1-postmortem-overview.avif)
 
-**Post-mortem by subsystem**
+### Post-mortem by subsystem
 
 ![V1 subsystem reflection board](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/v1/v1-postmortem-subsystems.avif)
 
@@ -129,21 +127,15 @@ Assembly / cost goals under discussion: **&lt;100 minutes** to assemble and **&l
 | Pumping | Tube spacing on vial top is tight | In/out water tests; larger vial | Horizontal pump drawers; PWM map from DoE |
 | Integration / UI | Multi-device serial fragile when one port fails | Powered USB hubs (charge-only vs data); JSON command protocol | Tkinter / serial dashboard with blank/dark OD setup; error isolation per reactor |
 
-**V2 control intent (from late-summer notes)**
+### V2 control intent (from late-summer notes)
 
 - Setup flow: dark (no vial) → blank vial → run, with reference stored for nOD.
 - Pumps: stop + PWM / power percent slider (experimentally bounded).
 - Temperature: target + continuous feedback.
 - Prefer JSON over serial for commands/telemetry; plan for &gt;2 Arduinos needing powered data-capable hubs.
 
-</PageTab>
-
-<PageTab id="journal" label="Journal">
+## Journal
 
 Dated hardware work through **27 August 2026**. Newest entries appear first.
 
 <HardwareJournal />
-
-</PageTab>
-
-</PageTabs>

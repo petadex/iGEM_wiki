@@ -29,8 +29,8 @@ const ChromeBar = styled.div`
   justify-content: space-between;
   gap: var(--space-sm);
   padding: 0.5rem var(--space-md);
-  border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-bg) 50%, #fff);
+  border-bottom: 1px solid var(--cal-line, var(--color-border));
+  background: var(--cal-chrome, color-mix(in srgb, var(--color-bg) 50%, #fff));
   flex-shrink: 0;
 `
 
@@ -39,13 +39,13 @@ const ChromeTitle = styled.span`
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-weight: 600;
-  color: var(--color-muted);
+  color: var(--cal-muted, var(--color-muted));
 `
 
 const HideBtn = styled.button`
-  border: 1px solid var(--color-border);
-  background: #fff;
-  color: #2d9194;
+  border: 1px solid var(--cal-line, var(--color-border));
+  background: var(--cal-surface, #fff);
+  color: var(--cal-accent, #2d9194);
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 600;
@@ -55,8 +55,8 @@ const HideBtn = styled.button`
   white-space: nowrap;
 
   &:hover {
-    background: #e2f6e2;
-    border-color: #2d9194;
+    background: var(--cal-hover, #e2f6e2);
+    border-color: var(--cal-accent, #2d9194);
   }
 
   &:focus-visible {
@@ -70,15 +70,15 @@ const RestoreBar = styled.div`
   align-items: center;
   justify-content: center;
   padding: 0.35rem;
-  background: color-mix(in srgb, #2d9194 8%, var(--color-bg));
-  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--cal-accent, #2d9194) 8%, var(--cal-surface, var(--color-bg)));
+  border-bottom: 1px solid var(--cal-line, var(--color-border));
   flex-shrink: 0;
 `
 
 const RestoreBtn = styled.button`
   border: none;
   background: transparent;
-  color: #2d9194;
+  color: var(--cal-accent, #2d9194);
   font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 600;
@@ -88,7 +88,7 @@ const RestoreBtn = styled.button`
   text-underline-offset: 3px;
 
   &:hover {
-    color: #06202b;
+    color: var(--cal-ink, #06202b);
   }
 
   &:focus-visible {

@@ -96,6 +96,8 @@ export const DRY_LAB_SCENE = {
     /** First item's distance below the box top (plate px). */
     navTop: 32,
     indicator: { name: "box-subsection-indicator", box: [88, 452, 241, 513] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#9c6e56",
     /** Crab sitting on the box's bottom edge. */
     crab: { name: "box-crab", box: [144, 804, 195, 860] },
     linkColor: "#fbf3ea",
@@ -161,6 +163,8 @@ export const VENTURE_SCENE = {
     maxHeight: "min(24rem, 52vh)",
     linkPadY: 7,
     indicator: { name: "nav-bar-highlight", box: [136, 456, 289, 528] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#f2b574",
     /** Coin that rides on the left end of the highlight. */
     indicatorIcon: { name: "navbar-icon", box: [100, 460, 160, 515] },
     linkColor: "#5b3a1a",
@@ -314,8 +318,10 @@ export const HP_SCENE = {
     linkPadY: 7,
     linkSize: 11.5,
     indicator: { name: "nav-bar-highlight", box: [136, 456, 289, 528] },
-    /** Feather riding on the left end of the highlight (sits a little high). */
-    indicatorIcon: { name: "nav-bar-icon", box: [94, 427, 168, 512] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#689581",
+    /** Feather riding on the left end of the highlight. */
+    indicatorIcon: { name: "new-nav-icon", box: [111, 453, 156, 523] },
     linkColor: "#2e4a3c",
     /** Light text on the dark green highlight. */
     activeLinkColor: "#ffffff",
@@ -329,4 +335,199 @@ export const HP_SCENE = {
   },
   /** Bottom of the mockup's text box; the treeline below is the ending. */
   textEndY: 3691,
+}
+
+/** Every Hardware page; each box is titled with its page's short name. */
+export const HARDWARE_SCENE = {
+  header: "Hardware",
+  assetBase: "https://static.igem.wiki/teams/6187/wiki/hardware-notebook/",
+  plate: [1110, 4000],
+  background: "#20222e",
+  skyBottom: 400,
+  headerColor: "#e6e1ff",
+  /** Light title on the dark cave: a soft crystal glow instead of a highlight. */
+  headerShadow:
+    "0 0 0.4em rgba(135, 123, 199, 0.6), 0 0.08em 0.3em rgba(0, 0, 0, 0.5)",
+  accent: "#6b5cb5",
+  layers: [
+    { name: "bg", box: [0, 0, 1110, 4000] },
+    // Extra lighting: glints down the walls and pillars into the pool.
+    { name: "bottom-lightning-turtles", box: [127, 1985, 1088, 3942] },
+    // Hover (tap on touch) the turtle: it shivers and the lightning on
+    // zapzap crackles round it.
+    {
+      name: "turtle-1",
+      box: [76, 1815, 426, 2392],
+      hit: [125, 1865, 315, 2150],
+      zap: { name: "zapzap", box: [122, 1830, 352, 2133] },
+    },
+    // The turtle lying in the pool does the same with its own lightning.
+    {
+      name: "turtle-2",
+      box: [173, 3760, 566, 3961],
+      hit: [170, 3815, 569, 3950],
+      zap: { name: "zapzap", box: [164, 3819, 568, 4000] },
+    },
+  ],
+  // Side column and text box are flat rectangles on `text-space`.
+  side: {
+    name: "text-space",
+    box: [135, 412, 288, 1225],
+    caps: [4, 4],
+    navTop: 40,
+    fit: true,
+    maxHeight: "min(24rem, 52vh)",
+    linkPadY: 7,
+    linkSize: 11.5,
+    indicator: { name: "nav-bar-highlight", box: [136, 458, 287, 517] },
+    /** The highlight's painted colour, for UI that matches it (footer button). */
+    highlightColor: "#877bc7",
+    /** Crystal riding on the left end of the highlight. */
+    indicatorIcon: { name: "navbaricon", box: [107, 452, 164, 520] },
+    /** The crystal reaches further in than Venture's coin; clear its text. */
+    linkIndent: 20,
+    linkColor: "#2a2350",
+    activeLinkColor: "#ffffff",
+    stripColor: "#a39dcb",
+  },
+  text: {
+    name: "text-space",
+    box: [339, 412, 980, 3691],
+    caps: [4, 4],
+    minH: 2000,
+  },
+  /** Bottom of the mockup's text box; the pool below is the ending. */
+  textEndY: 3691,
+}
+
+/**
+ * Project › Contribution: a greenhouse. The page is one big season calendar,
+ * so there's no section list and the text box is wide, ending just above the
+ * petamons on the steps (they and the pool below are the ending).
+ */
+export const CONTRIBUTION_SCENE = {
+  header: "Contribution",
+  boxTitle: "Overview",
+  assetBase: "https://static.igem.wiki/teams/6187/wiki/contributions/",
+  plate: [1110, 4000],
+  background: "#c0dad3",
+  skyBottom: 400,
+  headerColor: "#2e5247",
+  accent: "#46725f",
+  layers: [
+    { name: "bg", box: [0, 0, 1110, 4000] },
+    // Seedlings in the planter, behind the Dry Lab bug.
+    { name: "sprouts", box: [70, 2997, 290, 3090] },
+    // Each subteam's petamon on the steps, one file each so they can move
+    // on their own. Four do what their subteam's critters do on hover (tap
+    // on touch): the kangaroo throws Venture's coins, the bird loops like
+    // the Human Practices birds, the crab scuttles like Dry Lab's, and the
+    // turtle gets Hardware's lightning.
+    { name: "venpetamon", coinBurst: true, box: [0, 2800, 196, 3362] },
+    // Faces us; looping "rightward" rolls it counterclockwise.
+    { name: "hppetamon", loop: { facing: 1 }, box: [120, 2724, 348, 2822] },
+    { name: "orpetamon", box: [222, 2806, 396, 3005] },
+    { name: "webpetamon", box: [371, 2755, 644, 3004] },
+    { name: "wlpetamon", box: [604, 2783, 805, 2910] },
+    { name: "dlpetamon", crab: true, box: [161, 3046, 290, 3148] },
+    {
+      name: "hwpetamon",
+      box: [300, 3006, 541, 3210],
+      hit: [304, 3012, 534, 3202],
+      // The standing turtle's lightning on the Hardware plate, stretched
+      // over this one.
+      zap: {
+        name: `${HARDWARE_SCENE.assetBase}zapzap.avif`,
+        from: [122, 1830, 352, 2133],
+        box: [288, 2984, 552, 3218],
+      },
+    },
+  ],
+  /** Loose coins on Venture's coins.avif, for the kangaroo (same plate size). */
+  coinSprites: VENTURE_SCENE.coinSprites.map(coin => ({
+    ...coin,
+    name: `${VENTURE_SCENE.assetBase}${coin.name}.avif`,
+  })),
+  side: null,
+  /** No menu highlight to match, so the footer button takes the accent. */
+  footerButton: { bg: "#46725f", text: "#ffffff" },
+  /** Not painted: a flat box in the greenhouse's paper colour. */
+  text: {
+    fill: "#fdf9f0",
+    box: [90, 412, 1020, 2690],
+    minH: 900,
+  },
+  textEndY: 2690,
+  /**
+   * The calendar in greenhouse colours: paper panels, sandstone lines, sage
+   * for what's selected, terracotta Sundays. Subteams take the team's painted
+   * swatches (Hardware, Venture and Human Practices match their pages' menu
+   * highlights), each with a dark label that reads on it.
+   */
+  vars: {
+    "--cal-surface": "#fffdf7",
+    "--cal-chrome": "#f3ecdc",
+    "--cal-line": "#d9c9a8",
+    "--cal-ink": "#2b3a30",
+    "--cal-muted": "#6a6650",
+    "--cal-accent": "#46725f",
+    "--cal-hover": "#f1ead9",
+    "--cal-tint": "rgba(70, 114, 95, 0.12)",
+    "--cal-cell": "#fffdf7",
+    "--cal-cell-hover": "#f5eee0",
+    "--cal-cell-line": "rgba(120, 96, 60, 0.2)",
+    "--cal-cell-out": "#f1eadb",
+    "--cal-cell-out-hover": "#e8dfcc",
+    "--cal-cell-out-line": "rgba(120, 96, 60, 0.1)",
+    "--cal-band": "#bcdccf",
+    "--cal-band-out": "#dce9e1",
+    "--cal-band-line": "#46725f",
+    "--cal-band-out-line": "rgba(70, 114, 95, 0.35)",
+    "--cal-sunday": "#b0543c",
+    "--cal-team-wetLab": "#76b8c8",
+    "--cal-team-wetLab-text": "#0c2a32",
+    "--cal-team-dryLab": "#f5e5b2",
+    "--cal-team-dryLab-text": "#3d3112",
+    "--cal-team-hardware": "#877bc3",
+    "--cal-team-hardware-text": "#17122e",
+    "--cal-team-humanPractices": "#648b80",
+    "--cal-team-humanPractices-text": "#0b1d18",
+    "--cal-team-outreach": "#cd7261",
+    "--cal-team-outreach-text": "#2a0d08",
+    "--cal-team-venture": "#eab781",
+    "--cal-team-venture-text": "#3a230e",
+    "--cal-team-web": "#afbc90",
+    "--cal-team-web-text": "#1f2914",
+  },
+}
+
+/**
+ * Attributions: a sunset over the Toronto skyline. No section list yet; the
+ * box ends above the buildings, which (with the birds) are the ending.
+ */
+export const ATTRIBUTIONS_SCENE = {
+  header: "Attributions",
+  boxTitle: "Overview",
+  assetBase: "https://static.igem.wiki/teams/6187/wiki/attributions/",
+  plate: [1110, 4000],
+  background: "#c0c0be",
+  skyBottom: 400,
+  headerColor: "#4f4159",
+  accent: "#8a4f60",
+  layers: [
+    { name: "bg", box: [0, 0, 1110, 4000] },
+    // Loop-the-loop on hover (tap on touch), counterclockwise like the
+    // Contribution bird.
+    { name: "birds", loop: { facing: 1 }, box: [1020, 3388, 1108, 3484] },
+  ],
+  side: null,
+  /** No menu highlight to match: the skyline's purple. */
+  footerButton: { bg: "#584960", text: "#ffffff" },
+  /** Not painted: a flat, faintly warm box on the sunset. */
+  text: {
+    fill: "#fffbf7",
+    box: [140, 412, 970, 3400],
+    minH: 2000,
+  },
+  textEndY: 3400,
 }

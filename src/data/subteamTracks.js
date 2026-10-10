@@ -70,3 +70,10 @@ export const SUBTEAM_IDS = SUBTEAM_TRACKS.map((t) => t.id)
 
 /** @type {Record<SubteamId, SubteamTrack>} */
 export const SUBTEAM_BY_ID = Object.fromEntries(SUBTEAM_TRACKS.map((t) => [t.id, t]))
+
+/** A track's colour, which a page can override with `--cal-team-<id>`. */
+export const trackColor = (track) => `var(--cal-team-${track.id}, ${track.color})`
+
+/** Text on a track's colour, overridable with `--cal-team-<id>-text`. */
+export const trackTextColor = (track) =>
+  `var(--cal-team-${track.id}-text, ${track.textColor})`
