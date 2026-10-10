@@ -1,0 +1,1627 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="525.6pt"
+   height="212.4pt"
+   viewBox="0 0 525.6 212.4"
+   version="1.1"
+   id="svg112"
+   sodipodi:docname="signalp_composite.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview112"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     inkscape:zoom="1.3762752"
+     inkscape:cx="354.21693"
+     inkscape:cy="88.645059"
+     inkscape:window-width="1440"
+     inkscape:window-height="830"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="figure_1" />
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:date>2026-10-06T10:39:31.741050</dc:date>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+          </cc:Agent>
+        </dc:creator>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1">
+    <style
+       type="text/css"
+       id="style1">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+  </defs>
+  <g
+     id="figure_1">
+    <g
+       id="patch_1">
+      <path
+         d="M 0 212.4  L 525.6 212.4  L 525.6 0  L 0 0  z "
+         style="fill: #ffffff"
+         id="path1" />
+    </g>
+    <g
+       id="axes_1">
+      <g
+         id="patch_2">
+        <path
+           d="M 60.444 176.292  L 147.168 176.292  L 147.168 42.48  L 60.444 42.48  z "
+           style="fill: #ffffff"
+           id="path2" />
+      </g>
+      <g
+         id="matplotlib.axis_1">
+        <g
+           id="xtick_1">
+          <g
+             id="line2d_1">
+            <path
+               d="M 60.444 176.292  L 60.444 42.48  "
+               clip-path="url(#pcbb2a66596)"
+               style="fill: none; stroke: #e3e8ec; stroke-width: 0.5; stroke-linecap: square"
+               id="path3" />
+          </g>
+          <g
+             id="line2d_2">
+            <defs
+               id="defs3">
+              <path
+                 id="m0adc413d16"
+                 d="M 0 0  L 0 2  "
+                 style="stroke: #5f6b76; stroke-width: 0.5" />
+            </defs>
+            <g
+               id="g3">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="60.444"
+                 y="176.292"
+                 style="fill: #5f6b76; stroke: #5f6b76; stroke-width: 0.5"
+                 id="use3" />
+            </g>
+          </g>
+          <g
+             id="text_1">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; text-anchor: middle; fill: #5f6b76"
+               x="60.444"
+               y="186.140125"
+               transform="rotate(-0 60.444 186.140125)"
+               id="text3">1</text>
+          </g>
+        </g>
+        <g
+           id="xtick_2">
+          <g
+             id="line2d_3">
+            <path
+               d="M 82.125 176.292  L 82.125 42.48  "
+               clip-path="url(#pcbb2a66596)"
+               style="fill: none; stroke: #e3e8ec; stroke-width: 0.5; stroke-linecap: square"
+               id="path4" />
+          </g>
+          <g
+             id="line2d_4">
+            <g
+               id="g4">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="82.125"
+                 y="176.292"
+                 style="fill: #5f6b76; stroke: #5f6b76; stroke-width: 0.5"
+                 id="use4" />
+            </g>
+          </g>
+          <g
+             id="text_2">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; text-anchor: middle; fill: #5f6b76"
+               x="82.125"
+               y="186.140125"
+               transform="rotate(-0 82.125 186.140125)"
+               id="text4">100</text>
+          </g>
+        </g>
+        <g
+           id="xtick_3">
+          <g
+             id="line2d_5">
+            <path
+               d="M 103.806 176.292  L 103.806 42.48  "
+               clip-path="url(#pcbb2a66596)"
+               style="fill: none; stroke: #e3e8ec; stroke-width: 0.5; stroke-linecap: square"
+               id="path5" />
+          </g>
+          <g
+             id="line2d_6">
+            <g
+               id="g5">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="103.806"
+                 y="176.292"
+                 style="fill: #5f6b76; stroke: #5f6b76; stroke-width: 0.5"
+                 id="use5" />
+            </g>
+          </g>
+          <g
+             id="text_3">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; text-anchor: middle; fill: #5f6b76"
+               x="103.806"
+               y="186.140125"
+               transform="rotate(-0 103.806 186.140125)"
+               id="text5">10K</text>
+          </g>
+        </g>
+        <g
+           id="xtick_4">
+          <g
+             id="line2d_7">
+            <path
+               d="M 125.487 176.292  L 125.487 42.48  "
+               clip-path="url(#pcbb2a66596)"
+               style="fill: none; stroke: #e3e8ec; stroke-width: 0.5; stroke-linecap: square"
+               id="path6" />
+          </g>
+          <g
+             id="line2d_8">
+            <g
+               id="g6">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="125.487"
+                 y="176.292"
+                 style="fill: #5f6b76; stroke: #5f6b76; stroke-width: 0.5"
+                 id="use6" />
+            </g>
+          </g>
+          <g
+             id="text_4">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; text-anchor: middle; fill: #5f6b76"
+               x="125.487"
+               y="186.140125"
+               transform="rotate(-0 125.487 186.140125)"
+               id="text6">1M</text>
+          </g>
+        </g>
+        <g
+           id="xtick_5">
+          <g
+             id="line2d_9">
+            <path
+               d="M 147.168 176.292  L 147.168 42.48  "
+               clip-path="url(#pcbb2a66596)"
+               style="fill: none; stroke: #e3e8ec; stroke-width: 0.5; stroke-linecap: square"
+               id="path7" />
+          </g>
+          <g
+             id="line2d_10">
+            <g
+               id="g7">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="147.168"
+                 y="176.292"
+                 style="fill: #5f6b76; stroke: #5f6b76; stroke-width: 0.5"
+                 id="use7" />
+            </g>
+          </g>
+          <g
+             id="text_5">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; text-anchor: middle; fill: #5f6b76"
+               x="147.168"
+               y="186.140125"
+               transform="rotate(-0 147.168 186.140125)"
+               id="text7">100M</text>
+          </g>
+        </g>
+        <g
+           id="text_6">
+          <text
+             style="font-size: 6.5px; font-family: 'Liberation Sans'; text-anchor: middle; fill: #3d4954"
+             x="103.806"
+             y="196.095594"
+             transform="rotate(-0 103.806 196.095594)"
+             id="text8">ORFs per class (log scale)</text>
+        </g>
+      </g>
+      <g
+         id="matplotlib.axis_2">
+        <g
+           id="ytick_1">
+          <g
+             id="line2d_11" />
+          <g
+             id="text_7">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(48.939625 56.949079)"
+               id="text9">SP</text>
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(31.933375 62.75961)"
+               id="text10">Sec / SPI</text>
+          </g>
+        </g>
+        <g
+           id="ytick_2">
+          <g
+             id="line2d_12" />
+          <g
+             id="text_8">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(43.2715 82.101711)"
+               id="text11">LIPO</text>
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(30.2665 87.912242)"
+               id="text12">Sec / SPII</text>
+          </g>
+        </g>
+        <g
+           id="ytick_3">
+          <g
+             id="line2d_13" />
+          <g
+             id="text_9">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(46.497438 107.254342)"
+               id="text13">TAT</text>
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(34.2715 113.064873)"
+               id="text14">Tat / SPI</text>
+          </g>
+        </g>
+        <g
+           id="ytick_4">
+          <g
+             id="line2d_14" />
+          <g
+             id="text_10">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(32.824938 132.406974)"
+               id="text15">TATLIPO</text>
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(32.604625 138.217505)"
+               id="text16">Tat / SPII</text>
+          </g>
+        </g>
+        <g
+           id="ytick_5">
+          <g
+             id="line2d_15" />
+          <g
+             id="text_11">
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(41.938375 157.559605)"
+               id="text17">PILIN</text>
+            <text
+               style="font-size: 6px; font-family: 'Liberation Sans'; fill: #1b232b"
+               transform="translate(28.599625 163.370137)"
+               id="text18">Sec / SPIII</text>
+          </g>
+        </g>
+      </g>
+      <g
+         id="patch_3">
+        <path
+           d="M 60.444 176.292  L 147.168 176.292  "
+           style="fill: none; stroke: #4b5763; stroke-width: 0.6; stroke-linejoin: miter; stroke-linecap: square"
+           id="path18" />
+      </g>
+      <g
+         id="patch_4">
+        <path
+           d="M 60.444 65.368895  L 141.941448 65.368895  L 141.941448 49.774263  L 60.444 49.774263  z "
+           clip-path="url(#pcbb2a66596)"
+           style="fill: #1c5c80"
+           id="path19" />
+      </g>
+      <g
+         id="patch_5">
+        <path
+           d="M 60.444 90.521526  L 134.12802 90.521526  L 134.12802 74.926895  L 60.444 74.926895  z "
+           clip-path="url(#pcbb2a66596)"
+           style="fill: #7db2d6"
+           id="path20" />
+      </g>
+      <g
+         id="patch_6">
+        <path
+           d="M 60.444 115.674158  L 130.288535 115.674158  L 130.288535 100.079526  L 60.444 100.079526  z "
+           clip-path="url(#pcbb2a66596)"
+           style="fill: #16764e"
+           id="path21" />
+      </g>
+      <g
+         id="patch_7">
+        <path
+           d="M 60.444 140.826789  L 122.597344 140.826789  L 122.597344 125.232158  L 60.444 125.232158  z "
+           clip-path="url(#pcbb2a66596)"
+           style="fill: #5a9e7d"
+           id="path22" />
+      </g>
+      <g
+         id="patch_8">
+        <path
+           d="M 60.444 165.979421  L 85.618018 165.979421  L 85.618018 150.384789  L 60.444 150.384789  z "
+           clip-path="url(#pcbb2a66596)"
+           style="fill: #8f5511"
+           id="path23" />
+      </g>
+      <g
+         id="text_12"
+         transform="translate(22.734896,0.468035)">
+        <text
+           style="font-weight:700;font-size:9px;font-family:'Liberation Sans';text-anchor:start;fill:#1b232b"
+           x="8.4096003"
+           y="27.2313"
+           id="text23">A</text>
+      </g>
+      <g
+         id="text_13"
+         transform="translate(20.80821,0.8120234)">
+        <text
+           style="font-weight:700;font-size:7.3px;font-family:'Liberation Sans';text-anchor:start;fill:#1b232b"
+           x="19.409599"
+           y="27.152111"
+           id="text24">Signal peptide classes</text>
+      </g>
+      <g
+         id="text_14">
+        <text
+           style="font-size:5.4px;font-family:'Liberation Sans';text-anchor:start;fill:#5f6b76"
+           x="35.768543"
+           y="39.576668"
+           id="text25">Sec 92.21% Tat 7.79%</text>
+      </g>
+      <g
+         id="text_15">
+        <text
+           style="font-weight: 700; font-size: 5.8px; font-family: 'Liberation Sans'; text-anchor: end; fill: #ffffff"
+           x="140.640588"
+           y="59.071423"
+           transform="rotate(-0 140.640588 59.071423)"
+           id="text26">32,950,956</text>
+      </g>
+      <g
+         id="text_16">
+        <text
+           style="font-size: 5.2px; font-family: 'Liberation Sans'; text-anchor: start; fill: #5f6b76"
+           x="60.444"
+           y="72.155586"
+           transform="rotate(-0 60.444 72.155586)"
+           id="text27">77.47% of positives</text>
+      </g>
+      <g
+         id="text_17">
+        <text
+           style="font-weight: 700; font-size: 5.8px; font-family: 'Liberation Sans'; text-anchor: end; fill: #ffffff"
+           x="132.82716"
+           y="84.224054"
+           transform="rotate(-0 132.82716 84.224054)"
+           id="text28">6,267,658</text>
+      </g>
+      <g
+         id="text_18">
+        <text
+           style="font-size: 5.2px; font-family: 'Liberation Sans'; text-anchor: start; fill: #5f6b76"
+           x="60.444"
+           y="97.308217"
+           transform="rotate(-0 60.444 97.308217)"
+           id="text29">14.74% of positives</text>
+      </g>
+      <g
+         id="text_19">
+        <text
+           style="font-weight: 700; font-size: 5.8px; font-family: 'Liberation Sans'; text-anchor: end; fill: #ffffff"
+           x="128.987675"
+           y="109.376686"
+           transform="rotate(-0 128.987675 109.376686)"
+           id="text30">2,772,845</text>
+      </g>
+      <g
+         id="text_20">
+        <text
+           style="font-size: 5.2px; font-family: 'Liberation Sans'; text-anchor: start; fill: #5f6b76"
+           x="60.444"
+           y="122.460849"
+           transform="rotate(-0 60.444 122.460849)"
+           id="text31">6.52% of positives</text>
+      </g>
+      <g
+         id="text_21">
+        <text
+           style="font-weight: 700; font-size: 5.8px; font-family: 'Liberation Sans'; text-anchor: end; fill: #ffffff"
+           x="121.296484"
+           y="134.529317"
+           transform="rotate(-0 121.296484 134.529317)"
+           id="text32">541,301</text>
+      </g>
+      <g
+         id="text_22">
+        <text
+           style="font-size: 5.2px; font-family: 'Liberation Sans'; text-anchor: start; fill: #5f6b76"
+           x="60.444"
+           y="147.61348"
+           transform="rotate(-0 60.444 147.61348)"
+           id="text33">1.27% of positives</text>
+      </g>
+      <g
+         id="text_23">
+        <text
+           style="font-weight: 700; font-size: 5.8px; font-family: 'Liberation Sans'; text-anchor: start; fill: #1b232b"
+           x="86.918878"
+           y="159.681949"
+           transform="rotate(-0 86.918878 159.681949)"
+           id="text34">210</text>
+      </g>
+      <g
+         id="text_24">
+        <text
+           style="font-size: 5.2px; font-family: 'Liberation Sans'; text-anchor: start; fill: #5f6b76"
+           x="60.444"
+           y="172.766112"
+           transform="rotate(-0 60.444 172.766112)"
+           id="text35">0.0005% of positives</text>
+      </g>
+    </g>
+    <g
+       id="axes_2"
+       transform="translate(-9.2641355,-1.0898983)">
+      <g
+         id="patch_9">
+        <path
+           d="M 270.684,176.292 H 373.176 V 42.48 H 270.684 Z"
+           style="fill:#ffffff"
+           id="path35" />
+      </g>
+      <g
+         id="matplotlib.axis_3">
+        <g
+           id="xtick_6">
+          <g
+             id="line2d_16">
+            <path
+               d="M 270.684,176.292 V 42.48"
+               clip-path="url(#pd67ba1ed83)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path36" />
+          </g>
+          <g
+             id="line2d_17">
+            <g
+               id="g36">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="270.68399"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use36" />
+            </g>
+          </g>
+          <g
+             id="text_25">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="270.68399"
+               y="186.14012"
+               id="text36">0%</text>
+          </g>
+        </g>
+        <g
+           id="xtick_7">
+          <g
+             id="line2d_18">
+            <path
+               d="M 290.394,176.292 V 42.48"
+               clip-path="url(#pd67ba1ed83)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path37" />
+          </g>
+          <g
+             id="line2d_19">
+            <g
+               id="g37">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="290.39401"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use37" />
+            </g>
+          </g>
+          <g
+             id="text_26">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="290.39401"
+               y="186.14012"
+               id="text37">10%</text>
+          </g>
+        </g>
+        <g
+           id="xtick_8">
+          <g
+             id="line2d_20">
+            <path
+               d="M 310.104,176.292 V 42.48"
+               clip-path="url(#pd67ba1ed83)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path38" />
+          </g>
+          <g
+             id="line2d_21">
+            <g
+               id="g38">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="310.104"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use38" />
+            </g>
+          </g>
+          <g
+             id="text_27">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="310.104"
+               y="186.14012"
+               id="text38">20%</text>
+          </g>
+        </g>
+        <g
+           id="xtick_9">
+          <g
+             id="line2d_22">
+            <path
+               d="M 329.814,176.292 V 42.48"
+               clip-path="url(#pd67ba1ed83)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path39" />
+          </g>
+          <g
+             id="line2d_23">
+            <g
+               id="g39">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="329.814"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use39" />
+            </g>
+          </g>
+          <g
+             id="text_28">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="329.814"
+               y="186.14012"
+               id="text39">30%</text>
+          </g>
+        </g>
+        <g
+           id="xtick_10">
+          <g
+             id="line2d_24">
+            <path
+               d="M 349.524,176.292 V 42.48"
+               clip-path="url(#pd67ba1ed83)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path40" />
+          </g>
+          <g
+             id="line2d_25">
+            <g
+               id="g40">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="349.52399"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use40" />
+            </g>
+          </g>
+          <g
+             id="text_29">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="349.52399"
+               y="186.14012"
+               id="text40">40%</text>
+          </g>
+        </g>
+        <g
+           id="xtick_11">
+          <g
+             id="line2d_26">
+            <path
+               d="M 369.234,176.292 V 42.48"
+               clip-path="url(#pd67ba1ed83)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path41" />
+          </g>
+          <g
+             id="line2d_27">
+            <g
+               id="g41">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="369.23401"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use41" />
+            </g>
+          </g>
+          <g
+             id="text_30">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="369.23401"
+               y="186.14012"
+               id="text41">50%</text>
+          </g>
+        </g>
+        <g
+           id="text_31">
+          <text
+             style="font-size:6.5px;font-family:'Liberation Sans';text-anchor:middle;fill:#3d4954"
+             x="321.92999"
+             y="196.0956"
+             id="text42">ORFs in family with a predicted signal peptide</text>
+        </g>
+      </g>
+      <g
+         id="matplotlib.axis_4">
+        <g
+           id="ytick_6">
+          <g
+             id="line2d_28" />
+          <g
+             id="text_32">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="54.445183"
+               id="text43">Cupredoxins – blue copper (8.8M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_7">
+          <g
+             id="line2d_29" />
+          <g
+             id="text_33">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="70.763718"
+               id="text44">Trypsin-like (25M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_8">
+          <g
+             id="line2d_30" />
+          <g
+             id="text_34">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="87.08226"
+               id="text45">Arylesterase* (4.3M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_9">
+          <g
+             id="line2d_31" />
+          <g
+             id="text_35">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="103.40079"
+               id="text46">DD-peptidase/beta-lactamase (68M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_10">
+          <g
+             id="line2d_32" />
+          <g
+             id="text_36">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="119.71933"
+               id="text47">Alpha/Beta Hydrolase (176M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_11">
+          <g
+             id="line2d_33" />
+          <g
+             id="text_37">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="136.03787"
+               id="text48">Amidase signature (19M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_12">
+          <g
+             id="line2d_34" />
+          <g
+             id="text_38">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="152.3564"
+               id="text49">Uridase-like* (1.0M)</text>
+          </g>
+        </g>
+        <g
+           id="ytick_13">
+          <g
+             id="line2d_35" />
+          <g
+             id="text_39">
+            <text
+               style="font-size:6px;font-family:'Liberation Sans';text-anchor:end;fill:#1b232b"
+               x="267.18399"
+               y="168.67494"
+               id="text50">L-amino peptidase (4.0M)</text>
+          </g>
+        </g>
+      </g>
+      <g
+         id="line2d_36">
+        <path
+           d="M 297.97715,176.292 V 42.48"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:none;stroke:#667380;stroke-width:0.7;stroke-dasharray:2.1, 1.4;stroke-dashoffset:0"
+           id="path50" />
+      </g>
+      <g
+         id="patch_10">
+        <path
+           d="M 270.684,176.292 H 373.176"
+           style="fill:none;stroke:#4b5763;stroke-width:0.6;stroke-linecap:square;stroke-linejoin:miter"
+           id="path51" />
+      </g>
+      <g
+         id="patch_11">
+        <path
+           d="m 270.684,57.656239 h 90.42839 V 46.886005 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path52" />
+      </g>
+      <g
+         id="patch_12">
+        <path
+           d="m 270.684,73.974776 h 61.04991 V 63.204541 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path53" />
+      </g>
+      <g
+         id="patch_13">
+        <path
+           d="m 270.684,90.293312 h 48.1103 V 79.523078 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path54" />
+      </g>
+      <g
+         id="patch_14">
+        <path
+           d="m 270.684,106.61185 h 29.26454 V 95.841615 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path55" />
+      </g>
+      <g
+         id="patch_15">
+        <path
+           d="m 270.684,122.93039 h 20.98909 V 112.16015 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#dd8f36"
+           id="path56" />
+      </g>
+      <g
+         id="patch_16">
+        <path
+           d="m 270.684,139.24892 h 6.80002 V 128.47869 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path57" />
+      </g>
+      <g
+         id="patch_17">
+        <path
+           d="m 270.684,155.56746 h 4.03873 V 144.79722 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path58" />
+      </g>
+      <g
+         id="patch_18">
+        <path
+           d="m 270.684,171.88599 h 2.32791 V 161.11576 H 270.684 Z"
+           clip-path="url(#pd67ba1ed83)"
+           style="fill:#1c5c80"
+           id="path59" />
+      </g>
+      <g
+         id="text_40">
+        <text
+           style="font-size:5.2px;font-family:'Liberation Sans';text-anchor:start;fill:#5f6b76"
+           x="299.35684"
+           y="167.84557"
+           id="text59">database 13.85%</text>
+      </g>
+      <g
+         id="text_41"
+         transform="translate(24.661582,-0.2199416)">
+        <text
+           style="font-weight:700;font-size:9px;font-family:'Liberation Sans';text-anchor:start;fill:#1b232b"
+           x="155.89296"
+           y="27.2313"
+           id="text60">B</text>
+      </g>
+      <g
+         id="text_42"
+         transform="translate(25.734896,-0.2199416)">
+        <text
+           style="font-weight:700;font-size:7.3px;font-family:'Liberation Sans';text-anchor:start;fill:#1b232b"
+           x="166.89296"
+           y="27.18405"
+           id="text61">Secretion rate by catalytic fold family</text>
+      </g>
+      <g
+         id="text_43"
+         transform="translate(34.68035,-0.9492672)">
+        <text
+           style="font-size:5.4px;font-family:'Liberation Sans';text-anchor:start;fill:#5f6b76"
+           x="155.89296"
+           y="35.337959"
+           id="text62">family size in parentheses</text>
+      </g>
+      <g
+         id="text_44">
+        <text
+           style="font-size:5.2px;font-family:'Liberation Sans';fill:#8f5511"
+           transform="translate(318.47869,116.37206)"
+           id="text63">18.7M secreted ORFs</text>
+        <text
+           style="font-size:5.2px;font-family:'Liberation Sans';fill:#8f5511"
+           transform="translate(318.47869,121.40785)"
+           id="text64">= 44% of all secreted</text>
+      </g>
+      <g
+         id="text_45">
+        <g
+           id="patch_19">
+          <path
+             d="M 362.02809,55.438466 H 379.4009 V 49.103778 H 362.02809 Z"
+             style="fill:#ffffff"
+             id="path64" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="362.4921"
+           y="53.770966"
+           id="text65">45.9%</text>
+      </g>
+      <g
+         id="text_46">
+        <g
+           id="patch_20">
+          <path
+             d="m 332.64961,71.757002 h 17.37281 v -6.334687 h -17.37281 z"
+             style="fill:#ffffff"
+             id="path65" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="333.11362"
+           y="70.0895"
+           id="text66">31.0%</text>
+      </g>
+      <g
+         id="text_47">
+        <g
+           id="patch_21">
+          <path
+             d="m 319.71,88.075539 h 17.37282 V 81.740851 H 319.71 Z"
+             style="fill:#ffffff"
+             id="path66" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="320.17401"
+           y="86.408035"
+           id="text67">24.4%</text>
+      </g>
+      <g
+         id="text_48">
+        <g
+           id="patch_22">
+          <path
+             d="m 300.86424,104.39408 h 17.37281 v -6.334692 h -17.37281 z"
+             style="fill:#ffffff"
+             id="path67" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="301.32825"
+           y="102.72658"
+           id="text68">14.8%</text>
+      </g>
+      <g
+         id="text_49">
+        <g
+           id="patch_23">
+          <path
+             d="m 292.58879,120.71261 h 17.37281 v -6.33468 h -17.37281 z"
+             style="fill:#ffffff"
+             id="path68" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#8f5511"
+           x="293.0528"
+           y="119.04511"
+           id="text69">10.6%</text>
+      </g>
+      <g
+         id="text_50">
+        <g
+           id="patch_24">
+          <path
+             d="m 278.39972,137.03115 h 14.14747 v -6.33469 h -14.14747 z"
+             style="fill:#ffffff"
+             id="path69" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="278.86374"
+           y="135.36365"
+           id="text70">3.5%</text>
+      </g>
+      <g
+         id="text_51">
+        <g
+           id="patch_25">
+          <path
+             d="M 275.63843,153.34968 H 289.7859 V 147.015 h -14.14747 z"
+             style="fill:#ffffff"
+             id="path70" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="276.10242"
+           y="151.68219"
+           id="text71">2.0%</text>
+      </g>
+      <g
+         id="text_52">
+        <g
+           id="patch_26">
+          <path
+             d="m 273.92761,169.66822 h 14.14747 v -6.33469 h -14.14747 z"
+             style="fill:#ffffff"
+             id="path71" />
+        </g>
+        <text
+           style="font-weight:700;font-size:5.8px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="274.3916"
+           y="168.00072"
+           id="text72">1.2%</text>
+      </g>
+    </g>
+    <g
+       id="axes_3"
+       transform="translate(-1.5)">
+      <g
+         id="patch_27">
+        <path
+           d="m 407.34,176.292 h 91.98 V 42.48 h -91.98 z"
+           style="fill:#ffffff"
+           id="path72" />
+      </g>
+      <g
+         id="matplotlib.axis_5">
+        <g
+           id="xtick_12">
+          <g
+             id="line2d_37">
+            <g
+               id="g72">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="412.35709"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use72" />
+            </g>
+          </g>
+          <g
+             id="text_53">
+            <text
+               style="font-size:4.9px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="412.35709"
+               y="183.34297"
+               id="text73">2</text>
+          </g>
+        </g>
+        <g
+           id="xtick_13">
+          <g
+             id="line2d_38">
+            <g
+               id="g73">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="429.08072"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use73" />
+            </g>
+          </g>
+          <g
+             id="text_54">
+            <text
+               style="font-size:4.9px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="429.08072"
+               y="183.34297"
+               id="text74">3–5</text>
+          </g>
+        </g>
+        <g
+           id="xtick_14">
+          <g
+             id="line2d_39">
+            <g
+               id="g74">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="445.80435"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use74" />
+            </g>
+          </g>
+          <g
+             id="text_55">
+            <text
+               style="font-size:4.9px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="445.80435"
+               y="183.34297"
+               id="text75">6–10</text>
+          </g>
+        </g>
+        <g
+           id="xtick_15">
+          <g
+             id="line2d_40">
+            <g
+               id="g75">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="462.52802"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use75" />
+            </g>
+          </g>
+          <g
+             id="text_56">
+            <text
+               style="font-size:4.9px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="462.52802"
+               y="183.34297"
+               id="text76">11–50</text>
+          </g>
+        </g>
+        <g
+           id="xtick_16">
+          <g
+             id="line2d_41">
+            <g
+               id="g76">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="479.25165"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use76" />
+            </g>
+          </g>
+          <g
+             id="text_57">
+            <text
+               style="font-size:4.9px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="479.25165"
+               y="183.34297"
+               id="text77">51–200</text>
+          </g>
+        </g>
+        <g
+           id="xtick_17">
+          <g
+             id="line2d_42">
+            <g
+               id="g77">
+              <use
+                 xlink:href="#m0adc413d16"
+                 x="495.97528"
+                 y="176.29201"
+                 style="fill:#5f6b76;stroke:#5f6b76;stroke-width:0.5"
+                 id="use77" />
+            </g>
+          </g>
+          <g
+             id="text_58">
+            <text
+               style="font-size:4.9px;font-family:'Liberation Sans';text-anchor:middle;fill:#5f6b76"
+               x="495.97528"
+               y="183.34297"
+               id="text78">201+</text>
+          </g>
+        </g>
+        <g
+           id="text_59">
+          <text
+             style="font-size:6.5px;font-family:'Liberation Sans';text-anchor:middle;fill:#3d4954"
+             x="453.32999"
+             y="193.07019"
+             id="text79">Cluster size (secreted members)</text>
+        </g>
+      </g>
+      <g
+         id="matplotlib.axis_6">
+        <g
+           id="ytick_14">
+          <g
+             id="line2d_43">
+            <path
+               d="m 407.34,176.292 h 91.98"
+               clip-path="url(#p1d108c8fce)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path79" />
+          </g>
+          <g
+             id="line2d_44" />
+          <g
+             id="text_60">
+            <text
+               style="font-size:5.6px;font-family:'Liberation Sans';text-anchor:end;fill:#5f6b76"
+               x="403.84"
+               y="178.32112"
+               id="text80">40%</text>
+          </g>
+        </g>
+        <g
+           id="ytick_15">
+          <g
+             id="line2d_45">
+            <path
+               d="m 407.34,149.5296 h 91.98"
+               clip-path="url(#p1d108c8fce)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path80" />
+          </g>
+          <g
+             id="line2d_46" />
+          <g
+             id="text_61">
+            <text
+               style="font-size:5.6px;font-family:'Liberation Sans';text-anchor:end;fill:#5f6b76"
+               x="403.84"
+               y="151.55873"
+               id="text81">52%</text>
+          </g>
+        </g>
+        <g
+           id="ytick_16">
+          <g
+             id="line2d_47">
+            <path
+               d="m 407.34,122.7672 h 91.98"
+               clip-path="url(#p1d108c8fce)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path81" />
+          </g>
+          <g
+             id="line2d_48" />
+          <g
+             id="text_62">
+            <text
+               style="font-size:5.6px;font-family:'Liberation Sans';text-anchor:end;fill:#5f6b76"
+               x="403.84"
+               y="124.79633"
+               id="text82">64%</text>
+          </g>
+        </g>
+        <g
+           id="ytick_17">
+          <g
+             id="line2d_49">
+            <path
+               d="m 407.34,96.0048 h 91.98"
+               clip-path="url(#p1d108c8fce)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path82" />
+          </g>
+          <g
+             id="line2d_50" />
+          <g
+             id="text_63">
+            <text
+               style="font-size:5.6px;font-family:'Liberation Sans';text-anchor:end;fill:#5f6b76"
+               x="403.84"
+               y="98.033928"
+               id="text83">76%</text>
+          </g>
+        </g>
+        <g
+           id="ytick_18">
+          <g
+             id="line2d_51">
+            <path
+               d="m 407.34,69.2424 h 91.98"
+               clip-path="url(#p1d108c8fce)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path83" />
+          </g>
+          <g
+             id="line2d_52" />
+          <g
+             id="text_64">
+            <text
+               style="font-size:5.6px;font-family:'Liberation Sans';text-anchor:end;fill:#5f6b76"
+               x="403.84"
+               y="71.271523"
+               id="text84">88%</text>
+          </g>
+        </g>
+        <g
+           id="ytick_19">
+          <g
+             id="line2d_53">
+            <path
+               d="m 407.34,42.48 h 91.98"
+               clip-path="url(#p1d108c8fce)"
+               style="fill:none;stroke:#e3e8ec;stroke-width:0.5;stroke-linecap:square"
+               id="path84" />
+          </g>
+          <g
+             id="line2d_54" />
+          <g
+             id="text_65">
+            <text
+               style="font-size:5.6px;font-family:'Liberation Sans';text-anchor:end;fill:#5f6b76"
+               x="403.84"
+               y="44.509125"
+               id="text85">100%</text>
+          </g>
+        </g>
+      </g>
+      <g
+         id="patch_28">
+        <path
+           d="m 407.34,176.292 h 91.98"
+           style="fill:none;stroke:#4b5763;stroke-width:0.6;stroke-linecap:square;stroke-linejoin:miter"
+           id="path85" />
+      </g>
+      <g
+         id="line2d_55">
+        <path
+           d="m 412.35709,50.95476 16.72364,6.46758 16.72363,6.91362 16.72364,-4.90644 16.72364,-1.33812 16.72363,-3.12228"
+           clip-path="url(#p1d108c8fce)"
+           style="fill:none;stroke:#1c5c80;stroke-width:1.4;stroke-linecap:square"
+           id="path86" />
+        <defs
+           id="defs86">
+          <path
+             id="md0bbd5169c"
+             d="M 0,1.6 C 0.424325,1.6 0.831328,1.431414 1.131371,1.131371 1.431414,0.831328 1.6,0.424325 1.6,0 1.6,-0.424325 1.431414,-0.831328 1.131371,-1.131371 0.831328,-1.431414 0.424325,-1.6 0,-1.6 c -0.424325,0 -0.831328,0.168586 -1.131371,0.468629 C -1.431414,-0.831328 -1.6,-0.424325 -1.6,0 c 0,0.424325 0.168586,0.831328 0.468629,1.131371 C -0.831328,1.431414 -0.424325,1.6 0,1.6 Z"
+             style="stroke:#ffffff;stroke-width:0.5" />
+        </defs>
+        <g
+           clip-path="url(#p1d108c8fce)"
+           id="g91">
+          <use
+             xlink:href="#md0bbd5169c"
+             x="412.35709"
+             y="50.954762"
+             style="fill:#1c5c80;stroke:#ffffff;stroke-width:0.5"
+             id="use86" />
+          <use
+             xlink:href="#md0bbd5169c"
+             x="429.08072"
+             y="57.42234"
+             style="fill:#1c5c80;stroke:#ffffff;stroke-width:0.5"
+             id="use87" />
+          <use
+             xlink:href="#md0bbd5169c"
+             x="445.80435"
+             y="64.33596"
+             style="fill:#1c5c80;stroke:#ffffff;stroke-width:0.5"
+             id="use88" />
+          <use
+             xlink:href="#md0bbd5169c"
+             x="462.52802"
+             y="59.42952"
+             style="fill:#1c5c80;stroke:#ffffff;stroke-width:0.5"
+             id="use89" />
+          <use
+             xlink:href="#md0bbd5169c"
+             x="479.25165"
+             y="58.0914"
+             style="fill:#1c5c80;stroke:#ffffff;stroke-width:0.5"
+             id="use90" />
+          <use
+             xlink:href="#md0bbd5169c"
+             x="495.97528"
+             y="54.96912"
+             style="fill:#1c5c80;stroke:#ffffff;stroke-width:0.5"
+             id="use91" />
+        </g>
+      </g>
+      <g
+         id="text_66">
+        <text
+           style="font-weight:700;font-size:5.6px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="499.32001"
+           y="56.417244"
+           id="text91">94.4%</text>
+      </g>
+      <g
+         id="line2d_56">
+        <path
+           d="m 412.35709,57.42234 16.72364,14.94234 16.72363,17.8416 16.72364,-4.01436 16.72364,2.00718 16.72363,-0.66906"
+           clip-path="url(#p1d108c8fce)"
+           style="fill:none;stroke:#7db2d6;stroke-width:1.4;stroke-linecap:square"
+           id="path91" />
+        <defs
+           id="defs91">
+          <path
+             id="m53f74c2795"
+             d="M 0,1.6 C 0.424325,1.6 0.831328,1.431414 1.131371,1.131371 1.431414,0.831328 1.6,0.424325 1.6,0 1.6,-0.424325 1.431414,-0.831328 1.131371,-1.131371 0.831328,-1.431414 0.424325,-1.6 0,-1.6 c -0.424325,0 -0.831328,0.168586 -1.131371,0.468629 C -1.431414,-0.831328 -1.6,-0.424325 -1.6,0 c 0,0.424325 0.168586,0.831328 0.468629,1.131371 C -0.831328,1.431414 -0.424325,1.6 0,1.6 Z"
+             style="stroke:#ffffff;stroke-width:0.5" />
+        </defs>
+        <g
+           clip-path="url(#p1d108c8fce)"
+           id="g97">
+          <use
+             xlink:href="#m53f74c2795"
+             x="412.35709"
+             y="57.42234"
+             style="fill:#7db2d6;stroke:#ffffff;stroke-width:0.5"
+             id="use92" />
+          <use
+             xlink:href="#m53f74c2795"
+             x="429.08072"
+             y="72.364677"
+             style="fill:#7db2d6;stroke:#ffffff;stroke-width:0.5"
+             id="use93" />
+          <use
+             xlink:href="#m53f74c2795"
+             x="445.80435"
+             y="90.206284"
+             style="fill:#7db2d6;stroke:#ffffff;stroke-width:0.5"
+             id="use94" />
+          <use
+             xlink:href="#m53f74c2795"
+             x="462.52802"
+             y="86.191917"
+             style="fill:#7db2d6;stroke:#ffffff;stroke-width:0.5"
+             id="use95" />
+          <use
+             xlink:href="#m53f74c2795"
+             x="479.25165"
+             y="88.199097"
+             style="fill:#7db2d6;stroke:#ffffff;stroke-width:0.5"
+             id="use96" />
+          <use
+             xlink:href="#m53f74c2795"
+             x="495.97528"
+             y="87.530037"
+             style="fill:#7db2d6;stroke:#ffffff;stroke-width:0.5"
+             id="use97" />
+        </g>
+      </g>
+      <g
+         id="text_67">
+        <text
+           style="font-weight:700;font-size:5.6px;font-family:'Liberation Sans';text-anchor:start;fill:#3f86b2"
+           x="499.32001"
+           y="88.978165"
+           id="text97">79.8%</text>
+      </g>
+      <g
+         id="line2d_57">
+        <path
+           d="m 412.35709,69.91146 16.72364,22.97106 16.72363,30.1077 16.72364,2.00718 16.72364,20.0718 16.72363,17.61858"
+           clip-path="url(#p1d108c8fce)"
+           style="fill:none;stroke:#dd8f36;stroke-width:1.4;stroke-linecap:square"
+           id="path97" />
+        <defs
+           id="defs97">
+          <path
+             id="ma3520fc986"
+             d="M 0,1.6 C 0.424325,1.6 0.831328,1.431414 1.131371,1.131371 1.431414,0.831328 1.6,0.424325 1.6,0 1.6,-0.424325 1.431414,-0.831328 1.131371,-1.131371 0.831328,-1.431414 0.424325,-1.6 0,-1.6 c -0.424325,0 -0.831328,0.168586 -1.131371,0.468629 C -1.431414,-0.831328 -1.6,-0.424325 -1.6,0 c 0,0.424325 0.168586,0.831328 0.468629,1.131371 C -0.831328,1.431414 -0.424325,1.6 0,1.6 Z"
+             style="stroke:#ffffff;stroke-width:0.5" />
+        </defs>
+        <g
+           clip-path="url(#p1d108c8fce)"
+           id="g103">
+          <use
+             xlink:href="#ma3520fc986"
+             x="412.35709"
+             y="69.911461"
+             style="fill:#dd8f36;stroke:#ffffff;stroke-width:0.5"
+             id="use98" />
+          <use
+             xlink:href="#ma3520fc986"
+             x="429.08072"
+             y="92.882523"
+             style="fill:#dd8f36;stroke:#ffffff;stroke-width:0.5"
+             id="use99" />
+          <use
+             xlink:href="#ma3520fc986"
+             x="445.80435"
+             y="122.99022"
+             style="fill:#dd8f36;stroke:#ffffff;stroke-width:0.5"
+             id="use100" />
+          <use
+             xlink:href="#ma3520fc986"
+             x="462.52802"
+             y="124.9974"
+             style="fill:#dd8f36;stroke:#ffffff;stroke-width:0.5"
+             id="use101" />
+          <use
+             xlink:href="#ma3520fc986"
+             x="479.25165"
+             y="145.0692"
+             style="fill:#dd8f36;stroke:#ffffff;stroke-width:0.5"
+             id="use102" />
+          <use
+             xlink:href="#ma3520fc986"
+             x="495.97528"
+             y="162.68777"
+             style="fill:#dd8f36;stroke:#ffffff;stroke-width:0.5"
+             id="use103" />
+        </g>
+      </g>
+      <g
+         id="text_68">
+        <text
+           style="font-weight:700;font-size:5.6px;font-family:'Liberation Sans';text-anchor:start;fill:#c9792a"
+           x="499.32001"
+           y="164.13591"
+           id="text103">46.1%</text>
+      </g>
+      <g
+         id="text_69">
+        <text
+           style="font-weight:700;font-size:9px;font-family:'Liberation Sans';text-anchor:start;fill:#1b232b"
+           x="388.944"
+           y="27.2313"
+           id="text104">C</text>
+      </g>
+      <g
+         id="text_70">
+        <text
+           style="font-weight:700;font-size:7.3px;font-family:'Liberation Sans';text-anchor:start;fill:#1b232b"
+           x="399.944"
+           y="27.152111"
+           id="text105">Signal type purity by cluster size</text>
+      </g>
+      <g
+         id="text_71">
+        <text
+           style="font-size:5.4px;font-family:'Liberation Sans';text-anchor:start;fill:#5f6b76"
+           x="388.944"
+           y="35.337959"
+           id="text106">% of clusters ≥90% one type; singletons excluded</text>
+      </g>
+      <g
+         id="text_72">
+        <text
+           style="font-weight:700;font-size:5.4px;font-family:'Liberation Sans';text-anchor:start;fill:#1c5c80"
+           x="410.0994"
+           y="150.92601"
+           id="text107">● 90% identity</text>
+      </g>
+      <g
+         id="text_73">
+        <text
+           style="font-weight:700;font-size:5.4px;font-family:'Liberation Sans';text-anchor:start;fill:#3f86b2"
+           x="410.0994"
+           y="160.29285"
+           id="text108">● 60% identity</text>
+      </g>
+      <g
+         id="text_74">
+        <text
+           style="font-weight:700;font-size:5.4px;font-family:'Liberation Sans';text-anchor:start;fill:#c9792a"
+           x="410.0994"
+           y="169.65968"
+           id="text109">● 30% identity</text>
+      </g>
+    </g>
+  </g>
+  <defs
+     id="defs112">
+    <clipPath
+       id="pcbb2a66596">
+      <rect
+         x="60.444"
+         y="42.48"
+         width="86.724"
+         height="133.812"
+         id="rect110" />
+    </clipPath>
+    <clipPath
+       id="pd67ba1ed83">
+      <rect
+         x="270.684"
+         y="42.48"
+         width="102.492"
+         height="133.812"
+         id="rect111" />
+    </clipPath>
+    <clipPath
+       id="p1d108c8fce">
+      <rect
+         x="407.34"
+         y="42.48"
+         width="91.98"
+         height="133.812"
+         id="rect112" />
+    </clipPath>
+  </defs>
+</svg>
