@@ -16,8 +16,6 @@ wideProse: true
 
 Engineering notes on this page are current through **5 October 2026** (engineering notebooks, DoE protocols, V1 reflection, V2 build and wiring).
 
-<PageTab id="notebook" label="Notebook">
-
 ## Stickies
 
 Drag the sticky notes anywhere on the page to explore hardware ideas. Positions are saved in your browser for this prototype.
@@ -97,9 +95,8 @@ Reusable subsystem validation protocols (temperature, pump, OD). Use these as li
 **Purpose.** Find stir speeds / sensor heights that minimize stir-bar interference and measure any collection-time delay.
 
 ![OD validation diagram](https://static.igem.wiki/teams/6187/wiki/hardware-notebook/experiments/doe-od-diagram.avif)
-</PageTab>
 
-<PageTab id="source-code" label="Source Code">
+## Source Code
 
 Firmware and software files for the bioreactor, organized by subsystem. Expand a file to inspect its source code and use Copy to copy it.
 
@@ -107,11 +104,20 @@ Firmware and software files for the bioreactor, organized by subsystem. Expand a
 
 Shared firmware and integration tests for the AS7343 optical-density sensors and bioreactor hardware.
 
-<CodeDropdown file="AS7343Soft.h" description="AS7343 sensor / SoftWire header" />
+<CodeDropdown
+  file="AS7343Soft.h"
+  description="AS7343 sensor / SoftWire header"
+/>
 
-<CodeDropdown file="Integration_Aug11.ino" description="Integration firmware — August 11" />
+<CodeDropdown
+  file="Integration_Aug11.ino"
+  description="Integration firmware, August 11"
+/>
 
-<CodeDropdown file="Integration_Oct 5 (not tested).ino" description="Integration firmware — October 5; untested" />
+<CodeDropdown
+  file="Integration_Oct 5 (not tested).ino"
+  description="Integration firmware, October 5; untested"
+/>
 
 ## Optical density (OD)
 
@@ -129,7 +135,10 @@ Peristaltic pump control firmware.
 
 Temperature sensor reading, heater control, and PID experiments.
 
-<CodeDropdown file="Read_DS18B20.ino" description="DS18B20 temperature sensor" />
+<CodeDropdown
+  file="Read_DS18B20.ino"
+  description="DS18B20 temperature sensor"
+/>
 
 <CodeDropdown file="Temperature.ino" description="Temperature monitoring" />
 
@@ -143,21 +152,24 @@ Python-based interface, simulation, and data files for the bioreactor.
 
 <CodeDropdown file="main.py" description="Application entry point" />
 
-<CodeDropdown file="demo_with_bioreactor.py" description="Bioreactor UI demonstration" />
+<CodeDropdown
+  file="demo_with_bioreactor.py"
+  description="Bioreactor UI demonstration"
+/>
 
 <CodeDropdown file="simulation.py" description="Bioreactor simulation" />
 
 <CodeDropdown file="requirements.txt" description="Python dependencies" />
 
-<CodeDropdown file="simulation.jsonl" description="Simulation data / event log" />
+<CodeDropdown
+  file="simulation.jsonl"
+  description="Simulation data / event log"
+/>
 
 <CodeDropdown file="data.csv" description="Application data" />
 
 <CodeDropdown file="README.md" description="Python UI documentation" />
 
-</PageTab>
-
-<PageTab id="v1-journal" label="V1 and Journal">
 ## V1
 
 ### What V1 set out to prove
@@ -201,4 +213,3 @@ Assembly / cost goals under discussion: **&lt;100 minutes** to assemble and **&l
 Dated hardware work through **5 October 2026**. Newest entries appear first.
 
 <HardwareJournal />
-</PageTab>

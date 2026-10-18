@@ -26,8 +26,6 @@
     "@fontsource/dm-sans": "^5.3.0",
     "@mdx-js/react": "^2.3.0",
     "babel-plugin-styled-components": "^2.1.0",
-    "baseline-browser-mapping": "^2.11.29",
-    "caniuse-lite": "^1.0.30001816",
     "gatsby": "^5.13.0",
     "gatsby-plugin-mdx": "^5.16.0",
     "gatsby-plugin-styled-components": "^6.13.0",

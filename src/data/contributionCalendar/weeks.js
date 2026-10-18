@@ -29,10 +29,21 @@ import { buildWeekSkeleton, formatDayShort } from "./calendarUtils.js"
  * @property {Record<SubteamId, SubteamWeekContent>} subteams
  */
 
+/*
+ * Sources: the leads' weekly updates and announcements on Discord, subteam
+ * channels, meeting minutes and slides in the team Drive, and the Hardware and
+ * Wet Lab notebooks. Milestones are the important dates (they show on the
+ * calendar); the week overview and subteam entries are the sidebar; the day by
+ * day specifics live in the notebooks, which the subteam entries link to.
+ */
+
+/** Weeks starting before this are past: gaps say "Slow week", not "coming soon". */
 const PAST_WEEK_QUIET_BEFORE = "2026-10-11"
 
+/** The calendar opens on the latest week on the record. */
 const LATEST_WEEK_ID = "week-2026-10-04"
 
+/** Start of the week each subteam first met; earlier weeks say "Not started yet". */
 const SUBTEAM_FIRST_WEEK = {
   venture: "2026-01-04",
   outreach: "2026-01-18",
@@ -1344,86 +1355,6 @@ const WEEK_CONTENT_OVERRIDES = {
 }
 
 /**
- * Notebook-level dates from the Wet Lab and Hardware notebooks. These only add
- * milestones to a week (its overview and subteam copy are untouched), and any
- * milestone already on the week is skipped.
- */
-const NOTEBOOK_MILESTONE_PATCHES = {
-  "week-2026-05-10": [
-    { date: "2026-05-16", label: "Sensor and controller prototyping assigned", subteamId: "hardware" },
-  ],
-  "week-2026-05-31": [
-    { date: "2026-06-04", label: "Prep growth media and pour plates", subteamId: "wetLab" },
-  ],
-  "week-2026-06-07": [
-    { date: "2026-06-11", label: "Pick up cells for competent-cell prep", subteamId: "wetLab" },
-    { date: "2026-06-12", label: "Make competent cells", subteamId: "wetLab" },
-  ],
-  "week-2026-06-14": [
-    { date: "2026-06-16", label: "Optical-sensor housing prototype ordered", subteamId: "hardware" },
-    { date: "2026-06-16", label: "Make competent cells; transform team plasmids", subteamId: "wetLab" },
-    { date: "2026-06-18", label: "Save freezer stocks; purify plasmid DNA", subteamId: "wetLab" },
-    { date: "2026-06-19", label: "Pour antibiotic selection plates", subteamId: "wetLab" },
-  ],
-  "week-2026-06-21": [
-    { date: "2026-06-24", label: "Miniprep BL21; transform NEB DH5α", subteamId: "wetLab" },
-    { date: "2026-06-26", label: "Miniprep DH5α; send for sequencing", subteamId: "wetLab" },
-  ],
-  "week-2026-06-28": [
-    { date: "2026-07-03", label: "Transform DH5α with selected plasmids", subteamId: "wetLab" },
-    { date: "2026-07-04", label: "Pour selection plates", subteamId: "wetLab" },
-  ],
-  "week-2026-07-05": [
-    { date: "2026-07-08", label: "FAST-PETase expression in T7 cells", subteamId: "wetLab" },
-    { date: "2026-07-10", label: "Miniprep team plasmid set", subteamId: "wetLab" },
-  ],
-  "week-2026-07-19": [
-    { date: "2026-07-21", label: "Miniprep AS plasmids; send for sequencing", subteamId: "wetLab" },
-    { date: "2026-07-24", label: "Finish BL21 competent cells", subteamId: "wetLab" },
-  ],
-  "week-2026-07-26": [
-    { date: "2026-07-29", label: "Pour plates; test BL21 competence", subteamId: "wetLab" },
-    { date: "2026-07-31", label: "Test copper toxicity", subteamId: "wetLab" },
-  ],
-  "week-2026-08-02": [
-    { date: "2026-08-04", label: "Golden Gate assembly of AS plasmid", subteamId: "wetLab" },
-    { date: "2026-08-07", label: "Miniprep and sequence AS products", subteamId: "wetLab" },
-  ],
-  "week-2026-08-09": [
-    { date: "2026-08-10", label: "Gel check of AS GGA products", subteamId: "wetLab" },
-    { date: "2026-08-13", label: "Make trimethoprim stock; first antibiotic + copper plates", subteamId: "wetLab" },
-  ],
-  "week-2026-08-16": [
-    { date: "2026-08-18", label: "Copper mesh biosensor test", subteamId: "wetLab" },
-    { date: "2026-08-20", label: "Test AS-sul1 on sulfa + copper plates", subteamId: "wetLab" },
-  ],
-  "week-2026-08-23": [
-    { date: "2026-08-25", label: "Sequence AS empty and AS-dfr plasmids", subteamId: "wetLab" },
-    { date: "2026-08-26", label: "Start PD plasmid PCR", subteamId: "wetLab" },
-  ],
-  "week-2026-08-30": [
-    { date: "2026-08-31", label: "Assemble PD plasmid", subteamId: "wetLab" },
-    { date: "2026-09-01", label: "Start move to BioZone", subteamId: "wetLab" },
-  ],
-  "week-2026-09-06": [
-    { date: "2026-09-08", label: "Move plates and columns to BioZone", subteamId: "wetLab" },
-    { date: "2026-09-10", label: "BioZone lab tour", subteamId: "wetLab" },
-  ],
-  "week-2026-09-13": [
-    { date: "2026-09-15", label: "Move -80 °C samples to BioZone", subteamId: "wetLab" },
-    { date: "2026-09-15", label: "Restart PD plasmid assembly", subteamId: "wetLab" },
-  ],
-  "week-2026-09-20": [
-    { date: "2026-09-23", label: "Move Lash Miller samples to BioZone", subteamId: "wetLab" },
-    { date: "2026-09-24", label: "Resuspend Twist PETase inserts; set up GGAs", subteamId: "wetLab" },
-  ],
-  "week-2026-10-04": [
-    { date: "2026-10-06", label: "Assemble PD with 5 control PETases; PCR and gel", subteamId: "wetLab" },
-    { date: "2026-10-07", label: "Co-transform AS + PD into BL21(DE3)", subteamId: "wetLab" },
-  ],
-}
-
-/**
  * Outreach week copy from meeting minutes, the leads' weekly updates and the
  * outreach channels. Replaces the Outreach entry for each listed week.
  */
@@ -1959,38 +1890,27 @@ function notStartedPlaceholderFor(subteamId) {
   }
 }
 
-/** Add milestones to a list, skipping any that are already there. */
-function mergeMilestones(existing, incoming) {
-  const milestones = [...(existing || [])]
-  for (const milestone of incoming || []) {
-    const exists = milestones.some(
-      (m) => m.date === milestone.date && m.label === milestone.label && m.subteamId === milestone.subteamId
-    )
-    if (!exists) milestones.push(milestone)
-  }
-  return milestones
-}
-
 /** Swap in one subteam's entry (and add its milestones) from a patch layer. */
 function applySubteamPatch(week, patches, subteamId) {
   const patch = patches[week.id]
   if (!patch) return week
 
+  const milestones = [...(week.milestones || [])]
+  for (const milestone of patch.milestones || []) {
+    const exists = milestones.some(
+      (m) => m.date === milestone.date && m.label === milestone.label && m.subteamId === milestone.subteamId
+    )
+    if (!exists) milestones.push(milestone)
+  }
+
   return {
     ...week,
-    milestones: mergeMilestones(week.milestones, patch.milestones),
+    milestones,
     subteams: {
       ...week.subteams,
       [subteamId]: { ...patch[subteamId] },
     },
   }
-}
-
-/** Add notebook-level milestones to a week without touching its copy. */
-function applyNotebookMilestones(week) {
-  const extra = NOTEBOOK_MILESTONE_PATCHES[week.id]
-  if (!extra) return week
-  return { ...week, milestones: mergeMilestones(week.milestones, extra) }
 }
 
 /** Replace "Progress update coming soon." on past weeks for every subteam. */
@@ -2026,7 +1946,6 @@ export const CONTRIBUTION_WEEKS = buildWeekSkeleton()
   .map((sk) => mergeWeek(sk, WEEK_CONTENT_OVERRIDES[sk.id]))
   .map((week) => applySubteamPatch(week, OUTREACH_WEEK_PATCHES, "outreach"))
   .map((week) => applySubteamPatch(week, HUMAN_PRACTICES_WEEK_PATCHES, "humanPractices"))
-  .map(applyNotebookMilestones)
   .map(applyPastWeekQuietPlaceholders)
 
 /** @type {Record<string, ContributionWeek>} */
