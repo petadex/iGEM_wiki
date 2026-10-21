@@ -27,6 +27,10 @@ const stageRoot = path.join(root, "tmp", "cdn-upload")
 const assets = [
   ["figures/dry-lab-model/dataset-flowchart-centred.avif", "drylab-page/figures/dataset-flowchart-centred.avif"],
   ["figures/dry-lab-model/cluster_plot.avif", "drylab-page/figures/cluster-plot.avif"],
+  ["figures/dry-lab-model/plasticesm-loss.svg", "drylab-page/figures/plasticesm-loss.svg"],
+  ["figures/dry-lab-model/ml-pipeline.svg", "drylab-page/figures/ml-pipeline.svg"],
+  ["figures/dry-lab-model/controls-sweep.svg", "drylab-page/figures/controls-sweep.svg"],
+  ["figures/dry-lab-model/homology-leakage.svg", "drylab-page/figures/homology-leakage.svg"],
   ["figures/dry-lab-model/Domain640.avif", "drylab-page/figures/domain640.avif"],
   ["figures/dry-lab-model/domain_distribution.avif", "drylab-page/figures/domain-distribution.avif"],
   ["figures/dry-lab-model/component_distribution.avif", "drylab-page/figures/component-distribution.avif"],

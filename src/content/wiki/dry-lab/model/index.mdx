@@ -78,7 +78,7 @@ sequence annotations needed to effectively navigate the sequence landscape.**
   Introduce the four components here in the order they are detailed below.
 */}
 
-**Project Goal:** Build a model that predicts PETase activity under different conditions, to 
+**Project Goal:** Build the data, and the evaluation, needed for a model that predicts PETase activity under different conditions, to 
 accelerate the discovery of ultra-efficient plastic-degrading enzymes.
 
 #### PETadex V2: The largest database for plastic-degrading enzyme homologs
@@ -98,7 +98,9 @@ extracted PETase activities from 61 of them by hand, a cumulative 450 hours.
 
 #### Predicting Plastic-Degrading Activity
 Now that we have the largest database of plastic-degrading enzyme homologs to date, we can now train a model that can understand
-the plastic-degrading enzyme sequence and condition landscape. [Purav ESMC + model info].
+the plastic-degrading enzyme sequence and condition landscape.
+
+We adapted the ESM-C protein language model [@candido2026esmfold2] to PETadex, producing *PlasticESM*, and then tested whether its representations predict measured activity. We held that test to two rules: related enzymes never sit on both sides of a train/test split, and a model must beat simple controls such as sequence length. With the labels available today, no model clears that bar yet, and a conventional random split would have hidden this from us. The bottleneck is the labels, not the corpus, so the next wet-lab round will be chosen to fill the gaps: the clusters the model is least certain about, among those whose environmental metadata looks promising.
 
 #### Training on Tens of Thousands of In-House Datapoints
 Training a robust model takes tens to hundreds of thousands of sequence–activity pairs, but
@@ -129,7 +131,7 @@ used for other enzyme families and other reaction conditions.
 ### Background and Overview
 The creation of the PETadex in prior work [@chikhi2024logan] and the creation of PETadex V2 here, relies on the foundation 
 built by our supervising lab (RNAlab) through the *Logan* project. *Logan* is the assembly of the Sequence Read Archive (SRA), 
-the leading public repositiory for global sequencing experiments (38M experiments). Researchers often require only a little 
+the leading public repository for global sequencing experiments (38M experiments). Researchers often require only a little 
 portion of the total sequencing dataset, and thus will not run a genome assembly algorithm over the sample due to its expensive 
 nature. Therefore a large portion of the SRA is unassembled, rendering it difficult to use. *Logan* assembles the SRA, 
 compressing the 87.0 Petabases of raw data into 1.8 Petabases of searchable contigs. 
@@ -673,11 +675,7 @@ Agreement between human and language-model extraction.
   hit characterization.
 */}
 
-<Placeholder>
-
-This section opens with the data the model learns from. Before trusting any prediction, we then tested whether the model's internal representation of a sequence carries information beyond which organism it came from. The representation comes from a protein language model that we adapted to plastic-degrading enzyme families and then used to embed the corpus. An activity classifier trained on the labelled sequences sits on top of it. We compare the adapted model against its unadapted base, and test whether adding annotation features improves on sequence alone.
-
-</Placeholder>
+This section opens with the data the model learns from, then checks that protein language model embeddings of PETadex carry real signal, then adapts that language model to PETadex and tests it against measured activity. Two rules govern every test. First, the unit of independence is the homology component: enzymes connected at any identity threshold always fall in the same fold, so a model is never scored on a close relative of something it trained on. Second, a learned representation counts only if it beats controls that need no model at all, sequence length and amino-acid composition.
 
 ### Datasets
 
@@ -689,10 +687,10 @@ This section opens with the data the model learns from. Before trusting any pred
   Direction agreed with Purav (Discord, 2026-10-17): the candidates are the
   raw data that enables discovery; the labels are what we keep improving, in a
   loop with wet lab. The round 2 library comes from this loop.
-  CONFIRM WITH PURAV: that round 2 was chosen by model uncertainty plus
-  metadata (Bayesian optimisation), not only by predicted activity. Until
-  then the round 2 sentence says "will be chosen"; if he confirms, change it
-  to "was chosen" here and on the Methods page.
+  RESOLVED 2026-10-21 (Purav): round 2 has NOT been chosen yet. It will be
+  chosen by model uncertainty plus metadata. Keep every round 2 sentence in
+  the future tense ("will be chosen") here, in the ML sections below and on
+  the Methods page, until the library is actually picked.
 */}
 
 The model learns from two datasets with different jobs. The PETadex corpus is the raw material: 307 million candidate enzymes that a model can train on and explore. The PETai activity labels are what we keep improving, because better labels let the model explore the candidates better. They come from three readings of the literature, by hand and by machine, plus a plate screen run by our collaborator lab, and each source is published on its own alongside the merged set. Everything is open on Hugging Face (marked 🤗).
@@ -701,7 +699,17 @@ The model learns from two datasets with different jobs. The PETadex corpus is th
 
 The two datasets meet in a loop. Rather than testing only the candidates the model already likes, we test the clusters it is least sure about whose environmental metadata looks promising, so each result improves the labels where the model is weakest. Our round 2 library will be chosen this way.
 
-<DatasetLoop />
+{/* PETai discovery loop: Dennis's interactive mockup (static/figures/dry-lab-model/petai-loop.html),
+    copied from petai-loop.html with its lede paragraph removed because the
+    paragraph above says the same thing. Restyled onto the light figure ground and
+    cut to the loop, stage cards and loop note: the playback controls, legend,
+    stat tiles and sparkline below it were removed, so it autoplays in view and
+    loops. Replaces <DatasetLoop />, which is kept in ModelDatasets.js. */}
+<InteractiveEmbed
+  src="/figures/dry-lab-model/petai-loop.html"
+  title="The PETai discovery loop"
+  logical={[1200, 876]}
+/>
 
 <MethodsLink href="/dry-lab/model/datasets/">What each dataset holds, how the loop chooses what to test, what the metadata can and cannot tell us, and how to download everything.</MethodsLink>
 
@@ -732,55 +740,105 @@ Controls are then embedded identically to the real proteins, and UMAPed alongsid
 
 ### Domain Adapted ESM-LoRA
 
-Placeholder: PlasticESM, ESMC-300M, 18.17M catalytic centroids.
-
-### Activity Prediction
-
 {/*
-  OUTLINE — not rendered. ~250 words, the longest of the ML subsections.
-  Notebook 61. Page Tree §3.4 [S] — but see the note below: this is marked
-  [S] in the tree and is nonetheless the section ballot Q2 depends on.
+  WRITER NOTES — not rendered.
 
-  THIS SECTION CARRIES THE PRIZE. MVP Build Plan §2 puts the Q2 answer as
-  "PETai's ranking became the library wet lab ordered". §2 of the page
-  states it up front; this is where it is substantiated. If anything on the
-  page gets written properly, it is this and Embedding Controls.
-
-  Order to write in:
-
-  1. What PETai is: a binary activity classifier on PlasticESM embeddings
-  2. The sequence-alone baseline FIRST, then what each added feature block
-     does to it — metadata, structural, annotation blocks probed as
-     additions. Report the ablation honestly, including blocks that did not
-     help. A feature block that added nothing is a result
-  3. Multiple label definitions run in parallel, and why: "active" is not
-     one thing across papers with different assays and substrates
-  4. Where the inactives came from (pulled from the labelled pool) and that
-     they are thin — Limitations below already commits to saying so, so
-     flag it here and let Limitations carry the weight
-  5. Variant generation (61)
-  6. Close the loop: ranking -> wet lab library -> results as new labels.
-     This is the DBTL figure slot in §2, so refer to it rather than
-     redrawing the loop in prose
-
-  Numbers owed: label counts per definition, baseline and per-block
-  performance, how many candidates the ranking handed to wet lab.
-
-  Open question for the owners: does the page claim the wet lab round
-  validated PETai, or only that PETai chose the library? Narrative §3 left
-  "discovering and validating" vs "discovering and prioritizing" unresolved
-  and defaulted to prioritizing. Keep this section consistent with whatever
-  that resolves to — and note the 2-of-161 FAST-PETase screen was a RANDOM
-  screen, so it is not PETai validation and must not be presented as such.
+  Sources: petabite branch stage1/dual-seed,
+  notebooks/261016_stage1_plasticesm_pretraining.ipynb. No Numbers.md entry
+  yet; add these before publishing.
+    - 240 tensors / 14,745,600 params, backbone frozen: cells 3, 11
+    - 57 h/epoch on the full 90% set; 1,814,296 c60 clusters; 81 clusters
+      excluded via the 1,219-sequence label set: cells 5-6
+    - 48.7% singletons, 2,494,836 distinct sequences (1.38x): cell 12
+    - eval loss 1.68426 (dual) vs 1.69644 / 1.69640 (single), ppl 5.3884,
+      run-to-run noise 4e-5 nats, ~279x: cell 13, job 6334470. These are on
+      the common eval set; run 1's own log ends at 1.6836, which is a
+      different eval set. Do not mix the two
+    - 2.63x throughput: cell 8
+    - Released adapters: huggingface.co/petadex/plasticesm-dualseed (card
+      confirms 240 tensors / 14,745,600 params, base biohub/ESMC-300M)
+  Do NOT write 18.17M as the training-set size: that is the source corpus
+  (catalytic-orfs-90pid), not what PlasticESM trained on.
 */}
 
-Placeholder: PETai classifier, feature-block ablation, parallel label definitions.
+General protein language models are trained mostly on curated databases, while most PETadex sequences come from unassembled metagenomes. We continued pretraining ESM-C 300M [@candido2026esmfold2] on PETadex with masked-language modelling, training only low-rank adapters (LoRA) [@hu2021lora] on all four projections of every transformer block (the attention input and output, and both feed-forward layers). This trains 240 adapter tensors, 14.7 million parameters, with the backbone frozen.
 
-<Placeholder label="Placeholder figure">
+One epoch over all 18.2 million 90%-identity centroids would take 57 hours, so we trained on one randomly drawn member of each of the 1,814,296 60%-identity clusters. A second random seed draws a different member per cluster. Because 48.7% of clusters are singletons, the two draws together hold 2,494,836 distinct sequences, 1.38 times one draw rather than twice.
 
-Model architecture.
+Training on both draws lowered held-out loss from 1.696 to 1.684 nats (perplexity 5.39). The gain is small but real: about 279 times the difference between two identical runs. Engineering changes cut training time 2.63-fold, and every saved adapter was checked against the live model, with none left untrained. We call the result *PlasticESM*, and its adapters are open on Hugging Face as [🤗 petadex/plasticesm-dualseed](https://huggingface.co/petadex/plasticesm-dualseed).
 
-</Placeholder>
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/plasticesm-loss.svg"
+  alt="Training loss against optimizer step for the single-seed and dual-seed PlasticESM runs; the dual-seed run continues to a lower loss"
+  width="100%"
+  caption={<><strong>Figure 15.</strong> PlasticESM training loss for one random draw per 60%-identity cluster (single seed, 9,423 steps) and for two draws (dual seed, 18,873 steps). On a common held-out set, loss falls from 1.696 to 1.684 nats (perplexity 5.39), about 279 times the difference between two identical runs. Logged in Weights &amp; Biases.</>}
+/>
+
+### Evaluating PlasticESM on Activity Labels
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Framing (agreed 2026-10-21, Purav): lead with the benchmark, then the
+  leakage finding, then the grouped-split results as the baseline the next
+  model must beat, with the labels as the bottleneck; round 2 is future
+  tense (round 1 = the LOBSTER library screen). It does NOT claim that PETai or PlasticESM
+  predicts activity, chose the wet-lab library, or was validated by the
+  wet-lab screen. The 2-of-161 FAST-PETase screen was a random screen.
+
+  Sources: petabite notebook cells 16-35; igem-toronto issue 117 notebook.
+    - 1,137 labelled sequences, component split, 0 groups spanning folds:
+      issue 117 audit.json
+    - twelve verdicts to the controls, kcat n=227 / 40 components, length
+      +0.343, stock -0.025, PlasticESM -0.217: cell 20, job 6344807 (sweep
+      framing; the measurement-level framing gives length +0.416, so do not
+      mix them)
+    - leakage +0.49 to +1.01 for stock, length -0.12 to +0.18; stock kcat
+      0.721 random vs -0.025 grouped, Tm 0.741 vs +0.211; 90-92% have a
+      relative: cell 21, job 6345366
+    - 53 of 1,137 (4.7%) in the c60 training corpus; 48.0% in component
+      00855c73: cell 34. Issue 117's corpus_overlap_v2.json reports 120 of
+      1,137 against the full 90% centroid set, a different corpus. Name the
+      corpus whenever either number is used
+    - kcat/Km +0.350, p 0.001, jackknife [0.152, 0.522]: cell 35
+  Methods sub-page (/dry-lab/model/plasticesm/) is planned; add its
+  MethodsLink here once it exists.
+*/}
+
+Before a model can choose what the wet lab tests next, it needs a fair test. We built one on the PETai activity labels (1,137 labelled sequences). Folds are split by connected homology components, so no group of related enzymes spans training and test, and every model is scored against two controls that need no model at all: sequence length and amino-acid composition. Within this benchmark we compared stock ESM-C and PlasticESM, fitting a ridge regression on each model's embeddings for five human-curated activity targets and seven that add LLM-extracted labels, with fold-centred scoring and permutation tests.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/ml-pipeline.svg"
+  alt="Five-step pipeline: PETadex cluster draws, LoRA masked-language modelling on ESM-C 300M, embeddings, a component-grouped ridge probe, and a verdict against length and composition controls"
+  width="100%"
+  caption={<><strong>Figure 16.</strong> From corpus to verdict. PlasticESM is trained on PETadex, each labelled sequence is embedded by stock ESM-C and by PlasticESM, and a ridge probe is scored under component-grouped cross-validation. A representation counts only if it beats sequence length and amino-acid composition.</>}
+/>
+
+The benchmark's first finding concerns evaluation itself. Under the random five-fold splits common in sequence-to-function work, stock ESM-C reaches ρ = 0.72 on turnover number (kcat) and 0.74 on melting temperature, numbers that would look like a working model. Split by homology component, the same embeddings lose 0.49 to 1.01 across the five human-curated targets, while sequence length moves by at most 0.18. Between 90% and 92% of labelled sequences have a homologous relative elsewhere in the set, so a random split almost always scores a model on a relative of something it trained on. Without the component split, we would have reported the inflated numbers.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/homology-leakage.svg"
+  alt="For each target, arrows from the grouped-split score to the random-split score; stock ESM-C jumps by 0.49 to 1.01 while sequence length barely moves"
+  width="100%"
+  caption={<><strong>Figure 17.</strong> Homology leakage. The same ridge probe scored under component-grouped splits (hollow) and under random five-fold splits (filled). The 960-dimensional ESM-C embeddings gain 0.49 to 1.01 from a random split, because 90–92% of labelled sequences have a homologous relative in the set. A single length column gains at most 0.18.</>}
+/>
+
+With leakage removed, the benchmark sets the baseline the next model has to beat. The two controls outscore both embeddings on all twelve target sets: on kcat (227 sequences across 40 components), sequence length reaches ρ = +0.343, against −0.025 for stock ESM-C and −0.217 for PlasticESM. Length's own signal is real and replicates: longer PETases have higher catalytic efficiency (kcat/Km; ρ = +0.350, p = 0.001, jackknife interval 0.152 to 0.522).
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/controls-sweep.svg"
+  alt="Dot plot of Spearman correlation for five activity targets; sequence length scores highest or near-highest on every target, setting the baseline that stock ESM-C and PlasticESM do not yet reach"
+  width="100%"
+  caption={<><strong>Figure 18.</strong> Sequence length sets the baseline. Spearman ρ for each feature set on five human-curated targets, under component-grouped five-fold cross-validation with fold-centred scoring (one value per sequence; n sequences and homology components under each target). Point estimates only.</>}
+/>
+
+The bottleneck is the labels. Only 53 of the 1,137 labelled sequences (4.7%) appear among the 60%-cluster draws PlasticESM was trained on. Most labels describe engineered variants from the literature rather than natural sequences, and 48% of all labelled sequences sit in a single homology component. The model is being asked to rank point mutants within one family, from labels that barely overlap the population we want to screen. What the next model needs is labels drawn from that population.
+
+### From Round 1 to Round 2
+
+Round 1 will supply the first of those labels. The wet lab will screen the LOBSTER library of 1,744 sequences from the *Is*PETase and LCC clusters, and its results will be added to the literature labels, giving the model measurements on the PETadex sequences it is meant to explore.
+
+Round 2 will then be chosen by the model's uncertainty rather than by its predicted activity. Among the clusters whose environmental metadata looks promising, we will test the ones the model is least sure about, so each new measurement lands where the current labels say least. Each round will be judged against the same component-grouped benchmark and its length and composition controls, so any improvement we report will be one that a random split could not have produced.
 
 ## Limitations
 
@@ -798,11 +856,13 @@ Model architecture.
       leans toward well-described studies
 */}
 
-<Placeholder>
+**The labels are thin where it matters most.** Only 200 of the activity labels (1.53%) are negatives, and 168 of those come from a single halo screen. Once the split is repaired so that no homology group spans folds, the held-out test fold holds 89 evaluated labels on 16 sequences. One homology component contains 48% of all labelled sequences, so most measurements describe variants of one scaffold. Two shipped targets, relative activity and weight loss, span too few components to be scored at all.
 
-This section states what the model has not been shown to do. It covers the annotation choices that remain provisional, the shortage of confirmed inactive enzymes among the training labels, and the fact that experimental validation so far comes from a single round of assays.
+**Our strongest candidate signal is not established.** Structural geometry from predicted structures tracked melting temperature (p = 0.0084), but the same test passes a pure-noise target in 4.5% of null draws. It rests on one family, with nowhere to replicate it.
 
-</Placeholder>
+**The model has not been tested prospectively.** Wet-lab validation so far comes from a single round of assays, and no library has yet been chosen by the model. Round 2 will be the first, selected by model uncertainty, and only its results can show whether that choice beats random sampling.
+
+**Annotation layers carry their own caveats.** Four known profile-rule defects remain unfixed; they touch about 1.5% of profiled BioSamples, and the shift from samples to clusters does not depend on them. The independent temperature check is real but small (ε² = 0.044). Half of BioSamples (50.6%) carry no environment signal, so profiled data leans toward well-described studies. BacDive growth means are unweighted, and the TED novelty cut-offs are provisional.
 
 ## Reproducibility and reuse
 
@@ -812,11 +872,9 @@ This section states what the model has not been shown to do. It covers the annot
   (github.com/petadex/igem-toronto), generalization to other enzyme families.
 */}
 
-<Placeholder>
+The model and everything it learns from are open on Hugging Face: the PlasticESM adapters ([petadex/plasticesm-dualseed](https://huggingface.co/petadex/plasticesm-dualseed)), the pretraining corpus ([petadex/catalytic-orfs-90pid](https://huggingface.co/datasets/petadex/catalytic-orfs-90pid)) and the activity labels ([petadex/petai-activity-labels](https://huggingface.co/datasets/petadex/petai-activity-labels)), with each label source also published separately. The model card reports the downstream results alongside the weights, so no one reuses the adapters expecting them to predict activity. Each analysis step has a lab notebook as its primary record, with retractions kept in place: label release and split repair in [github.com/petadex/igem-toronto](https://github.com/petadex/igem-toronto), and pretraining and evaluation in [github.com/petadex/petabite](https://github.com/petadex/petabite).
 
-This section points to the released model and training set, the analysis notebooks that record each step, and the parts of the pipeline another team could reuse for a different enzyme family.
-
-</Placeholder>
+The part we most want others to reuse is the evaluation protocol, not the model. Split by connected homology components rather than at random. Standardise each fold's predictions before pooling them. Use jackknife intervals and permutation tests over components rather than a component bootstrap, which we found excludes zero far too often under the null. And require any learned representation to beat sequence length and composition. These rules are implemented in a small statistics module (`grouped_out_of_fold`, `jackknife_ci`, `permutation_p`) that applies unchanged to any enzyme family with activity labels. Under the conventional random split, we would have reported a correlation of 0.72 for a model that, evaluated correctly, does not yet beat sequence length.
 
 ## References
 

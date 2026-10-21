@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PETai Discovery Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  /* Light take on the PetaBite loop palette, on the wiki's figure ground (#f0ede6) with the
+     same ink, secondary and line tokens as the Model page's other figures. Station colours are
+     the subteam colours; --zap is a darker cut of the Hardware turtle's bolt cyan so it reads on light. */
+  :root{
+    --bg:#f0ede6; --field:#e4dfd3; --card:#fcfcfb; --card-on:#ffffff; --text:#0b0b0b; --text-2:#52514e;
+    --line:#d9d5cc; --water:#5f8f99; --water-2:#3f7f8a; --badge:#e9d9c3; --badge-ink:#1a1714;
+    --c0:#f08a4b; --c1:#f2c14e; --c2:#2f9e5a; --c3:#55aee9; --zap:#0fa3b8; --spark:#0b6f80;
+    --hit:#1f8a4c; --miss:#c2541f; --dot:#7d8890; --cream:#0b0b0b;
+    --spd:1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"DM Sans","Helvetica Neue",Helvetica,Arial,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 16px 4px}
+  .lede{font-size:17px;line-height:1.65;margin:0 0 8px;max-width:960px}
+  .fig{position:relative}
+  svg#loop{width:100%;height:auto;display:block}
+
+  /* ---- figure ---- */
+  .lbl{font-weight:700;letter-spacing:.02em;fill:var(--text)}
+  .edge{font-size:13px;font-weight:600;fill:var(--water-2);
+    paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+  .arc{fill:none;stroke:var(--water-2);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:3 7;opacity:.5;transition:opacity .3s}
+  .arc.live{opacity:1;stroke-width:2.4;animation:march calc(.6s / var(--spd)) linear infinite}
+  @keyframes march{to{stroke-dashoffset:-10}}
+  .fieldcap{font-size:12px;font-weight:600;fill:var(--text-2);letter-spacing:.08em;text-transform:uppercase}
+
+  .station .body{transition:transform calc(.45s / var(--spd)) cubic-bezier(.3,1.5,.5,1)}
+  .station.on .body{transform:scale(1.08)}
+  .station .ring{fill:none;stroke-width:3;opacity:0;transition:opacity .25s}
+  .station.on .ring,.station.hl .ring{opacity:.95}
+  .station.on .bleed{animation:breathe calc(1.6s / var(--spd)) ease-in-out infinite}
+  @keyframes breathe{50%{transform:scale(1.12);opacity:.45}}
+  .glyph{fill:none;stroke:#2a2420;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .glyph .fillk{stroke:none}
+  .tag-g{transform-origin:-12px 0}
+  .station.on .tag-g{animation:wiggle calc(.5s / var(--spd)) ease-in-out 2}
+  @keyframes wiggle{25%{transform:rotate(-12deg)}75%{transform:rotate(10deg)}}
+  .needle{transform-origin:0 6px;transition:transform calc(.25s / var(--spd)) ease-out}
+  .flagpole{transform-origin:9px -12px;transition:transform calc(.4s / var(--spd)) cubic-bezier(.3,1.6,.5,1)}
+  .station:not(.on) .flagpole{transform:scaleY(.5)}
+  .petamon{transform-box:fill-box;transform-origin:50% 60%}
+  .station.on .hopper{animation:hop calc(.55s / var(--spd)) ease-out 2}
+  .station.hover .hopper{animation:hop .55s ease-out 1}
+  @keyframes hop{35%{transform:translateY(-10px)}70%{transform:translateY(0)}85%{transform:translateY(-3px)}}
+  /* The wet-lab axolotl lights up like it does on the Wet Lab pages. */
+  .pglow{opacity:0;transition:opacity .35s ease}
+  .station.charged .pglow,.station.hover .pglow{opacity:1;animation:glowpulse 1s ease-in-out infinite alternate}
+  @keyframes glowpulse{from{opacity:.75}to{opacity:1}}
+  .boltmark{opacity:0;pointer-events:none}
+  .station.wet{cursor:pointer}
+
+  /* candidate clusters */
+  .cl{cursor:pointer;transition:opacity calc(.4s / var(--spd))}
+  .cl > *{transform-origin:0 0}
+  .cl .halo{fill:rgba(143,195,204,.06);stroke:var(--water-2);stroke-opacity:.5;stroke-width:1;
+    stroke-dasharray:2 3;vector-effect:non-scaling-stroke;transform:scale(0);
+    transition:transform calc(.7s / var(--spd)) cubic-bezier(.3,1.35,.5,1)}
+  .cl .dot{fill:var(--dot);stroke:var(--bg);stroke-width:1.2;transition:fill calc(.5s / var(--spd))}
+  .cl .flag{fill:none;stroke:var(--c2);stroke-width:2.2;opacity:0;transform:scale(.3);
+    transition:opacity .3s,transform calc(.5s / var(--spd)) cubic-bezier(.3,1.6,.5,1)}
+  .cl.flagged.shown .flag{opacity:1;transform:scale(1)}
+  .cl .tick{fill:none;stroke:var(--bg);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+  .cl.lab .dot{stroke:var(--cream);stroke-width:1.8;fill:var(--bg)}
+  .cl.lab.hit .dot{fill:var(--cream);stroke:var(--cream)}
+  .cl.lab.hit .tick{opacity:1}
+  .cl .pickr{fill:none;stroke:var(--zap);stroke-width:2.6;opacity:0}
+  .cl.picked .pickr{opacity:1;animation:pick calc(.9s / var(--spd)) ease-in-out infinite}
+  @keyframes pick{50%{transform:scale(1.35);opacity:.5}}
+  .cl .pg{fill:none;stroke:var(--c0);stroke-width:2;opacity:0}
+  .cl.ping .pg{animation:ping calc(.9s / var(--spd)) ease-out 1}
+  @keyframes ping{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(2.8)}}
+  .cl.dim{opacity:.28}
+  .cl:hover .dot{stroke:var(--cream);stroke-width:2}
+  .beam{fill:none;stroke:var(--zap);stroke-opacity:.45;stroke-width:1.4;stroke-dasharray:2 5;stroke-linecap:round;
+    transition:stroke-dashoffset calc(.7s / var(--spd)) ease-out,opacity .3s}
+  .float{font-size:12.5px;font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+
+  .tip{position:absolute;pointer-events:none;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;
+    padding:8px 11px;font-size:13px;line-height:1.45;box-shadow:0 6px 18px rgba(0,0,0,.12);
+    opacity:0;transform:translate(-50%,calc(-100% - 14px));transition:opacity .12s;white-space:nowrap;z-index:2}
+  .tip .mut{color:var(--text-2)}
+
+  /* ---- stage cards, in a row like the original figure ---- */
+  .steps{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+  .step{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px 16px;position:relative;
+    transition:background .25s,transform .25s,box-shadow .25s}
+  .step:not(:last-child)::after{content:"→";position:absolute;right:-21px;top:50%;transform:translateY(-50%);color:var(--text-2);font-weight:700}
+  .step .n{width:28px;height:28px;border-radius:50%;background:var(--badge);color:var(--badge-ink);
+    display:grid;place-items:center;font-weight:700;font-size:13px;margin-bottom:8px}
+  .step h3{margin:0 0 4px;font-size:17px}
+  .step p{margin:0;font-size:14px;color:var(--text-2);line-height:1.45}
+  .step.on{background:var(--card-on);border-color:var(--sc);transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.10)}
+  .step.hl{border-color:var(--text-2)}
+  .step .bar{position:absolute;left:10px;right:10px;bottom:6px;height:3px;border-radius:2px;overflow:hidden}
+  .step .bar i{display:block;height:100%;width:0;background:var(--sc)}
+  .loopnote{margin-top:14px;border:1.5px dashed #3f7f8a;border-radius:12px;padding:10px 14px;text-align:center;
+    color:#3f7f8a;font-weight:700;font-size:15px}
+  @media (max-width:860px){.steps{grid-template-columns:1fr 1fr;gap:14px}.step::after{display:none}}
+
+  @media (prefers-reduced-motion:reduce){
+    .station.on .bleed,.arc.live,.cl.picked .pickr,.station.on .tag-g,.station.on .hopper,.station.hover .hopper,.station.charged .pglow{animation:none}
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="fig">
+    <svg id="loop" viewBox="40 0 1120 612" role="img" aria-labelledby="t d">
+      <title id="t">The PETai discovery loop</title>
+      <desc id="d">Four stations on a loop around a field of candidate enzyme clusters: Labels train PETai, PETai scores each cluster and how sure it is, metadata flags clusters from promising environments, and the wet lab tests the flagged clusters PETai is least sure of. Each result becomes a new label.</desc>
+      <defs>
+        <filter id="wash" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <filter id="bleed" x="-30%" y="-30%" width="160%" height="160%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="14"/>
+          <feGaussianBlur stdDeviation="2.2"/>
+        </filter>
+        <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+          <path d="M1 1L8 5L1 9" fill="none" stroke="#3f7f8a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <!-- Warm silhouette glow for the wet-lab axolotl (Wet Lab page hover: 255,244,150). -->
+        <filter id="petglow" x="-60%" y="-60%" width="220%" height="220%">
+          <feFlood flood-color="#fff496" result="c"/>
+          <feComposite in="c" in2="SourceAlpha" operator="in" result="s"/>
+          <feGaussianBlur in="s" stdDeviation="6" result="b1"/>
+          <feGaussianBlur in="s" stdDeviation="15" result="b2"/>
+          <feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="b1"/></feMerge>
+        </filter>
+        <!-- Cyan crackle around the lightning, as on the Hardware turtle's bolt. -->
+        <filter id="zapglow" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="620">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="b"/>
+          <feFlood flood-color="#7fe9f7"/>
+          <feComposite in2="b" operator="in" result="g"/>
+          <feMerge><feMergeNode in="g"/><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <symbol id="bolt" viewBox="0 0 48 84">
+          <path d="M30 2 L10 36 H22 L8 82 L44 32 H30 L40 2 Z" fill="#ffffff" stroke="#0fa3b8" stroke-width="4" stroke-linejoin="round"/>
+        </symbol>
+        <linearGradient id="scan" x1="0" x2="1">
+          <stop offset="0" stop-color="#f2c14e" stop-opacity="0"/>
+          <stop offset=".85" stop-color="#f2c14e" stop-opacity=".45"/>
+          <stop offset="1" stop-color="#a87a0c" stop-opacity=".9"/>
+        </linearGradient>
+      </defs>
+      <g id="track"></g>
+      <g id="arcs"></g>
+      <g id="field"></g>
+      <g id="fx"></g>
+      <g id="stations"></g>
+    </svg>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <ol class="steps" id="steps"></ol>
+  <div class="loopnote">↻ Each result becomes a new label, so the next round of the model explores the candidates better</div>
+
+</main>
+
+<script>
+(function () {
+  /* ---- EDIT HERE ------------------------------------------------------- */
+  var STAGES = [
+    { name: 'Labels',   body: 'Train the activity model, PETai.',                                         c: '#f08a4b', r: 60, edge: 'training data' },
+    { name: 'PETai',    body: 'Scores the candidates and says how sure it is.',                           c: '#f2c14e', r: 60, edge: 'scored clusters' },
+    { name: 'Metadata', body: 'Flags clusters from promising environments.',                              c: '#62c883', r: 60, edge: 'shortlist' },
+    { name: 'Wet lab',  body: 'Tests the clusters the model is least sure of but the metadata favours.', c: '#55aee9', r: 70, edge: 'new labels',
+      icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/wet-lab.webp' }
+  ];
+  /* Petamon icons share one 363 x 250 crop with the white circle at (181.5, 125), r 97.5. */
+  var ICON = { w: 363, h: 250, cx: 181.5, cy: 125, r: 97.5 };
+  var N_CLUSTERS = 64, PICKS = 5, MAX_ROUNDS = 8, HIT = 0.5;
+  /* Toy activity landscape: three active families. The starting labels cover the first;
+     the other two are what the loop has to discover. Coordinates are relative to the field centre. */
+  var FAMILIES = [ { x: -195, y: -30, s: 52, h: .95 }, { x: 205, y: 30, s: 46, h: .9 }, { x: 25, y: 55, s: 32, h: .8 } ];
+  /* ---- end edit -------------------------------------------------------- */
+
+  var NS = 'http://www.w3.org/2000/svg';
+  /* Stadium track: two semicircles of radius R joined by straights of length 2A.
+     Stations sit at the left end, top middle, right end and bottom middle. */
+  var C = { x: 600, y: 300 }, A = 230, R = 220, RX = 330, RY = 116;
+  var Q = Math.PI * R / 2, SEG = Q + A, TOTAL = 4 * SEG;
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function f1(v) { return v.toFixed(1); }
+  function tp(s) {
+    s = ((s % TOTAL) + TOTAL) % TOTAL;
+    var L = C.x - A, Rr = C.x + A, th;
+    if (s < Q) { th = Math.PI + s / R; return { x: L + R * Math.cos(th), y: C.y + R * Math.sin(th) }; }
+    s -= Q; if (s < 2 * A) return { x: L + s, y: C.y - R };
+    s -= 2 * A; if (s < 2 * Q) { th = -Math.PI / 2 + s / R; return { x: Rr + R * Math.cos(th), y: C.y + R * Math.sin(th) }; }
+    s -= 2 * Q; if (s < 2 * A) return { x: Rr - s, y: C.y + R };
+    s -= 2 * A; th = Math.PI / 2 + s / R; return { x: L + R * Math.cos(th), y: C.y + R * Math.sin(th) };
+  }
+  function trackPath(s0, s1) {
+    var d = '', n = Math.max(2, Math.ceil((s1 - s0) / 5));
+    for (var i = 0; i <= n; i++) { var p = tp(s0 + (s1 - s0) * i / n); d += (i ? 'L' : 'M') + f1(p.x) + ' ' + f1(p.y); }
+    return d;
+  }
+  function mulberry(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function lerpHex(a, b, t) {
+    var pa = [1, 3, 5].map(function (i) { return parseInt(a.substr(i, 2), 16); });
+    var pb = [1, 3, 5].map(function (i) { return parseInt(b.substr(i, 2), 16); });
+    return 'rgb(' + pa.map(function (v, i) { return Math.round(v + (pb[i] - v) * t); }).join(',') + ')';
+  }
+  function scoreColor(s) { return lerpHex('#efe6cf', '#b07200', Math.max(0, Math.min(1, s))); }
+
+  /* ---------------- static layer: track, field, stations ---------------- */
+  var arcs = [], stationEls = [], stepEls = [];
+  el('path', { d: trackPath(0, TOTAL) + 'Z', fill: 'none', stroke: 'var(--water)', 'stroke-opacity': .22, 'stroke-width': 22, filter: 'url(#bleed)' }, $('track'));
+  STAGES.forEach(function (s, i) {
+    var s0 = i * SEG + s.r + 16, s1 = (i + 1) * SEG - STAGES[(i + 1) % 4].r - 18;
+    arcs.push(el('path', { 'class': 'arc', d: trackPath(s0, s1), 'marker-end': 'url(#arrow)' }, $('arcs')));
+    var m = i * SEG + SEG / 2, p = tp(m), a = tp(m - 1), b = tp(m + 1), tx = b.x - a.x, ty = b.y - a.y, tl = Math.hypot(tx, ty);
+    el('text', { 'class': 'edge', x: f1(p.x + ty / tl * 22), y: f1(p.y - tx / tl * 22 + 4), 'text-anchor': 'middle' }, $('arcs')).textContent = s.edge;
+  });
+
+  var field = $('field');
+  el('ellipse', { cx: C.x, cy: C.y, rx: RX + 10, ry: RY + 10, fill: 'var(--water)', opacity: .25, filter: 'url(#bleed)' }, field);
+  el('ellipse', { cx: C.x, cy: C.y, rx: RX, ry: RY, fill: 'var(--field)', filter: 'url(#wash)' }, field);
+  el('text', { 'class': 'fieldcap', x: C.x, y: C.y - RY - 12, 'text-anchor': 'middle' }, field).textContent = 'candidate clusters';
+  var clip = el('clipPath', { id: 'fieldclip' }, field);
+  el('ellipse', { cx: C.x, cy: C.y, rx: RX, ry: RY }, clip);
+  var scan = el('rect', { x: 0, y: C.y - RY, width: 70, height: 2 * RY, fill: 'url(#scan)', 'clip-path': 'url(#fieldclip)', opacity: 0 }, field);
+  var clusterLayer = el('g', {}, field);
+
+  var GLYPHS = [
+    function (g) {
+      var t = el('g', { 'class': 'tag-g' }, g);
+      el('path', { d: 'M-20 -12H3L16 0L3 12H-20Z', fill: '#fffdf8' }, t);
+      el('circle', { cx: -12, cy: 0, r: 3 }, t);
+      el('path', { d: 'M-4 -4H5M-4 4H1' }, t);
+    },
+    function (g) {
+      el('path', { d: 'M-20 6A20 20 0 0 1 20 6', fill: '#fffdf8' }, g);
+      el('path', { d: 'M-14 -8L-11 -5M0 -14V-10M14 -8L11 -5', 'stroke-width': 1.6 }, g);
+      var n = el('g', { 'class': 'needle' }, g);
+      el('path', { d: 'M0 6V-11' }, n);
+      el('circle', { 'class': 'fillk', cx: 0, cy: 6, r: 3.2, fill: '#2a2420' }, g);
+      el('path', { d: 'M-22 12H22', 'stroke-width': 1.6, opacity: .5 }, g);
+    },
+    function (g) {
+      el('circle', { r: 16, fill: '#fffdf8' }, g);
+      el('ellipse', { rx: 7, ry: 16 }, g);
+      el('path', { d: 'M-16 0H16M-13 -8H13M-13 8H13', 'stroke-width': 1.4 }, g);
+      var f = el('g', { 'class': 'flagpole' }, g);
+      el('path', { d: 'M9 -12V-28' }, f);
+      el('path', { 'class': 'fillk', d: 'M9 -28L21 -24L9 -20Z', fill: '#2f8f52' }, f);
+    }
+  ];
+
+  STAGES.forEach(function (s, i) {
+    var p = tp(i * SEG), DR = s.r;
+    var st = el('g', { 'class': 'station', transform: 'translate(' + f1(p.x) + ',' + f1(p.y) + ')' }, $('stations'));
+    el('title', {}, st).textContent = s.name;
+    var b = el('g', { 'class': 'body' }, st);
+    el('circle', { 'class': 'bleed', r: DR + 6, fill: s.c, opacity: .25, filter: 'url(#bleed)' }, b);
+    el('circle', { r: DR, fill: '#fffdf8', filter: 'url(#wash)' }, b);
+    el('circle', { r: DR, fill: s.c, opacity: .5, filter: 'url(#wash)' }, b);
+    if (s.icon) {
+      /* The petamon breaks out of its disc, as on the PetaBite figure. A blurred copy
+         underneath is its glow; the bolt mark sits on its head for zaps. */
+      var k = (DR - 6) / ICON.r, img = { href: s.icon, x: -ICON.cx * k, y: -ICON.cy * k, width: ICON.w * k, height: ICON.h * k };
+      var pm = el('g', { 'class': 'petamon' }, el('g', { 'class': 'hopper' }, b));
+      el('image', Object.assign({ 'class': 'pglow', filter: 'url(#petglow)' }, img), pm);
+      el('image', img, pm);
+      el('use', { 'class': 'boltmark', href: '#bolt', x: 10, y: -DR - 10, width: 22, height: 38 }, pm);
+      st.classList.add('wet');
+    } else {
+      GLYPHS[i](el('g', { 'class': 'glyph', transform: 'scale(1.3)' }, b));
+    }
+    el('circle', { 'class': 'ring', r: DR + 2, stroke: s.c }, b);
+    var bd = el('g', { transform: 'translate(' + f1(-DR * .72) + ',' + f1(-DR * .72) + ')' }, b);
+    el('circle', { r: 13, fill: 'var(--badge)' }, bd);
+    el('text', { 'text-anchor': 'middle', y: 4.5, fill: 'var(--badge-ink)', 'font-size': 13, 'font-weight': 700 }, bd).textContent = i + 1;
+    var w = s.name.length * 7.8 + 24, tg = el('g', { transform: 'translate(0,' + (DR - 2) + ')' }, b);
+    el('rect', { x: -w / 2, y: -11, width: w, height: 22, rx: 11, fill: 'var(--card)', stroke: s.c, 'stroke-width': 1.8 }, tg);
+    el('text', { 'class': 'lbl', 'text-anchor': 'middle', y: 4.6, 'font-size': 13 }, tg).textContent = s.name;
+    stationEls.push(st);
+
+    var li = document.createElement('li');
+    li.className = 'step'; li.style.setProperty('--sc', s.c);
+    li.innerHTML = '<span class="n">' + (i + 1) + '</span><h3>' + s.name + '</h3><p>' + s.body + '</p><span class="bar"><i></i></span>';
+    $('steps').appendChild(li); stepEls.push(li);
+    function hl(on) { st.classList.toggle('hl', on); li.classList.toggle('hl', on); }
+    [st, li].forEach(function (x) { x.addEventListener('mouseenter', function () { hl(true); }); x.addEventListener('mouseleave', function () { hl(false); }); });
+  });
+  var needle = stationEls[1].querySelector('.needle');
+  var wet = stationEls[3], petamon = wet.querySelector('.petamon'), boltmark = wet.querySelector('.boltmark');
+
+  /* Zap motion, same keyframes as the Hardware turtle on the wiki (petamonHovers.js). */
+  var ZAP_JOLT = [
+    { transform: 'translate(0, 0) rotate(0deg)' },
+    { transform: 'translate(-4px, 1.5px) rotate(-8deg)', offset: 0.1 },
+    { transform: 'translate(5px, -1.5px) rotate(9deg)', offset: 0.22 },
+    { transform: 'translate(-3.5px, 1px) rotate(-6deg)', offset: 0.36 },
+    { transform: 'translate(3.5px, -1px) rotate(5deg)', offset: 0.52 },
+    { transform: 'translate(-1.5px, 0) rotate(-2deg)', offset: 0.7 },
+    { transform: 'translate(0, 0) rotate(0deg)' }
+  ];
+  var ZAP_FLICKER = [
+    { opacity: 0 }, { opacity: 1, offset: 0.06 }, { opacity: 0.2, offset: 0.14 }, { opacity: 1, offset: 0.24 },
+    { opacity: 0.35, offset: 0.36 }, { opacity: 1, offset: 0.48 }, { opacity: 0.8, offset: 0.72 }, { opacity: 0 }
+  ];
+  function jolt(ms) {
+    if (reduced) return;
+    petamon.animate(ZAP_JOLT, { duration: ms / SPEED, easing: 'ease-out' });
+    boltmark.animate(ZAP_FLICKER, { duration: 1.4 * ms / SPEED });
+  }
+  wet.addEventListener('mouseenter', function () { wet.classList.add('hover'); jolt(900); });
+  wet.addEventListener('mouseleave', function () { wet.classList.remove('hover'); });
+  wet.addEventListener('click', function () { jolt(900); });
+
+  /* ---------------- simulation state ---------------- */
+  var seed = 11, strategy = 'explore', clusters = [], round = 1, history = [], ghost = null, flagsShown = false;
+
+  function d2(a, b) { return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y); }
+  function activityAt(x, y) {
+    return FAMILIES.reduce(function (s, f) { return s + f.h * Math.exp(-d2({ x: x, y: y }, f) / (2 * f.s * f.s)); }, 0.05);
+  }
+  function build() {
+    var rng = mulberry(seed), tries = 0;
+    clusters = []; clusterLayer.innerHTML = '';
+    while (clusters.length < N_CLUSTERS && tries++ < 8000) {
+      var r = Math.sqrt(rng()), a = rng() * Math.PI * 2, x = (RX - 22) * r * Math.cos(a), y = (RY - 16) * r * Math.sin(a);
+      if (clusters.some(function (c) { return d2(c, { x: x, y: y }) < 27 * 27; })) continue;
+      clusters.push({ id: clusters.length + 1, x: x, y: y, act: Math.max(0, Math.min(1, activityAt(x, y) + (rng() - .5) * .14)) });
+    }
+    clusters.forEach(function (c) { c.flag = rng() < .1 + .75 * c.act; c.lab = c.init = c.scored = false; c.mean = null; c.unc = 1; });
+    /* Starting labels: five clusters in the known family plus one stray. */
+    function nearest(p, n) { return clusters.slice().sort(function (a, b) { return d2(a, p) - d2(b, p); }).slice(0, n); }
+    nearest(FAMILIES[0], 5).concat(nearest({ x: 120, y: -70 }, 1)).forEach(function (c) { c.lab = c.init = true; });
+
+    clusters.forEach(function (c) {
+      var g = el('g', { 'class': 'cl', transform: 'translate(' + f1(C.x + c.x) + ',' + f1(C.y + c.y) + ')' }, clusterLayer);
+      c.halo = el('circle', { 'class': 'halo', r: 1 }, g);
+      el('circle', { 'class': 'flag', r: 9.5 }, g);
+      el('circle', { 'class': 'pg', r: 7 }, g);
+      el('circle', { 'class': 'pickr', r: 11.5 }, g);
+      c.dot = el('circle', { 'class': 'dot', r: 5.5 }, g);
+      el('path', { 'class': 'tick', d: 'M-2.6 .2L-.6 2.2L2.8-1.8' }, g);
+      el('circle', { r: 13, fill: 'transparent' }, g);
+      c.g = g;
+      if (c.flag) g.classList.add('flagged');
+      paintLabel(c);
+      g.addEventListener('mouseenter', function () { showTip(c); });
+      g.addEventListener('mouseleave', hideTip);
+      g.addEventListener('click', function () { showTip(c); });
+    });
+  }
+  function paintLabel(c) {
+    c.g.classList.toggle('lab', c.lab);
+    c.g.classList.toggle('hit', c.lab && c.act >= HIT);
+    if (c.lab) { c.dot.style.fill = ''; c.halo.style.transform = 'scale(0)'; }
+  }
+  /* Kernel regression over the labels: the mean is the PETai score, and uncertainty
+     falls with the total kernel weight of nearby labels. */
+  function predict() {
+    var labs = clusters.filter(function (c) { return c.lab; }), L2 = 2 * 58 * 58, w0 = .25;
+    clusters.forEach(function (c) {
+      if (c.lab) return;
+      var sw = 0, sy = 0;
+      labs.forEach(function (l) { var w = Math.exp(-d2(c, l) / L2); sw += w; sy += w * l.act; });
+      c.mean = (sy + w0 * .3) / (sw + w0);
+      c.unc = Math.sqrt(w0 / (sw + w0));
+    });
+  }
+  function meanUnc() {
+    var u = clusters.filter(function (c) { return !c.lab; });
+    return u.reduce(function (s, c) { return s + c.unc; }, 0) / Math.max(1, u.length);
+  }
+  function choose() {
+    var pool = clusters.filter(function (c) { return !c.lab; });
+    if (strategy === 'greedy') return pool.sort(function (a, b) { return b.mean - a.mean; }).slice(0, PICKS);
+    var flagged = pool.filter(function (c) { return c.flag; }).sort(function (a, b) { return b.unc - a.unc || b.mean - a.mean; });
+    var rest = pool.filter(function (c) { return !c.flag; }).sort(function (a, b) { return b.unc - a.unc; });
+    return flagged.concat(rest).slice(0, PICKS);
+  }
+  function familiesFound() {
+    return FAMILIES.slice(1).filter(function (f) {
+      return clusters.some(function (c) { return c.lab && !c.init && c.act >= HIT && d2(c, f) < Math.pow(1.6 * f.s, 2); });
+    }).length;
+  }
+
+  /* ---------------- tooltip ---------------- */
+  var tip = $('tip');
+  function showTip(c) {
+    var lines = ['<b>Cluster ' + c.id + '</b>'];
+    if (c.lab) lines.push(c.init ? 'Labelled before round 1: ' + (c.act >= HIT ? 'active' : 'inactive') : 'Tested in the wet lab: <b>' + (c.act >= HIT ? 'active' : 'inactive') + '</b>');
+    else if (c.scored) lines.push('PETai score ' + c.mean.toFixed(2) + ', <span class="mut">' + Math.round((1 - c.unc) * 100) + '% sure</span>');
+    else lines.push('<span class="mut">Not scored yet</span>');
+    if (flagsShown && !c.lab) lines.push(c.flag ? '<span style="color:var(--c2)">Favoured environment</span>' : '<span class="mut">No environment flag</span>');
+    tip.innerHTML = lines.join('<br>');
+    var fr = tip.parentNode.getBoundingClientRect(), r = c.g.getBoundingClientRect();
+    tip.style.left = (r.left + r.width / 2 - fr.left) + 'px';
+    tip.style.top = (r.top - fr.top) + 'px';
+    tip.style.opacity = 1;
+  }
+  function hideTip() { tip.style.opacity = 0; }
+
+  /* ---------------- timing ---------------- */
+  var runId = 0, playing = false, SPEED = 1, waiter = null, CANCEL = {};
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function check(id) { if (id !== runId) throw CANCEL; }
+  function sleep(ms, id) { return new Promise(function (r) { setTimeout(r, ms / SPEED); }).then(function () { check(id); }); }
+  function tween(ms, fn, id) {
+    return new Promise(function (res) {
+      var t0 = null, dur = ms / SPEED;
+      function f(ts) {
+        if (id !== runId) return res();
+        if (t0 === null) t0 = ts;
+        var t = Math.min(1, (ts - t0) / dur); fn(t);
+        t < 1 ? requestAnimationFrame(f) : res();
+      }
+      requestAnimationFrame(f);
+    }).then(function () { check(id); });
+  }
+  function ease(t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+  function gate() { if (playing) return Promise.resolve(); return new Promise(function (r) { waiter = r; }); }
+
+  var fx = $('fx');
+  function flow(i, n, id, ms) {
+    var path = arcs[i], L = path.getTotalLength(), col = STAGES[i].c, all = [];
+    path.classList.add('live');
+    for (var k = 0; k < n; k++) (function (k) {
+      all.push(sleep(k * 110, id).then(function () {
+        var p = el('circle', { r: 4.5, fill: col, stroke: 'var(--bg)', 'stroke-width': 1.5 }, fx);
+        return tween(ms, function (t) {
+          var q = path.getPointAtLength(ease(t) * L);
+          p.setAttribute('cx', q.x); p.setAttribute('cy', q.y);
+          p.setAttribute('opacity', t > .9 ? (1 - t) * 10 : 1);
+        }, id).then(function () { p.remove(); });
+      }));
+    })(k);
+    return Promise.all(all).then(function () { path.classList.remove('live'); });
+  }
+  function floatText(c, txt, col, id) {
+    var t = el('text', { 'class': 'float', 'text-anchor': 'middle', fill: col, x: C.x + c.x, y: C.y + c.y - 14 }, fx);
+    t.textContent = txt;
+    return tween(1100, function (k) { t.setAttribute('y', C.y + c.y - 14 - 16 * k); t.setAttribute('opacity', k < .7 ? 1 : (1 - k) / .3); }, id).then(function () { t.remove(); });
+  }
+
+  /* A jagged bolt from the axolotl to a cluster. It re-forks every few frames
+     and flickers out with the shared zap keyframes. */
+  function boltPath(x0, y0, x1, y1) {
+    var dx = x1 - x0, dy = y1 - y0, d = Math.hypot(dx, dy), nx = -dy / d, ny = dx / d, n = Math.max(5, Math.round(d / 22)), out = 'M' + f1(x0) + ' ' + f1(y0);
+    for (var i = 1; i < n; i++) {
+      var t = i / n, j = (Math.random() - .5) * 26 * Math.sin(Math.PI * t);
+      out += 'L' + f1(x0 + dx * t + nx * j) + ' ' + f1(y0 + dy * t + ny * j);
+    }
+    return out + 'L' + f1(x1) + ' ' + f1(y1);
+  }
+  function flickerAt(t) {
+    for (var i = 1; i < ZAP_FLICKER.length; i++) {
+      var a = ZAP_FLICKER[i - 1], b = ZAP_FLICKER[i], ta = a.offset != null ? a.offset : 0, tb = b.offset != null ? b.offset : 1;
+      if (t <= tb) return a.opacity + (b.opacity - a.opacity) * (t - ta) / Math.max(1e-6, tb - ta);
+    }
+    return 0;
+  }
+  function zap(c, id) {
+    var wp = tp(3 * SEG), x1 = C.x + c.x, y1 = C.y + c.y, dx = x1 - wp.x, dy = y1 - wp.y, d = Math.hypot(dx, dy);
+    var x0 = wp.x + dx / d * 30, y0 = wp.y - 20 + dy / d * 20;
+    var g = el('g', { filter: 'url(#zapglow)' }, fx);
+    var main = el('path', { fill: 'none', stroke: 'var(--spark)', 'stroke-width': 2.4, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+    var fork = el('path', { fill: 'none', stroke: 'var(--spark)', 'stroke-width': 1.2, 'stroke-linejoin': 'round', opacity: .8 }, g);
+    var burst = el('circle', { cx: x1, cy: y1, r: 6, fill: 'none', stroke: 'var(--zap)', 'stroke-width': 2.5, opacity: 0 }, fx);
+    var frame = -1;
+    jolt(650);
+    return tween(650, function (t) {
+      var f = Math.floor(t * 9);
+      if (f !== frame) {
+        frame = f;
+        main.setAttribute('d', boltPath(x0, y0, x1, y1));
+        var mx = x0 + (x1 - x0) * .45, my = y0 + (y1 - y0) * .45;
+        fork.setAttribute('d', boltPath(mx, my, mx + (Math.random() - .5) * 60, my + (Math.random() - .5) * 60));
+      }
+      g.setAttribute('opacity', reduced ? (t < .8 ? 1 : 0) : flickerAt(t));
+      if (t > .2) { var u = (t - .2) / .8; burst.setAttribute('r', 6 + u * 22); burst.setAttribute('opacity', 1 - u); }
+    }, id).then(function () { g.remove(); burst.remove(); });
+  }
+
+  /* ---------------- UI ---------------- */
+  var cap = document.createElement('p');  /* step captions were shown below the figure; kept off-page */
+  function setActive(i) {
+    stationEls.forEach(function (s, j) { s.classList.toggle('on', j === i); });
+    stepEls.forEach(function (s, j) {
+      s.classList.toggle('on', j === i);
+      var bar = s.querySelector('.bar i'); bar.style.transition = 'none'; bar.style.width = '0';
+    });
+  }
+  function runBar(i, ms) {
+    var bar = stepEls[i].querySelector('.bar i');
+    void bar.offsetWidth;
+    bar.style.transition = 'width ' + (ms / SPEED) + 'ms linear'; bar.style.width = '100%';
+  }
+  /* The round counter, stat tiles and uncertainty sparkline were cut from this version. */
+  function bump() {}
+  function stats() {}
+  function drawSpark() {}
+
+  /* ---------------- the four stages ---------------- */
+  var lastPicks = [];
+  function stageLabels(id) {
+    setActive(0); runBar(0, 2000);
+    var labs = clusters.filter(function (c) { return c.lab; });
+    cap.textContent = round === 1
+      ? 'Round 1. PETai trains on the ' + labs.length + ' clusters we already have activity labels for.'
+      : 'Round ' + round + '. PETai retrains on ' + labs.length + ' labels, including the ' + lastPicks.length + ' clusters the wet lab just tested.';
+    labs.forEach(function (c) { c.g.classList.remove('ping'); void c.g.getBBox(); c.g.classList.add('ping'); });
+    return sleep(600, id).then(function () { return flow(0, Math.min(8, labs.length), id, 1300); });
+  }
+  function stagePETai(id) {
+    setActive(1); runBar(1, 2600);
+    cap.textContent = 'PETai scores every untested cluster. Brighter means more likely to be active. A wider ring means it is less sure.';
+    predict();
+    var todo = clusters.filter(function (c) { return !c.lab; });
+    scan.setAttribute('opacity', 1);
+    return tween(1700, function (t) {
+      var x = C.x - RX - 70 + t * (2 * RX + 70);
+      scan.setAttribute('x', f1(x));
+      needle.style.transform = 'rotate(' + (Math.sin(t * 18) * 55).toFixed(1) + 'deg)';
+      todo.forEach(function (c) {
+        if (c.scored || C.x + c.x > x + 70) return;
+        c.scored = true;
+        c.dot.style.fill = scoreColor(c.mean);
+        c.halo.style.transform = 'scale(' + (6 + 22 * c.unc).toFixed(1) + ')';
+      });
+    }, id).then(function () {
+      scan.setAttribute('opacity', 0);
+      todo.forEach(function (c) { c.halo.style.transform = 'scale(' + (6 + 22 * c.unc).toFixed(1) + ')'; c.dot.style.fill = scoreColor(c.mean); c.scored = true; });
+      var u = meanUnc();
+      needle.style.transform = 'rotate(' + (-70 + 140 * (1 - u)).toFixed(1) + 'deg)';
+      history[round - 1] = u; drawSpark();
+      bump('sUnc', Math.round(u * 100) + '%');
+      return flow(1, 6, id, 1100);
+    });
+  }
+  function stageMetadata(id) {
+    setActive(2); runBar(2, 2100);
+    var greedy = strategy === 'greedy';
+    cap.textContent = greedy
+      ? 'Metadata flags clusters from promising environments, but the highest-score strategy ignores the flags.'
+      : (!flagsShown ? 'Metadata flags clusters sampled from promising environments (green rings). The rest step back.'
+                     : 'The environment flags stay the same each round. They narrow the pool before the wet lab picks.');
+    var mp = tp(2 * SEG);
+    for (var k = 0; k < 2; k++) (function (k) {
+      sleep(k * 260, id).then(function () {
+        var r = el('circle', { cx: mp.x, cy: mp.y, r: 60, fill: 'none', stroke: STAGES[2].c, 'stroke-width': 2 }, fx);
+        return tween(1000, function (t) { r.setAttribute('r', 60 + t * 140); r.setAttribute('opacity', 1 - t); }, id).then(function () { r.remove(); });
+      }).catch(function () {});
+    })(k);
+    flagsShown = true;
+    clusters.forEach(function (c) {
+      setTimeout(function () {
+        if (id !== runId) return;
+        c.g.classList.add('shown');
+        if (!greedy && !c.lab && !c.flag) c.g.classList.add('dim');
+      }, (RX - c.x) / (2 * RX) * 800 / SPEED);
+    });
+    return sleep(1100, id).then(function () { return flow(2, 4, id, 1100); });
+  }
+  function stageWetLab(id) {
+    setActive(3); runBar(3, 3800);
+    var picks = choose(); lastPicks = picks;
+    cap.textContent = strategy === 'greedy'
+      ? 'The wet lab tests the ' + picks.length + ' clusters PETai already rates highest. Most results confirm what it knew.'
+      : 'The wet lab tests the ' + picks.length + ' flagged clusters PETai is least sure of. Active or not, every result becomes a new label.';
+    if (strategy === 'greedy') clusters.forEach(function (c) { if (picks.indexOf(c) < 0 && !c.lab) c.g.classList.add('dim'); });
+    var wp = tp(3 * SEG), WR = STAGES[3].r, beams = [];
+    picks.forEach(function (c, k) {
+      setTimeout(function () { if (id === runId) c.g.classList.add('picked'); }, k * 140 / SPEED);
+      var x1 = C.x + c.x, y1 = C.y + c.y, dx = wp.x - x1, dy = wp.y - y1, d = Math.hypot(dx, dy);
+      var x2 = wp.x - dx / d * (WR + 6), y2 = wp.y - dy / d * (WR + 6), x0 = x1 + dx / d * 12, y0 = y1 + dy / d * 12;
+      var b = el('path', { 'class': 'beam', d: 'M' + f1(x0) + ' ' + f1(y0) + 'Q' + f1((x0 + x2) / 2 + (x0 < x2 ? -30 : 30)) + ' ' + f1((y0 + y2) / 2) + ' ' + f1(x2) + ' ' + f1(y2) }, fx);
+      b.style.opacity = 0; beams.push(b);
+      setTimeout(function () { b.style.opacity = 1; }, (300 + k * 140) / SPEED);
+    });
+    return sleep(1000, id).then(function () {
+      wet.classList.add('charged');
+      return sleep(600, id);
+    }).then(function () {
+      return picks.reduce(function (p, c) {
+        return p.then(function () {
+          return zap(c, id).then(function () {
+            c.lab = true; c.g.classList.remove('picked', 'dim'); paintLabel(c);
+            var hit = c.act >= HIT;
+            floatText(c, hit ? 'active' : 'inactive', hit ? 'var(--hit)' : 'var(--miss)', id).catch(function () {});
+            stats();
+            return sleep(120, id);
+          });
+        });
+      }, Promise.resolve());
+    }).then(function () {
+      wet.classList.remove('charged');
+      beams.forEach(function (b) { b.style.opacity = 0; setTimeout(function () { b.remove(); }, 400); });
+      clusters.forEach(function (c) { c.g.classList.remove('dim'); });
+      return flow(3, picks.length, id, 1300);
+    }).then(function () {
+      bump('sLabels', clusters.filter(function (c) { return c.lab; }).length);
+      round++;
+    });
+  }
+  var STAGE_FNS = [stageLabels, stagePETai, stageMetadata, stageWetLab];
+
+  function finish() {
+    setActive(-1); predict(); stats();
+    var u = Math.round(meanUnc() * 100), fam = familiesFound();
+    cap.textContent = MAX_ROUNDS + ' rounds in. ' + (strategy === 'greedy' ? 'Testing the top scores' : 'Testing where PETai was least sure')
+      + ' found ' + fam + ' of ' + (FAMILIES.length - 1) + ' new active families and left average uncertainty at ' + u + '%. Switch strategy to compare.';
+    /* No replay button: hold the final state, then start a fresh field. */
+    setTimeout(function () { if (playing) { seed = Math.floor(Math.random() * 1e6); reset(true); } }, 4000);
+  }
+
+  async function loop(id) {
+    try {
+      while (round <= MAX_ROUNDS) {
+        for (var s = 0; s < 4; s++) { await gate(); check(id); await STAGE_FNS[s](id); }
+        stats();
+      }
+      finish();
+    } catch (e) { if (e !== CANCEL) throw e; }
+  }
+
+  function reset(keepPlaying) {
+    runId++; waiter = null;
+    fx.innerHTML = ''; scan.setAttribute('opacity', 0); needle.style.transform = '';
+    wet.classList.remove('charged');
+    arcs.forEach(function (a) { a.classList.remove('live'); });
+    round = 1; history = []; flagsShown = false; lastPicks = [];
+    build(); stats(); drawSpark(); setActive(-1);
+    playing = keepPlaying;
+    loop(runId);
+  }
+
+
+  /* Autoplay once the figure scrolls into view, then loop; with reduced motion it stays still. */
+  function start() { if (playing) return; playing = true; if (waiter) { var w = waiter; waiter = null; w(); } }
+  reset(false);
+  if (!reduced) {
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { io.disconnect(); start(); }
+      }, { threshold: .35 });
+      io.observe($('loop'));
+    } else start();
+  }
+})();
+</script>
+</body>
+</html>
