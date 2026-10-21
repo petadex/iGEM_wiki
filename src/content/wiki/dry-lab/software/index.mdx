@@ -66,17 +66,15 @@ We built four pieces of software while searching for plastic-degrading enzymes. 
   VERIFY the ">50% nucleotide savings" figure before publishing it.
 */}
 
-<SideFigure
+To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER splits the full-length sequence into sections called fragment positions. LOBSTER then designs fragments at these positions to be combinatorially assembled using Golden Gate assembly and degenerate codons. Overall, LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage, under library size and nucleotide constraints. By running LOBSTER on 90pid clusters, we can experimentally validate them for a fraction of the nucleotide cost (~45%), greatly expanding our full validation space.
+
+<Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/overview-diagram.avif"
   alt="Overview of the LOBSTER algorithm: full-length PETase cores are split into fragment positions, and fragments with degenerate codons are designed at each position for combinatorial Golden Gate assembly into a full-length library"
   caption={<><strong>Figure X.</strong> Overview of LOBSTER. Each PETase core is split into fragment positions, and fragments designed at each position, with degenerate codons, assemble combinatorially by Golden Gate into a full-length library that covers as many natural cores as possible.</>}
-  width="55%"
-  flow
->
-
-To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER splits the full-length sequence into sections called fragment positions. LOBSTER then designs fragments at these positions to be combinatorially assembled using Golden Gate assembly and degenerate codons. Overall, LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage, under library size and nucleotide constraints. By running LOBSTER on 90pid clusters, we can experimentally validate them for a fraction of the nucleotide cost (~45%), greatly expanding our full validation space.
-
-</SideFigure>
+  width="40%"
+  expandable={false}
+/>
 
 LOBSTER operates by isolating the PETase cores, identifying and selecting Golden Gate cut sites, then greedily adding cores to the solution using additional fragments and degenerate codons. Using this approach, the LOBSTER output designs reduce the purchased nucleotides by 55% to cover the LCC and IsPETase 90pid clusters. This expands our PETase activity validation search space across more clusters. Additional details on LOBSTER's implementation can be found on its own page.
 

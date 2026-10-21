@@ -4,16 +4,27 @@ section: "Dry Lab"
 path: "/dry-lab/software/lobster/"
 navTitle: "LOBSTER Algorithm"
 order: 31
-description: "Full methods for the LOBSTER Algorithm"
+description: ""
 owners: ["Dry Lab"]
 updated: "2026-10-20"
 status: "draft"
 bibliography: "../../dry-lab.bib"
 ---
 
-# LOBSTER Algorithm
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/lobsterlogo.avif"
+  alt="LOBSTER logo"
+  width="100%"
+  expandable={false}
+/>
 
-IMAGE: Lobster Logo
+<div style={{ textAlign: "center" }}>
+
+**L**ibrary **O**ptimization for **B**ioprospecting **S**equences **T**hrough **E**conomical **R**ecombination
+
+</div>
+
+## Overview
 
 To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER utilizes Golden Gate fragment assembly and degenerate codons to create efficient fragment pool designs that can be combinatorially assembled to form a library of full-length cores. LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage. To keep the generated libraries experimentally feasible, this coverage optimization is run subject to nucleotide quantity and library size constraints. By running LOBSTER on  90pid clusters, we can experimentally validate them for a fraction of the nucleotide cost (~45%), greatly expanding our full validation space. Additionally, since the full cores are combinatorially assembled, Golden Gate assembly will create cores not found in the PETadex. While these chimeras of naturally-occurring mutations were not identified through natural sequencing, it is still plausible that they show plastic-degrading activity. This further expands our Wet Lab validation space of potentially active PETases.
 
@@ -23,7 +34,15 @@ Existing library codon optimization algorithms such as SwiftLib (2015) [@jacobs2
 
 ## Methods
 
-FIGURE 1: overview.png
+Cores are extracted from a PETadex 90pid cluster, Golden Gate cut sites are chosen to split them into fragment positions, and cores are then added greedily using new fragments and degenerate codons until a nucleotide or library size cap is reached.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/overview-diagram.avif"
+  alt="Overview of the LOBSTER algorithm: full-length PETase cores are split into fragment positions, and fragments with degenerate codons are designed at each position for combinatorial Golden Gate assembly into a full-length library"
+  caption={<><strong>Fig. 1</strong> LOBSTER Overview</>}
+  width="40%"
+  expandable={false}
+/>
 
 ### Preprocessing
 
@@ -31,13 +50,23 @@ First, we preprocessed PETadex 90pid clusters to create the input to LOBSTER. To
 
 ### Cut-Search
 
-FIGURE 2a: cutsearch.png
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/cutsearch.avif"
+  alt="Site-directed recombination graph for cut-search: nodes are candidate Golden Gate cut sites and edges encode the variation introduced at the fragment position they define, with the shortest path marking the lowest-variation cut configuration"
+  caption={<><strong>Fig. 2a</strong> Cut-search graph. Nodes are candidate Golden Gate cut sites and edges encode the variation introduced at the fragment position they define; the shortest path is the cut configuration with the least within-position variation.</>}
+  width="100%"
+/>
 
 Given a valid weighted core FASTA, LOBSTER works by identifying possible Golden Gate cut sites and then finding optimal cut site configurations to capitalize on naturally conserved regions. To do so, we adapted the site-directed recombination graph from RASPP (2004) [@endelman2004raspp]. As shown in Figure 2a, the nodes in the graph represent possible cut sites, and the edges encode how much variation would be created at the fragment position defined by the chosen cut site. The shortest path in this formulated graph represents the cut configuration with the least variation within fragment positions, which lowers the upper bound on nucleotides purchased. For the full algorithm, the top-5 shorted paths are computed using DP, and verified to ensure the orthogonality of Golden Gate overhangs. Additionally, because the graph solution is not guaranteed to lead to the fully optimal solution, random cut configurations are also chosen and input into the greedy loop.
 
 ### Greedy Loop
 
-FIGURE 2b: greedy.png
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/greedy.avif"
+  alt="An example greedy step: for the current solution, the operations needed to add each core are compared, and the core maximizing weighted coverage gain per increase in library size is chosen"
+  caption={<><strong>Fig. 2b</strong> An example greedy step. For each core, the operations needed to include it are computed, and the core that maximizes weighted coverage gain divided by the increase in library size (gain/lib growth) is added to the solution.</>}
+  width="100%"
+/>
 
 Once the cuts are fixed, the algorithm greedily selects cheap cores to add to the solution until a cap (nt or library size) is reached. Specifically, given a current solution, for each core the algorithm computes what operations (mixed base addition, new fragment addition) it would take to include this core. The algorithm then takes the core whose required operations maximize total weighted coverage gain divided by the increase in full sequences added to the overall library. We notate this metric as gain/lib growth. An example greedy choice is visualized in Figure 2b. This loop terminates when a cap is reached, or when full coverage is achieved.
 
@@ -45,27 +74,52 @@ Once the cuts are fixed, the algorithm greedily selects cheap cores to add to th
 
 Two 90pid clusters, one containing IsPETase and the other containing LCC, were chosen as positive literature controls for LOBSTER and the wet-lab protocol. LOBSTER’s output designs for the IsPETase and LCC clusters saved 13,874 and 6,104 nucleotides respectively, as shown in Figures 3a and 3b. This led to a significant price reduction for the oligo pool order, while retaining the vast majority of PETadex cluster cores, as shown in Figures 3a and 3b. Additionally, the algorithm runs in polynomial time to the input size due to its greedy assumption. This allows for reasonably fast computation on the chosen clusters, with both algorithms finishing their computation over all possible numbers of fragments within 20 minutes, as shown in Figures 4a and 4b.
 
-#### Figure 3a: IsPETase Design Savings
+<ImageGrid>
 
-FIGURE 3a: ispetase_naive_vs_designed.png
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/ispetase-naive-vs-designed.avif"
+  alt="Nucleotide usage of the naive full-length order versus the LOBSTER design for the IsPETase 90pid cluster"
+  caption={<><strong>Fig. 3a</strong> IsPETase design savings. The LOBSTER design saves 13,874 nucleotides against purchasing each full-length core, while retaining the vast majority of cluster cores.</>}
+  width="100%"
+/>
 
-#### Figure 3b: LCC Design Savings
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/lcc-naive-vs-designed.avif"
+  alt="Nucleotide usage of the naive full-length order versus the LOBSTER design for the LCC 90pid cluster"
+  caption={<><strong>Fig. 3b</strong> LCC design savings. The LOBSTER design saves 6,104 nucleotides against purchasing each full-length core, while retaining the vast majority of cluster cores.</>}
+  width="100%"
+/>
 
-FIGURE 3b: lcc_naive_vs_designed.png
+</ImageGrid>
 
-#### Figure 4a: IsPETase Runtime
+<ImageGrid>
 
-FIGURE 4a: ispetase_runtime.png
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/ispetase-runtime.avif"
+  alt="Runtime of LOBSTER over all possible numbers of fragments for the IsPETase 90pid cluster"
+  caption={<><strong>Fig. 4a</strong> IsPETase runtime across all possible numbers of fragments; the computation finishes within 20 minutes.</>}
+  width="100%"
+/>
 
-#### Figure 4b: LCC Runtime
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/lcc-runtime.avif"
+  alt="Runtime of LOBSTER over all possible numbers of fragments for the LCC 90pid cluster"
+  caption={<><strong>Fig. 4b</strong> LCC runtime across all possible numbers of fragments; the computation finishes within 20 minutes.</>}
+  width="100%"
+/>
 
-FIGURE 4b: lcc_runtime.png
+</ImageGrid>
 
 ### Output:
 
 Below is an interactive example of LOBSTER's output designs for the IsPETase and LCC clusters. Hovering over the different fragment positions shows the nucleotide sequences of each oligo at that position. Additionally, Golden Gate information including the overhangs between fragment positions and adapter sequences are displayed.
 
-HTML LOBSTER Fragment Map: lobster_fragment_map.html
+<FrameFigure
+  src="/figures/dry-lab-software/lobster_fragment_map.html"
+  title="LOBSTER Fragment Map"
+  aspect="2.8 / 1"
+  caption="LOBSTER's output designs for the IsPETase and LCC 90pid clusters. Hover over a fragment position to see the nucleotide sequence of each oligo at that position, along with the Golden Gate overhangs between positions and the adapter sequences."
+/>
 
 ## Discussion
 
@@ -73,9 +127,10 @@ LOBSTER is an effective algorithm for economizing general oligo-pool assembly or
 
 ## Appendix
 
-#### LOBSTER Pseudocode:
-
-PDF: pseudocode.pdf
+<PdfEmbed
+  title="LOBSTER Pseudocode"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/pseudocode.pdf"
+/>
 
 #### Codon usage data
 
