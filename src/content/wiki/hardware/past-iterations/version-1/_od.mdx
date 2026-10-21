@@ -19,7 +19,7 @@ this subsystem include:
 | ------------ | ---------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Photodiode   | Raw photodiode readings, converted to OD600 and nOD values | 19.95 per<br/>39.9 total   | [Adafruit](https://www.adafruit.com/product/6477)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | LED          | Shined through the culture to determine OD                 | $0.09                      | [Amazon](https://www.amazon.ca/Gikfun-Assorted-Arduino-100pcs-EK8437/dp/B01ER728F6/ref=sr_1_7?crid=2PON9OCDB99Q6&dib=eyJ2IjoiMSJ9.vgURJixuUw7UatfMOy99wza6v7locuEEbGR9Hh1CG-fRn2rK1gpXDX6OAxrduYtjIv0kUGhzMhFxd-itanpcMjDKzPHgdaEkKUd6F_QBdCKj-8Aw_yitN-eegxMKYwrZAvbbVyiGpumHf296OfkIYSB6DUqjDgUxDR-VkB3x1TUNLOu-tgn8uyC2TSc9vD5r8VtIitrKVFccq6UgZDIBtYKgwHmq-VlgSjO2fCKMofgOOrz-gj0ynsUKFwYE78deuNJ94D9uJYnYg4ikUATTgHjBAoLeqh4XfE2-MXNeoOI.tcs2c3yBAM9NR99ehucDySMpXDukQ1Uh1fXncD-_URY&dib_tag=se&keywords=led+breadboard&qid=1792438658&sprefix=led+breadborad%2Caps%2C142&sr=8-7)             |
-| Jumper wires | I2C wiring for photodiode sensors                          | ~$0.08per<br/>~$0.67 total | [Amazon](https://www.amazon.ca/Elegoo-120pcs-Multicolored-Breadboard-arduino/dp/B01EV70C78/ref=sr_1_6?crid=1YVH8QDGGRFU8&dib=eyJ2IjoiMSJ9.uCOb5HPboMdDvoE-0hwwkSHZ162tO6_pDczMCIn5t6AihS39Ke3JA0q-y4iRb9wydwbDCBqA8ss2zXSSj2BJMAPtsF_MuI1qHNT-1gtn-HA-g10ntY200v5FJrKwlKMoYGpfqgqvTIoS3Dz2gf8bDAJlHug1i1BrspB9DWROZGLz4qxHR3EKi4HVrPcavHGAPDTeqcMbXrV3uxFU9lstO1vwBSar-FtjFK9q8uG_qYAP2RF54yIaJWS8YprwiJzKVHEI8cIRLF_VVEaGOyfpMNkjanJpnhMr6yaVVa9_Ypc.D8yqwdO2pHcvXzbps7-o-k1y2G04kQpKX03S2mtT-g0&dib_tag=se&keywords=jumper%2Bwires&qid=1792438491&sprefix=jumper%2Bwire%2Caps%2C142&sr=8-6&th=1) |
+| Jumper wires | I2C wiring for photodiode sensors                          | ~$0.08per<br/>~$0.67 total | [Amazon](https://www.amazon.ca/Elegoo-120pcs-Multicolored-Breadboard-arduino/dp/B01EV70C78/ref=sr_1_6?crid=1YVH8QDGGRFU8&dib=eyJ2IjoiMSJ9.uCOb5HPboMdDvoE-0hwwkSHZ162tO6_pDczMCIn5t6AihS39Ke3JA0q-y4iRb9wydwbDCBqA8ss2zXSSj2BJMAPtsF_MuI1qHNT-1gtn-HA-g10ntY200v5FJrKwlKMoYGpfqgqvTIoS3Dz2gf8bDAJlHug1i1BrspB9DWROZGLz4qxHR3EKi4HVrPcavHGAPDTeqcMbXrthe final designuxFU9lstO1vwBSar-FtjFK9q8uG_qYAP2RF54yIaJWS8YprwiJzKVHEI8cIRLF_VVEaGOyfpMNkjanJpnhMr6yaVVa9_Ypc.D8yqwdO2pHcvXzbps7-o-k1y2G04kQpKX03S2mtT-g0&dib_tag=se&keywords=jumper%2Bwires&qid=1792438491&sprefix=jumper%2Bwire%2Caps%2C142&sr=8-6&th=1) |
 
 ### Equipment used:
 
@@ -51,7 +51,7 @@ this subsystem include:
   />
 </ImageGrid>
 
-The LED shines red light through the glass vial, and the collecting sensor reports the amount of 600nm light that was not blocked or scattered by the bacterial culture in the vial. For a vial with high bacterial density, little light is able to pass through, leaving a low OD value (with 0 being absolute darkness). While a vial with low bacterial density allows a large amount of light to pass through, leaving a high OD value. To account for drifts in lighting that are not caused by the vial–environmental lighting or LED flickers for example–the reference sensor sits directly above the LED and subtracts this drift. The conceptual layout is shown in the pink photo, while a rough CAD layout is shown below it.
+The LED shines red light through the glass vial, and the collecting sensor reports the amount of 600nm light that was not blocked or scattered by the bacterial culture in the vial. For a vial with high bacterial density, less light passes through, corresponding to a high OD value. A vial with low bacterial density allows more light to pass through, corresponding to a low OD value. To account for drifts in lighting that are not caused by the vial–environmental lighting or LED flickers for example–the reference sensor sits directly above the LED and subtracts this drift. The conceptual layout is shown in the pink photo, while a rough CAD layout is shown below it.
 
 #### Code
 
@@ -90,7 +90,7 @@ Find in the [Gitlab](https://gitlab.igem.org/2026/software/toronto/hardware/-/bl
 
 Three experiments were proposed to test the accuracy of the OD readings reported:
 
-1. normalized OD (nOD) and OD600 readings when varying dye concentrations
+1. normalized OD (nOD) and OD600 readings when varying concentrations
 2. nOD readings against varying temperatures.
 3. nOD readings against varying stir bar speeds.
 
@@ -144,11 +144,11 @@ The gif below shows the OD subsystem operating:
 The key flaws observed in experiment 1 were:
 
 1. Taking the vial in and out without changing the culture density still changes the nOD values significantly. Thus, the vial position should be fixed to avoid shifting values in the OD subsystem.
-2. First 2 decimal points for nOD are constant for an unchanging cultural density, but the later decimal points fluctuate. This is likely due to light contamination
+2. First 2 decimal places for nOD are constant for an unchanging culture density, but the later decimal places fluctuate. This is likely due to light contamination
 3. The wiring for the OD600 subsystem would disconnect when the bioreactor was slightly shifted from position.
 
 These observations justify the next steps.
 
 ### Next Steps
 
-From the results of experiment 1, the vial holder needs to be refined to further reduce light contamination and hopefully improve the accuracy of nOD recordings to higher than 2 decimal points. The bioreactor should then be able to detect small changes in bacterial growth, which is currently only seen in OD600 readings of a spectrophotometer. Additionally, as V1 relies on wiring to header pins which are prone to disconnecting, future versions should implement a single push connector, like the [Adafruit STEMMA QT connectors](https://www.adafruit.com/product/4424).
+From the results of experiment 1, the vial holder needs to be refined to further reduce light contamination and hopefully improve the accuracy of nOD recordings to higher than 2 decimal places. The bioreactor should then be able to detect small changes in bacterial growth, which is currently only seen in OD600 readings of a spectrophotometer. Additionally, as V1 relies on wiring to header pins which are prone to disconnecting, future versions should implement a single push connector, like the [Adafruit STEMMA QT connectors](https://www.adafruit.com/product/4424).

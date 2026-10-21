@@ -2,7 +2,7 @@
 
 Building onto our learnings from the previous iteration, we wanted to make improvements based on what each of the subsystems lacked during the experiments we performed. We planned to create a soldered protoboard to remove some unnecessary mass and repetitive wiring, design some housings for our electronics to improve the safety of our device, fix the fan RPM, and improve temperature control.
 
-Additionally, we wanted to begin integrating each of the subsystem components to fix any bugs or unexpected errors in communication between the arduino nano and laptop UI USB port. As our first pass, we standardised communication between these two devices by passing JSONS between them.
+Additionally, we wanted to begin integrating each of the subsystem components to fix any bugs or unexpected errors in communication between the Arduino nano and laptop UI USB port. As our first pass, we standardised communication between these two devices by passing JSON messages between them.
 
 Arduino to laptop UI: passing 2 OD sensor, temperature sensor, and fan RPM readings for the UI to display.
 
@@ -11,14 +11,14 @@ Laptop UI to Arduino: passing target temperature to heater, target power to pump
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/o1.avif"
   alt="fig1"
-  caption="Figure 1: Initial JSON communication content draft [Left] and flowchart with communication flows between bioreactor components, the arduino, and computer. [Right]"
+  caption="Figure 1: Initial JSON communication content draft [Left] and flowchart with communication flows between bioreactor components, the Arduino, and computer. [Right]"
 />
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-After defining our design goals for this cycle, we focused on achieving these improvements through three avenues: weighing the pros and cons of design solutions based on what we had learned from stakeholders and test runs, purchasing new components that met the demand of our requirements, and continuously iterating on the control and communication software we had originally established. We purchased a new fan with better lower RPM control, established a stronger connection between the UI and the arduino, improved temperature control loops, and added more OD600 features.
+After defining our design goals for this cycle, we focused on achieving these improvements through three avenues: weighing the pros and cons of design solutions based on what we had learned from stakeholders and test runs, purchasing new components that met the demand of our requirements, and continuously iterating on the control and communication software we had originally established. We purchased a new fan with better lower RPM control, established a stronger connection between the UI and the Arduino, improved temperature control loops, and added more OD600 features.
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/o2.avif"
@@ -28,14 +28,14 @@ After defining our design goals for this cycle, we focused on achieving these im
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/o3.avif"
   alt="fig3"
-  caption="Figure 3: Protoboard integration with housing [Left] and new mechanical shells and tubings. [Right]"
+  caption="Figure 3: Protoboard integration with housing [Left] and new mechanical shells and tubing. [Right]"
 />
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-After we built and integrated our components together, we tested the integration of the laptop UI to arduino connection by getting the arduino connected to the laptop to post pseudo values to the UI. This is demonstrated with the gif below.
+After we built and integrated our components together, we tested the integration of the laptop UI to Arduino connection by getting the Arduino connected to the laptop to post pseudo values to the UI. This is demonstrated with the gif below.
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/v2-demo.webp"
