@@ -35,6 +35,22 @@ const DRY_LAB_PATROL = {
 const NEEDLEMAN_BASE = "https://static.igem.wiki/teams/6187/wiki/drylab-page/needleman/"
 
 /**
+ * Sun, clouds and dunes, painted together on a 3798×1908 canvas that is the
+ * full width of the dry-lab plate, so it covers the top of the scene.
+ */
+const DRY_LAB_NEWTOP_BOX = [0, 0, 918, (1908 * 918) / 3798]
+
+function dryLabNewtop(name, file) {
+  return {
+    name,
+    src: `https://static.igem.wiki/teams/6187/wiki/drylab-page/newtop/${file}`,
+    box: DRY_LAB_NEWTOP_BOX,
+    // The file fills that window. It isn't a crop of the 918×4000 plate.
+    fill: true,
+  }
+}
+
+/**
  * Needleman the cactus and Wunsch the tumbleweed (see NeedlemanCactus), drawn
  * on their own 2580×1872 plate: `scale` and `at` (where the plate's top-left
  * lands, in scene px) put them on the skyline where the old saguaro stood.
@@ -95,6 +111,15 @@ export const DRY_LAB_SCENE = {
     { name: "layer-1", box: [0, 0, 918, 4000] },
     // Paints out layer-1's saguaro, where Needleman (`cactus`) now stands.
     { name: "cactus-patch", src: `${NEEDLEMAN_BASE}cactus-patch.avif`, box: [760, 85, 918, 300] },
+    // Sky over the old horizon (back to front): rays, clouds, then the dunes.
+    // The dunes sit in front of the sky and behind Needleman, the sentence
+    // and the rest of the header.
+    dryLabNewtop("newtop-sunlight", "sunlight.avif"),
+    dryLabNewtop("newtop-clouds", "clouds.avif"),
+    dryLabNewtop(
+      "newtop-dunes",
+      "dunes-sandwich-between-sky-and-everything-else.avif",
+    ),
     { name: "layer-2", box: [0, 1305, 918, 3136] },
     { name: "layer-3", box: [0, 2567, 918, 4000] },
     // Holes and paths dug into the ground.

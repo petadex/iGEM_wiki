@@ -21,39 +21,69 @@ export const Dropdown = ({ title, open = false, spotlight = false, children }) =
   </DropdownBox>
 )
 
-/* No green token in global styles (accent is red). Deep green stays
-   readable on the light text box. */
-const SPOTLIGHT_GREEN = "#2c4f43"
-
-const SpotlightFrame = styled.div`
-  container-type: inline-size;
-  margin: var(--space-lg) 0;
+/**
+ * Same sweep as the homepage figures (`discoveryShimmer` in
+ * HomeScrollPrototype): a bright band travels through a purple word.
+ */
+const conferenceFlash = keyframes`
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
 `
 
-const SpotlightHeadingTitle = styled.p`
-  && {
-    max-width: none;
-    margin: 0;
-    color: ${SPOTLIGHT_GREEN};
-    /* Larger than section titles (those top out near 2.6rem). The floor
-       keeps it a heading when the column is narrow; balance wraps on words. */
-    font-size: clamp(2.35rem, 8.4cqi, 3.35rem);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
+/** Purple, not the page's body colour, so a mention stays readable. */
+const CONFERENCE_FLASH = "#553273"
+
+const ConferenceFlashText = styled.span`
+  color: ${CONFERENCE_FLASH};
+  font-weight: inherit;
+
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: linear-gradient(
+      110deg,
+      #553273 20%,
+      #80502a 40%,
+      #ffe694 50%,
+      #80502a 60%,
+      #553273 80%
+    );
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: ${conferenceFlash} 5s linear infinite;
+    filter: drop-shadow(0 1px 1px #fff7d9);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: none;
+    color: ${CONFERENCE_FLASH};
+    -webkit-text-fill-color: ${CONFERENCE_FLASH};
+    filter: none;
   }
 `
 
-/**
- * One flagship title on the Outreach page. Not a page heading style, so
- * other section titles stay as they are.
- */
-export const SpotlightHeading = ({ title }) => (
-  <SpotlightFrame>
-    <SpotlightHeadingTitle>{title}</SpotlightHeadingTitle>
-  </SpotlightFrame>
+/** Inline name of the flagship event. The colour flashes; the words do not change. */
+export const ConferenceFlash = ({ children }) => (
+  <ConferenceFlashText>{children}</ConferenceFlashText>
 )
+
+const CONFERENCE_MENTION = /(Microplastics Conference|Microplastic Conference)/g
+
+/** Wrap those names inside a string, leaving the rest of the sentence as it is. */
+export function flashConferenceMentions(text) {
+  if (typeof text !== "string" || !text.includes("Microplastic")) return text
+  const parts = text.split(CONFERENCE_MENTION)
+  if (parts.length === 1) return text
+  return parts.map((part, i) =>
+    part === "Microplastics Conference" || part === "Microplastic Conference" ? (
+      <ConferenceFlash key={i}>{part}</ConferenceFlash>
+    ) : (
+      part
+    )
+  )
+}
 
 /**
  * PDF in a scrollable frame; `badge` labels it (e.g. "Primary vertical").
@@ -245,7 +275,7 @@ const ScaledFigure = ({ href, title, dark, logical, open, frameRef }) => {
 
 export const embedComponents = {
   Dropdown,
-  SpotlightHeading,
+  ConferenceFlash,
   Photos,
   InteractiveEmbed,
   PdfEmbed,

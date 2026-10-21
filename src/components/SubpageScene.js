@@ -2809,7 +2809,11 @@ export function SubpageScene({
                     decoding="async"
                     draggable={false}
                     style={{
-                      ...plate.imgStyle(layer.from || layer.box),
+                      // `fill`: the file is its own canvas and fills the window.
+                      // Otherwise it's a crop of the scene plate.
+                      ...(layer.fill
+                        ? { left: 0, top: 0, width: "100%", height: "100%" }
+                        : plate.imgStyle(layer.from || layer.box)),
                       ...plate.clip(layer.clip),
                       filter: layer.removeWhite ? `url(#${whiteFilterId})` : undefined,
                     }}
@@ -3005,7 +3009,9 @@ export function SubpageScene({
         <SectionHeader $opening={!!opening}>
           <SectionTitle>{scene.header}</SectionTitle>
           {!opening && !hideHeaderSub && scene.headerSub && (
-            <SectionSub>{scene.headerSub}</SectionSub>
+            <SectionSub>
+              <span>{scene.headerSub}</span>
+            </SectionSub>
           )}
         </SectionHeader>
       )}
@@ -4426,7 +4432,11 @@ const CropImg = styled.img`
   user-select: none;
 `
 
-/** The section name across the sky, above the side box and text box. */
+/**
+ * Header lockup. The column is the title's own width (`fit-content`), and
+ * the subtitle is taken out of that measurement (`width: 0; min-width: 100%`)
+ * so it can sit a little wider than the title without stretching it.
+ */
 const SectionHeader = styled.div`
   position: absolute;
   z-index: 1;
@@ -4434,12 +4444,13 @@ const SectionHeader = styled.div`
   left: 0;
   right: 0;
   height: var(--sky-h);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: fit-content(100%);
   justify-content: center;
+  align-content: center;
   text-align: center;
   pointer-events: none;
+  container-type: inline-size;
 
   ${NARROW} {
     height: max(4.5rem, var(--sky-h));
@@ -4459,6 +4470,9 @@ const SectionHeader = styled.div`
 /** Big and heavy, with a light top edge and a soft drop so it sits on the art. */
 const SectionTitle = styled.p`
   margin: 0;
+  justify-self: center;
+  width: max-content;
+  max-width: 100%;
   color: var(--header-color);
   font-family: var(--font-display);
   font-weight: 800;
@@ -4468,17 +4482,30 @@ const SectionTitle = styled.p`
   text-shadow: var(--header-shadow);
 `
 
-/** A scene's `headerSub`: a line under the header, in its colour. */
+/**
+ * A scene's `headerSub`. Same rule on every scene: a step down from the
+ * title, wrapping in a block 1.35× that title's width (and never the full
+ * header).
+ */
 const SectionSub = styled.p`
-  max-width: 88%;
-  margin: ${ax(10)} 0 0;
+  width: 0;
+  min-width: 100%;
+  margin: ${ax(8)} 0 0;
   color: var(--header-color);
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: max(0.95rem, ${ax(25)});
-  line-height: 1.15;
-  text-wrap: balance;
+  font-size: max(0.9rem, ${ax(20)});
+  line-height: 1.25;
   text-shadow: var(--header-shadow);
+
+  span {
+    display: block;
+    position: relative;
+    left: 50%;
+    width: min(135%, 92cqi);
+    transform: translateX(-50%);
+    text-wrap: balance;
+  }
 `
 
 /**
