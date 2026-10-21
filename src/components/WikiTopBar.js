@@ -23,7 +23,7 @@ export const wikiNav = [
     { to: "/wet-lab/biosensor/", label: "Biosensor Assay" },
     { to: "/wet-lab/selection/", label: "Selection Assay" },
     { to: "/wet-lab/results/", label: "Results" },
-    { to: "/wet-lab/notebook/", label: "Protocols / Lab Notes" },
+    { to: "/wet-lab/notebook/", label: "Protocols, Experiment Schedule, and Lab Notes" },
     { to: "/wet-lab/parts/", label: "Parts Documentation" },
   ]},
   { label: "Hardware", children: [
