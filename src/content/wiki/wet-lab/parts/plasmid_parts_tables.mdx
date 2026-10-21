@@ -1,0 +1,59 @@
+## Table 1. PETase Display System Basic Parts
+
+| Number       | Title                   | Type           | Short Description                                                                                                                                                                                                                                                                      |
+| ------------ | ----------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BBa_26B3WB2J | INP-FLAG Display System | CDS            | PETase Display System. Contains INP sequence obtained from BBa_K523013, two GS linker regions, a spacer from the pGGASelect vector flanked with BsmBI cut sites (5’ CGGA overhang and 3’ GGTG overhang), and a C-terminal FLAG-tag. Is potentially compatible with non-PETase inserts. |
+| BBa_260DSTY3 | PD-V2 Promoter + RBS    | Promoter + RBS | T7 promoter sequence from BBa_K3633015 and the BC_B0034 RBS sequence from BBa_J435364. The sequence surrounding the T7 promoter is from pTac (BBa_J435360), and the sequence surrounding the BC_B0034 RBS has been modified to remove a start codon.                                   |
+| BBa_26CILTUB | PD-V2 Terminator        | Terminator     | T7 terminator sequence from the pET-21a(+) vector with surrounding sequence from the rrnB T1 terminator (BBa_J434007).                                                                                                                                                                 |
+
+## Table 2. Vector and Vector Components used for the PD-V1 Plasmid Backbone
+
+| Number        | Title                   | Type          | Short Description                                                                   |
+| ------------- | ----------------------- | ------------- | ----------------------------------------------------------------------------------- |
+| BBa_J435300   | AF_lacZ pDest           | Plasmid       | Golden Gate destination vector.                                                     |
+| BBa_J435360   | AB_pTac                 | Promoter      | The tac promoter, a strong _E. coli_ promoter not requiring unique RNA polymerases. |
+| _See Table 1_ | INP-FLAG Display System | _See Table 1_ | _See Table 1_                                                                       |
+| BBa_J435364   | BC_B0034                | RBS           | Ribosome binding site.                                                              |
+| BBa_J434007   | rrnB T1 terminator      | Terminator    | BBa_B0010 transcriptional terminator with 5’ AA.                                    |
+
+## Table 3. Vector and Vector Components used for the PD-V2 Plasmid Backbone
+
+| Number | Title                       | Type           | Short Description                                |
+| ------ | --------------------------- | -------------- | ------------------------------------------------ |
+| N/A    | pUC57-Mini-Key IIS Free     | Plasmid        | GenScript vector containing a pUC ori and AmpR.  |
+|        | PD-V2 PETase Display System | Composite part | PETase Display System used in the PD-V2 plasmid. |
+
+## Table 4. Vector and Vector Components used for the AS Plasmid Backbone
+
+| Number      | Title      | Type       | Short Description                                                                         |
+| ----------- | ---------- | ---------- | ----------------------------------------------------------------------------------------- |
+| BBa_J428350 | pJUMP26-1A | Plasmid    | Standardized Type IIS Level 1 vector.                                                     |
+| BBa_J435364 | BC_B0034   | RBS        | Standard iGEM RBS provided in the _E. coli_ Protein Expression Toolkit.                   |
+| BBa_J435351 | EF_ECK9600 | Terminator | Strong natural _E. coli_ terminator provided in the _E. coli_ Protein Expression Toolkit. |
+
+## Table 5. PD Plasmid Inserts
+
+| Number       | Title         | Type | Short Description                                                                                                                                                                                                                                                        |
+| ------------ | ------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| BBa_26N7TKCW | LCC           | CDS  | Naturally-occurring PETase that has been characterized ([source](https://pubmed.ncbi.nlm.nih.gov/22194294/)), sequence is flanked by BsmBI cut sites (5’ CGGA overhang and 3’ GGTG overhang).                                                                            |
+| BBa_26KIWZ9H | Fast-PETase   | CDS  | Machine-learning-aided engineered PETase that has been characterized ([source](https://www.nature.com/articles/s41586-022-04599-z)), sequence is flanked by BsmBI cut sites (5’ CGGA overhang and 3’ GGTG overhang).                                                     |
+| BBa_2666R1WB | IsPETase      | CDS  | Naturally-occurring PETase that has been characterized ([source](https://www.science.org/doi/10.1126/science.aad6359)), sequence is flanked by BsmBI cut sites (5’ CGGA overhang and 3’ GGTG overhang).                                                                  |
+| BBa_268VEF1X | M4-Q IsPETase | CDS  | Engineered variant of naturally-occurring PETase (IsPETase) that has been characterized ([source](<https://www.cell.com/cell-reports-physical-science/fulltext/S2666-3864(24)00609-X>)), sequence is flanked by BsmBI cut sites (5’ CGGA overhang and 3’ GGTG overhang). |
+| BBa_2629L2Z5 | Dead-IsPETase | CDS  | Catalytically dead version of IsPETase (a naturally-occurring PETase), sequence is flanked by BsmBI cut sites (5’ CGGA overhang and 3’ GGTG overhang).                                                                                                                   |
+
+## Table 6. AS Plasmid Inserts
+
+| Number       | Title  | Type     | Short Description                                                                                                                                                                                              |
+| ------------ | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BBa_K1980004 | pCusC  | Promoter | Copper-inducible promoter.                                                                                                                                                                                     |
+| BBa_26DWFOTU | msGFP2 | CDS      | Well-characterized photostable sfGFP variant ([source](https://onlinelibrary.wiley.com/doi/10.1111/tra.12737)), is flanked by BsaI sites (5' AATG overhang and 3' GCTT overhang).                              |
+| BBa_26D63H1J | sul1   | CDS      | Encodes sulfadiazine-resistant variant of dihydropteroate synthase ([source](https://pmc.ncbi.nlm.nih.gov/articles/PMC10328974/)), sequence is flanked by BsaI sites (5' AATG overhang and 3' GCTT overhang).  |
+| BBa_26MKV4MN | sul2   | CDS      | Encodes sulfadiazine-resistant variant of dihydropteroate synthase ([source](https://pmc.ncbi.nlm.nih.gov/articles/PMC10328974/)), sequence is flanked by BsaI sites (5' AATG overhang and 3' GCTT overhang).  |
+| BBa_26QV2P3Z | dfrB10 | CDS      | Encodes a trimethoprim-resistant version of dihydrofolate reductase ([source](https://pmc.ncbi.nlm.nih.gov/articles/PMC10714783/)), sequence is flanked by BsaI sites (5' AATG overhang and 3' GCTT overhang). |
+
+## Table 7. Primers
+
+| Number       | Title            | Type   | Short Description                                                        |
+| ------------ | ---------------- | ------ | ------------------------------------------------------------------------ |
+| BBa_26YNQCMS | PETase_check_Fwd | Primer | Anneals to PETase Display System and amplifies inserted PETase sequence. |
+| BBa_26JPN0B0 | PETase_check_Rev | Primer | Anneals to PETase Display System and amplifies inserted PETase sequence. |
