@@ -173,9 +173,9 @@ we do not know which genomes belong to plastic-degrading organisms.
   same 609.
 */}
 
-We created the query search of validated plastic-degrading enzymes by combing two versions of the PAZy database [@buchholz2022pazy]:
+We created the query search of validated plastic-degrading enzymes by combining two versions of the PAZy database [@buchholz2022pazy]:
 the one used to generate the original PETadex (pulled August 26th, 2024) and a recently updated version (pulled July 1st, 2026). 
-Manual curation of the union of these two datasets resulted in a total of 609 curated, experimentally validation plastic-degrading
+Manual curation of the union of these two datasets resulted in a total of 609 curated, experimentally validated plastic-degrading
 enzymes, which we call PETadex-PAZy.
 
 
@@ -318,7 +318,7 @@ Here we show all of the 46 components that comprise the PETadex-PAZy dataset. A 
 */}
 
 PETadex-PAZy is far too small to train on, so we used it as a starting point rather than as the dataset itself. We
-searched its centroids against the NCBI nr database with DIAMOND [citation]. All 411 PETadex-PAZy
+searched its centroids against the NCBI nr database with DIAMOND [@buchfink2021diamond]. All 411 PETadex-PAZy
 centroids went into the search. The search returned 13,209,543 nr accessions; applying an E-value cutoff of 1 × 10⁻⁵ and removing
 PETadex-PAZy self-hits leaves 7,825,107 non-redundant sequences.
 
@@ -335,10 +335,10 @@ the catalytic domain alone rather than with whole proteins. This required profil
 of the plastic-degrading domain and the catalytic residues within it.
 
 Each HMM was seeded from an alignment of PETadex-PAZy sequences and their closest nr homologs, admitting a sequence only
-if it carried the residues of the catalytic mechanism, which we annotated from the literature [citation]. A single
+if it carried the residues of the catalytic mechanism, which we annotated from the literature. A single
 alignable component can hold more than one mechanism, so we segmented the 46 PETadex-PAZy components by mechanism,
 resolving them into 53 seed alignments. Each seed was then expanded over four iterations of a search analogous to
-jackhmmer [citation], in which the hits of one round build the HMM used by the next: an nr homolog advanced only if it
+jackhmmer [@johnson2010jackhmmer], in which the hits of one round build the HMM used by the next: an nr homolog advanced only if it
 retained every canonical catalytic residue. The 53 HMMs that came out of this are what we use to find and delimit
 catalytic domains in everything the searches below return.
 
@@ -358,7 +358,7 @@ catalytic domains in everything the searches below return.
 */}
 
 Searching nr finds the homologs that have been deposited; Logan reaches the sequencing data that was never assembled
-into them. We searched the 2,740,458 catalytic domain centroids against Logan contigs (version [x]), recovering
+into them. We searched the 2,740,458 catalytic domain centroids against Logan contigs, recovering
 5,780,630,372 significant hits, which collapse to 3,202,954,878 non-redundant sequences.
 
 Annotating those sequences with the catalytic HMMs gave 1,740,282,847 significant hits, of which 291,922,243 were
@@ -514,6 +514,7 @@ only accessory domains.
   alt="Overview of Domain Annotation on PETadex"
   caption={<><strong>Figure 4.</strong> Overview of domain annotation on PETadex.</>}
 />
+
 ### Novel Accessory Domains
 
 <SideFigure
@@ -586,6 +587,7 @@ The run folded 1,793,781 sequences in 16.6 hours on up to 80 GPUs, using 851.6 G
 <PlddtByTier />
 
 <FoldCostByLength />
+
 ### Biochemical Properties and Ancestral Reconstruction
 
 Six sequence-derived properties were calculated using Biopython ProtParam for all PETadex ORFs: length, molecular weight, isoelectric point (pI), GRAVY hydrophobicity, instability index, and aromaticity. Median values were 308 aa, 34.2 kDa, pI 6.45, GRAVY −0.165, instability 37.5, and aromaticity 0.0885. Compared with a similarly sized random sample of NCBI nr, certain property medians were generally similar (such as 289 aa, GRAVY −0.19), which strengthens PETadex being a database of real functional protein sequences. Additionally, PETadex was far narrower in GRAVY (standard deviation 0.20 vs 0.43), and had fewer comparably short, very long, or highly unstable sequences. This depletion of hydrophobic and extreme sequences is consistent with soluble catalytic domains rather than membrane proteins, supporting PETadex as a promising database for identifying plastic-degrading enzymes. Mature secreted proteins were also more hydrophilic than non-secreted proteins, and catalytic-family median GRAVY correlated strongly with secretion (Spearman ρ = −0.96). Thus the properties serve as a useful filter for sequence selection as well.
@@ -657,7 +659,7 @@ Every paper was also independently extracted by two or more scrapers, with 78% o
 
 To-Do: Manually reconcile discrepancies between scrapers to create a finalized ground truth for each double-scraped paper.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/human-scraping-v8.avif" alt="Human scraping composite figure" width="150%"
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/human-scraping-v8.avif" alt="Human scraping composite figure" width="100%"
   caption={<><strong>Figure 12.</strong> <strong>A.</strong> Project workflow. <strong>B.</strong> Most common substrates amongst the 61 scraped papers. <strong>C.</strong> Most common independent variables and <strong>D.</strong> Most common quantities measured in experiments (372 experiments tallied). <strong>E.</strong> Melting temperature distribution of wild-type and engineered enzymes. <strong>F.</strong> Optimum temperature distribution <strong>G.</strong> Optimum pH distribution, split by PET-related vs other substrates; dashed line = median. <strong>H.</strong> Agreement between scrapers (pre-reconciliation) on comparable experiment data entries.</>}
 />
 
@@ -665,12 +667,6 @@ To-Do: Manually reconcile discrepancies between scrapers to create a finalized g
 ### Human vs LLM Agreement
 
 Finally, when checking 26 LLM-extracted papers against 26 double-human-verified papers, large discrepancies remain both between the LLM-Human comparisons and Human-Human comparisons. The LLM found 70% of enzymes that either human listed (a second human finds 83%) and 90% of those both humans agreed on. Only 7 of 180 LLM enzyme names had no human match, and those were naming variants or whole-cell entries. When the enzyme and value match, the LLM's pH agrees 80% of the time (a second human: 91%) and buffer 75% (84%). The errors are usually a condition borrowed from another assay in the same paper, like pH 7 versus 8 for IsPETase, or 37 versus 50 °C for Dkca1. Temperature (92%) and plasmid (95%) are good.
-
-<Placeholder label="Placeholder figure">
-
-Agreement between human and language-model extraction.
-
-</Placeholder>
 
 ## Machine Learning
 
@@ -738,9 +734,10 @@ Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for th
 />
 
 
-Finally, we ran controls on this UMAP to verify that this clustering does not appear by chance. Our objectives are the following: 
-Generate negative controls (random and shuffled sequences) from the 64,730 family representatives, designed to disentangle amino-acid composition from sequence order.
-Generate positive / real-world controls (random UniProt [@uniprot2025] proteins, real-sequence fragments) for comparison against the real centroids.
+Finally, we ran controls on this UMAP to verify that this clustering does not appear by chance. Our objectives are the following:
+
+- Generate negative controls (random and shuffled sequences) from the 64,730 family representatives, designed to disentangle amino-acid composition from sequence order.
+- Generate positive / real-world controls (random UniProt [@uniprot2025] proteins, real-sequence fragments) for comparison against the real centroids.
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/real-vs-controls-stacked.avif"
