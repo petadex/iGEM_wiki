@@ -82,7 +82,7 @@ const N = Object.keys(D.enz).length
 
 /* ---------- forest ---------- */
 
-const FOREST = "/figures/dry-lab-model/plasticome-forest-full.avif"
+const FOREST = "https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/plasticome-forest-full.avif"
 const FOREST_ALT =
   "Circular forest of 16 fold groups. The alpha/beta hydrolase fold fills more than half the circle; amidase and peptidase folds follow, then smaller slices for oxygenases, beta-lactamase-like enzymes, proteases, cytochromes, cupredoxins and SGNH hydrolases, each with a representative structure."
 // Shown under the figure and again in its expanded view.
