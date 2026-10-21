@@ -41,6 +41,7 @@ import { DatasetLoop, ModelDatasets } from "./interactive/ModelDatasets.js"
 import { StructureCoverage } from "./interactive/StructureCoverage.js"
 import { FoldCostByLength, PlddtByTier } from "./interactive/FoldRunProfile.js"
 import { BiosampleViewer, ProfileShares, ProfileStack, ProfileSteps } from "./interactive/BiosampleProfiles.js"
+import { ClusterFunnel } from "./interactive/Clustering.js"
 import {
   EricksonSequences,
   PlasticomeCoverage,
@@ -287,6 +288,7 @@ export const mdxComponents = {
   ProfileSteps,
   ProfileShares,
   ProfileStack,
+  ClusterFunnel,
   BiosampleViewer,
   PlasticomeStats,
   PlasticomeByPlastic,
