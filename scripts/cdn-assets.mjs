@@ -38,6 +38,7 @@ const assets = [
   ["figures/diamond-search/diamond-search-architecture.svg", "drylab-page/figures/diamond-search-architecture.svg"],
   ["figures/diamond-search/diamond-search-architecture-simple.svg", "drylab-page/figures/diamond-search-architecture-simple.svg"],
   ["figures/diamond-search/diamond-search-temporal.svg", "drylab-page/figures/diamond-search-temporal.svg"],
+  ["figures/dry-lab-model/plasticome-forest-full.avif", "drylab-page/figures/plasticome-forest-full.avif"],
   ["figures/dry-lab-overview/game-title.avif", "drylab-page/figures/game-title.avif"],
   ["figures/dry-lab-overview/landscape-spin-poster.avif", "drylab-page/figures/landscape-spin-poster.avif"],
   // Biosample viewer photos. landscape.html loads the first five from here too.

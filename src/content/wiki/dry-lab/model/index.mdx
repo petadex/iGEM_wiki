@@ -8,7 +8,6 @@ description: "Modeling approach and assumptions used to analyze PETase candidate
 owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
-hideHeaderSub: true
 ---
 
 {/*
@@ -108,8 +107,6 @@ From each family we search outward, first into the NCBI protein database and the
   alt="Flowchart of how the PETadex corpus is built: 609 PETadex-PAZy proteins are clustered at 90% identity into 411 nr query centroids; a DIAMOND blastp search of NCBI nr gives 7,825,535 non-redundant raw hits, which HMMsearch filters to 6,857,582 PETadex-nr proteins; these are clustered into 2,740,458 Logan query centroids, searched against Logan with DIAMOND blastx and filtered with HMMsearch into PETadex-Logan. Bars beside each step sketch catalytic domains, off-target, partial and complete hits."
 />
 
-<DatasetFlowchart />
-
 ### Plasticome Reference Curation
 
 *Owner: Dennis*
@@ -140,8 +137,6 @@ To build PETadex, we created a starting search query by combining two versions o
 
 <PlasticomeStats />
 
-<PlasticomeCoverage />
-
 <PlasticomeExplorer />
 
 <MethodsLink href="/dry-lab/model/plasticome/">How the two PAZy snapshots were curated and merged, where every sequence came from, the Erickson enzymes reset to their paper, and what the 609 reduce to after clustering.</MethodsLink>
@@ -150,7 +145,81 @@ To build PETadex, we created a starting search query by combining two versions o
 
 *Owner: TBD*
 
-Placeholder: CATH fold assignment of the 609 reference proteins by Foldseek, Gene3D and Pfam; 606 of 609 annotated.
+{/*
+  WRITER NOTES — not rendered.
+
+  Overview tier. The full write-up is /dry-lab/model/cath-assignment/,
+  reached only from the Methods link below. Ported from the draft in
+  plasticome/wiki-reference-curation/02 CATH Assignment/ (template.html).
+  The domain-call explorer is the "Domain calls" tab of the plasticome
+  explorer above; the stat tiles and the folds chart are on the Methods page.
+
+  Text: petadex-manuscript.tex was not on watson when this was drafted, so
+  nothing here is checked against it. Everything is in <Placeholder> except
+  the forest figure's caption, which merges Results ¶5 (hand-written) with
+  the Supplementary Fig. 1 caption; confirm that caption is hand-written.
+  Before publishing, compare with the manuscript's plasticome-domain
+  paragraphs and drop the wrapper on any sentence that matches.
+
+  Open checks:
+    - The manuscript gap list (~/manuscript-README.md, D4) says the Results
+      credit domain assignment to "InterProScan" and give "15 distinct
+      protein domains". InterProScan was not run for this; this section
+      credits the three routes that were. The 15 matches: 15 distinct
+      catalytic CATH superfamilies, with Lcp a 16th domain name and no CATH
+      code. Make the manuscript and the wiki say the same thing.
+    - The tree README reports 4 of 33 backbone branches at UFBoot 95 (3
+      recovered independently); the manuscript says 2 of 33. The caption
+      follows the manuscript; reconcile before publishing.
+    - Every number comes from ~/plasticome-cath-assignment/results/ through
+      the draft's extract_data.py. Reference of record is CATH v4.3.0.
+
+  The forest is petadex-manuscript/figures/figure2c_plasticome-forest.png,
+  as AVIF in static/figures/dry-lab-model/ and listed in
+  scripts/cdn-assets.mjs; it opens in the figure viewer. <CathStructures />
+  loads one structure per fold from static.igem.wiki (src/data/
+  cathStructures.js); four of the fifteen are not plasticome sequences and
+  name no enzyme. Its caption is built from petadex-manuscript.tex: the
+  first sentence is Results on the forest (hand-written), the rest is
+  Methods, "Domain assignment of the plasticome", which the .tex marks
+  % AI-GENERATED; rewrite before publishing. The manuscript has no caption of
+  its own for these structures, and does not say which predictor made them
+  (the file names, model_0 to model_4, suggest ColabFold), so the caption
+  says only "predicted".
+
+  Each structure's details card (catalytic and supporting residues,
+  mechanism, docked substrate, structural notes) comes from the team's
+  per-fold sheet, petadex_domain_summary.csv, generated into
+  src/data/cathStructures.js; its header lists every edit made to the
+  sheet's text. The mechanism paragraphs are the sheet's own wording, with
+  spelling fixed: rewrite them before publishing. Open items from the sheet:
+  SGNH oxyanion G55 is A56 in the model (listed as unverified, not drawn);
+  the cupredoxin's "C-term T2/T3" site repeats the N-terminal histidines'
+  numbers. The ligand scores look like Boltz-2's; name the predictor in the
+  caption once confirmed. The fold-group buttons open the plasticome explorer
+  above on that group (#fold=g00). Their counts are centroids in the tree,
+  not enzymes, so the explorer lists more records than the button says.
+*/}
+
+<Placeholder>
+
+Before using the plasticome to search for new enzymes, we checked what kinds of proteins it contains. We gave every enzyme a structural label from CATH, a database that sorts protein domains into families by their 3D fold.
+
+Each enzyme was labelled three independent ways: by comparing its predicted structure with known structures, by matching its sequence against CATH sequence models, and by matching it against Pfam protein families. The structure search and the sequence search against CATH agree on every domain they both label. The plasticome is dominated by the α/β-hydrolase fold shared by IsPETase and LCC, followed by a smaller group of peptidases and amidases.
+
+</Placeholder>
+
+<CathForest />
+
+<CathStructures />
+
+<Placeholder>
+
+The domain calls for every enzyme can be browsed in the [plasticome explorer](#plasticome-explorer), under "Domain calls".
+
+</Placeholder>
+
+<MethodsLink href="/dry-lab/model/cath-assignment/">The three routes and how their calls were reconciled, the family CATH has never classified, how the calls became one row per enzyme, and how they check out against the original PETadex labels and a newer CATH release.</MethodsLink>
 
 ### Component Assignment
 

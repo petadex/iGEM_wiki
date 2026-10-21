@@ -5,6 +5,16 @@ import { STANDARD_ROUTE_ALIASES } from "./src/data/standardRoutes.mjs"
 
 const wikiTemplate = path.resolve(`./src/templates/wiki-mdx.js`)
 
+// Optional frontmatter queried by wiki-mdx.js. Gatsby infers frontmatter
+// fields from the files, so a field no page sets drops out of the schema and
+// the template's query fails on every page. Declare them here instead.
+export function createSchemaCustomization({ actions }) {
+  actions.createTypes(`
+    type Mdx implements Node { frontmatter: MdxFrontmatter }
+    type MdxFrontmatter { hideHeaderSub: Boolean }
+  `)
+}
+
 // Gatsby inlines small fonts into CSS, then repeats that CSS in every HTML
 // page. Emit shared font files instead to keep the Pages archive small.
 export function onCreateWebpackConfig({ stage, getConfig, actions }) {

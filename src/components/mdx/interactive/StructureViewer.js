@@ -57,11 +57,20 @@ const loadMolstar = () => {
 }
 
 /**
- * The catalytic triad, in the magenta petadex.net marks an annotated residue
- * with. It has to stay legible against both colour modes below, and the ink
- * brown it used to be was too close to the chain's N-terminal end.
+ * The catalytic residues, in pink. It has to stay legible against every
+ * colour mode below, the white cartoon most of all, and the ink brown it once
+ * was sat too close to the chain's N-terminal end.
  */
-export const TRIAD_COLOR = 0xd12b7d
+export const TRIAD_COLOR = 0xe8559a
+
+/** Residues that support catalysis: oxyanion holes, metal and heme ligands. */
+export const SECONDARY_COLOR = 0xe0a526
+
+/** A docked substrate (chain L in the CATH fold models), in teal. */
+export const SUBSTRATE_COLOR = 0x1f9e89
+
+/** Cofactors and metal ions bound alongside it: hemes, copper, zinc. */
+export const COFACTOR_COLOR = 0x8a6c57
 const PAPER = 0xf3e9e5
 
 /** A Mol* colour as CSS, so a legend can be drawn from the same numbers. */
@@ -128,7 +137,24 @@ const waitForBox = (el, timeoutMs = 8000) =>
     observer.observe(el)
   })
 
-export const StructureViewer = ({ src, triad, mode = "chain", spin = false, label, onState }) => {
+/**
+ * `triad` marks residues by their position in the sequence, [pos, aa] pairs.
+ * `sites` marks them by chain and residue number as the file writes them,
+ * { chain, num } — the CATH fold models have more than one chain — and
+ * `secondary` the residues that support them, in their own colour. A file's
+ * HETATM-only chains are drawn too: chain L as the docked substrate, any
+ * other as a cofactor.
+ */
+export const StructureViewer = ({
+  src,
+  triad,
+  sites,
+  secondary,
+  mode = "chain",
+  spin = false,
+  label,
+  onState,
+}) => {
   const hostRef = useRef(null)
   const pluginRef = useRef(null)
   const polymerRef = useRef(null)
@@ -207,6 +233,9 @@ export const StructureViewer = ({ src, triad, mode = "chain", spin = false, labe
         }
 
         await addTriad(plugin, structure, triad, molstar.lib)
+        await addSites(plugin, structure, secondary, molstar.lib, "secondary", SECONDARY_COLOR)
+        await addSites(plugin, structure, sites, molstar.lib, "catalytic", TRIAD_COLOR)
+        await addHetChains(plugin, structure, text, molstar.lib)
 
         const { Structure } = molstar.lib.structure
         await plugin.managers.camera.focusLoci(
@@ -234,7 +263,7 @@ export const StructureViewer = ({ src, triad, mode = "chain", spin = false, labe
     // The structure is rebuilt only when the record changes; mode and spin
     // are handled below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, triad, label])
+  }, [src, triad, sites, secondary, label])
 
   useEffect(() => {
     onState?.(state)
@@ -291,6 +320,81 @@ export const StructureViewer = ({ src, triad, mode = "chain", spin = false, labe
       )}
     </Host>
   )
+}
+
+/** Residues picked out by chain and residue number, as ball-and-stick. */
+const addSites = async (plugin, structure, sites, lib, key, color) => {
+  if (!sites?.length) return
+  const { Schema } = lib.structure.StructureElement
+  await addBallAndStick(
+    plugin,
+    structure,
+    Schema.toExpression({
+      items: sites.map((s) => ({ auth_asym_id: s.chain, auth_seq_id: s.num })),
+    }),
+    `${key}-residues`,
+    `${key[0].toUpperCase()}${key.slice(1)} residues`,
+    color,
+    0.3
+  )
+}
+
+/**
+ * Chains with no ATOM record, only HETATM: the docked substrate (chain L) and
+ * any cofactors. Read from the file itself, since the models name every
+ * hetero group LIG and only the chain tells a substrate from a heme.
+ */
+const addHetChains = async (plugin, structure, text, lib) => {
+  const atom = new Set()
+  const het = new Set()
+  for (const line of text.split("\n")) {
+    if (line.startsWith("ATOM")) atom.add(line[21])
+    else if (line.startsWith("HETATM")) het.add(line[21])
+  }
+  const only = [...het].filter((c) => !atom.has(c))
+  if (!only.length) return
+  const { Schema } = lib.structure.StructureElement
+  const group = (chains) => Schema.toExpression({ items: chains.map((c) => ({ auth_asym_id: c })) })
+  const cofactors = only.filter((c) => c !== "L")
+  if (cofactors.length) {
+    await addBallAndStick(
+      plugin,
+      structure,
+      group(cofactors),
+      "cofactors",
+      "Cofactors",
+      COFACTOR_COLOR,
+      0.35
+    )
+  }
+  if (only.includes("L")) {
+    await addBallAndStick(
+      plugin,
+      structure,
+      group(["L"]),
+      "substrate",
+      "Substrate",
+      SUBSTRATE_COLOR,
+      0.4
+    )
+  }
+}
+
+const addBallAndStick = async (plugin, structure, expression, key, label, color, size) => {
+  const component = await plugin.builders.structure.tryCreateComponentFromExpression(
+    structure,
+    expression,
+    key,
+    { label }
+  )
+  if (!component) return
+  await plugin.builders.structure.representation.addRepresentation(component, {
+    type: "ball-and-stick",
+    typeParams: { sizeFactor: size },
+    color: "uniform",
+    // Mol*'s Color() returns the number it is given.
+    colorParams: { value: color },
+  })
 }
 
 /**
