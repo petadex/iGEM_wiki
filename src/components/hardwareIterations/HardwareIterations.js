@@ -1,9 +1,8 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { CycleContent } from "../engineering/CycleContent.js"
 import { ENGINEERING_ART } from "../../data/engineeringCycles.js"
 import { HARDWARE_ITERATIONS, HARDWARE_SUBSYSTEMS } from "../../data/hardwareIterations.js"
-import { HardwareMap } from "./HardwareMap.js"
 import { IterationTimeline } from "./IterationTimeline.js"
 import { SubsystemTabs } from "./SubsystemTabs.js"
 import V1Cycle from "../../content/wiki/hardware/past-iterations/version-1/_cycle.mdx"
@@ -33,14 +32,11 @@ function fromHash(hash) {
   return { subsystem, version: version === -1 ? null : version }
 }
 
-const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect
-
 export function HardwareIterations() {
   const [version, setVersion] = useState(0)
   const [subsystem, setSubsystem] = useState("cad")
   // "subsystems" scrolls to the writeups. "photo" scrolls back to the version control.
   const [scrollTo, setScrollTo] = useState(null)
-  const pageRef = useRef(null)
   const iteration = HARDWARE_ITERATIONS[version]
   const Cycle = CYCLES[iteration.id]
   const Rest = REST[iteration.id]
@@ -69,17 +65,6 @@ export function HardwareIterations() {
     setScrollTo(null)
   }, [scrollTo, version, subsystem])
 
-  // Switching versions replaces one photo. If a previous photo is still in
-  // the page, drop it so only the selected version is shown.
-  useIsoLayoutEffect(() => {
-    const root = pageRef.current
-    if (!root) return
-    const keep = `hardware-map-${iteration.id}`
-    root.querySelectorAll("figure[id^='hardware-map-']").forEach(node => {
-      if (node.id !== keep) node.remove()
-    })
-  }, [iteration.id])
-
   const selectVersion = index => {
     const id = HARDWARE_ITERATIONS[index].id
     setVersion(index)
@@ -89,13 +74,12 @@ export function HardwareIterations() {
   }
 
   return (
-    <div ref={pageRef}>
+    <div>
       <IterationTimeline
         iterations={HARDWARE_ITERATIONS}
         selectedIndex={version}
         onChange={selectVersion}
       />
-      <HardwareMap key="map" version={iteration.id} />
       <Section>
         <SectionTitle id="iteration-overview">DBTL</SectionTitle>
         {Cycle ? (

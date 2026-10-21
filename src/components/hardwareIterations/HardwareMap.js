@@ -14,7 +14,7 @@ const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayout
  * `version-2`, or `version-3`) to use that photo. On touch, the first tap
  * shows what it does and the second opens it.
  */
-export function HardwareMap({ version = "version-1" }) {
+export function HardwareMap({ version = "version-1", anchorPrefix }) {
   const map = HARDWARE_MAPS[version] || HARDWARE_MAPS["version-1"]
   const { src, size: [W, H], alt, parts, summaries } = map
   const id = useId()
@@ -38,7 +38,9 @@ export function HardwareMap({ version = "version-1" }) {
     }
   }, [src])
   const labelOf = sub => HARDWARE_SUBSYSTEMS.find(s => s.id === sub)?.label || sub
-  const path = sub => `${ITERATIONS_PATH}#${version ? `${version}-` : ""}${sub}`
+  const path = sub => anchorPrefix
+    ? `#${anchorPrefix}-${sub}`
+    : `${ITERATIONS_PATH}#${version ? `${version}-` : ""}${sub}`
 
   const open = (sub, i) => event => {
     // A tap on a part not yet shown: show it first.
@@ -47,7 +49,26 @@ export function HardwareMap({ version = "version-1" }) {
       setActive({ sub, i })
       return
     }
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button) return
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button) return
+    if (anchorPrefix) {
+      const target = document.getElementById(`${anchorPrefix}-${sub}`)
+      if (!target) return
+      // Scroll the existing article instead of letting routing restore the
+      // page's previous scroll position when its hash changes.
+      event.preventDefault()
+      event.stopPropagation()
+      window.history.replaceState(window.history.state, "", path(sub))
+      if (!target.hasAttribute("tabindex")) {
+        target.setAttribute("tabindex", "-1")
+        target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true })
+      }
+      target.focus({ preventScroll: true })
+      target.scrollIntoView({
+        behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      })
+      return
+    }
     event.preventDefault()
     const hash = `#${version ? `${version}-` : ""}${sub}`
     const here = window.location.pathname.replace(/\/$/, "")
@@ -65,7 +86,7 @@ export function HardwareMap({ version = "version-1" }) {
     navigate(path(sub))
   }
   const handlers = (sub, i) => ({
-    href: withPrefix(path(sub)),
+    href: anchorPrefix ? path(sub) : withPrefix(path(sub)),
     onPointerDown: event => {
       touched.current = event.pointerType !== "mouse"
     },
