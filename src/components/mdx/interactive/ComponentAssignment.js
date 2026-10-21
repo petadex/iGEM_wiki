@@ -54,7 +54,8 @@ const domOf = c => pretty((c.cath && D.names[c.cath]) || c.dom)
 /* ---------- component map ---------- */
 
 // Substrate colours and node shapes follow logan-plasticome-figure/ssn/build_ssn.py.
-const SUB = {
+// The CATH forest draws its tips in the same colours, and reuses these for its key.
+export const SUB = {
   PET: "#275ca0",
   PE: "#e8559e",
   PA: "#40b6c5",
@@ -67,7 +68,7 @@ const SUB = {
   NR: "#959595",
   "Combi.": "#262626",
 }
-const SUBNAME = { NR: "Not reported", "Combi.": "Several plastics" }
+export const SUBNAME = { NR: "Not reported", "Combi.": "Several plastics" }
 const ORIGIN = { D: "Bacterial", h: "Eukaryotic", o: "Metagenomic" }
 const HALO = "#e8ddd1"
 const HALO_ON = "#d6c4b1"
@@ -608,7 +609,7 @@ export const ComponentMap = () => {
           {groups > 1
             ? `, drawn as ${groups} separate groups on the map (the map also requires 50% coverage)`
             : ""}
-          . <a href={`#comp=${c.c}`}>List them in the plasticome explorer →</a>
+          . <a href={`#comp=${c.c}`}>List them in the PETadex-PAZy explorer →</a>
         </>
       )
     }
@@ -628,7 +629,7 @@ export const ComponentMap = () => {
   const comp = focus?.kind === "comp"
   return (
     <Box ref={boxRef}>
-      <BoxTitle>The plasticome as a map of components</BoxTitle>
+      <BoxTitle>PETadex-PAZy as a map of components</BoxTitle>
       <Sub>
         Drag any component to move it around the map, or a domain's heading to
         move the whole domain.
@@ -725,7 +726,7 @@ export const ComponentMap = () => {
         ref={svg}
         viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
         role="img"
-        aria-label="Sequence similarity network of the 609 plasticome enzymes, grouped into sections by catalytic family. Nodes are coloured by substrate and shaped by origin; grey halos outline components."
+        aria-label="Sequence similarity network of the 609 PETadex-PAZy enzymes, grouped into sections by catalytic family. Nodes are coloured by substrate and shaped by origin; grey halos outline components."
         $drag={!!drag.current?.moved}
         onPointerDown={onDown}
         onPointerMove={onMove}
@@ -821,7 +822,7 @@ export const ComponentFlow = () => (
           <NodeN>{fmt(S.n_nodes)}</NodeN>
           <NodeT>Centroids</NodeT>
           <NodeD>
-            Plasticome clustered at 90% identity; one node per distinct sequence
+            PETadex-PAZy clustered at 90% identity; one node per distinct sequence
           </NodeD>
         </Node>
       </Lane>
@@ -857,7 +858,7 @@ export const ComponentFlow = () => (
       <Lane>
         <Node $out>
           <NodeN>{fmt(D.union.n)}</NodeN>
-          <NodeT>Plasticome, one row per enzyme</NodeT>
+          <NodeT>PETadex-PAZy, one row per enzyme</NodeT>
           <NodeD>Each enzyme takes the component of its centroid</NodeD>
         </Node>
       </Lane>
