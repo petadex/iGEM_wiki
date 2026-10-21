@@ -908,6 +908,4 @@ The model and everything it learns from are open on Hugging Face: the PlasticESM
 
 The part we most want others to reuse is the evaluation protocol, not the model. Split by connected homology components rather than at random. Standardise each fold's predictions before pooling them. Use jackknife intervals and permutation tests over components rather than a component bootstrap, which we found excludes zero far too often under the null. And require any learned representation to beat sequence length and composition. These rules are implemented in a small statistics module (`grouped_out_of_fold`, `jackknife_ci`, `permutation_p`) that applies unchanged to any enzyme family with activity labels. Under the conventional random split, we would have reported a correlation of 0.72 for a model that, evaluated correctly, does not yet beat sequence length.
 
-## References
-
 [^ref]

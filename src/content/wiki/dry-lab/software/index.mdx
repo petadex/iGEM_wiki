@@ -69,7 +69,6 @@ To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER
   alt="Overview of the LOBSTER algorithm: full-length PETase cores are split into fragment positions, and fragments with degenerate codons are designed at each position for combinatorial Golden Gate assembly into a full-length library"
   caption={<><strong>Figure 1.</strong> Overview of LOBSTER. Each PETase core is split into fragment positions, and fragments designed at each position, with degenerate codons, assemble combinatorially by Golden Gate into a full-length library that covers as many natural cores as possible.</>}
   width="40%"
-  expandable={false}
 />
 
 LOBSTER operates by isolating the PETase cores, identifying and selecting Golden Gate cut sites, then greedily adding cores to the solution using additional fragments and degenerate codons. Using this approach, the LOBSTER output designs reduce the purchased nucleotides by 55% to cover the LCC and IsPETase 90pid clusters. This expands our PETase activity validation search space across more clusters. Additional details on LOBSTER's implementation can be found on its own page.
@@ -160,6 +159,7 @@ Researchers often come to our database and ask a simple question.
 We can tell what it is by looking at the enzymes that are similar to it, found with a DIAMOND search [@buchfink2021diamond] over the entirety of the PETadex corpus. We've built this into a lightweight tool in the web-browser, no installs and less than a minute runtime.
 
 <ArchitectureFigure
+  title="Sharded DIAMOND search architecture"
   variant="simple"
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-architecture-simple.svg"
   alt="The sharded DIAMOND search, left to right. The petadex.net search page sends one sequence to an orchestrator, which replies with a job ID straight away and starts a Step Functions Map. The Map runs 32 workers at once, each taking one of the 32 shards of the database from S3 and searching it. Their hits go to an aggregator, which merges and ranks them and writes the stored result that the web page polls for."

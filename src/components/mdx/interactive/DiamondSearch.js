@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { withPrefix } from "gatsby"
 import styled, { keyframes } from "styled-components"
 import { useLinkTarget } from "../linkTarget.js"
+import { useFigureViewer, ViewerButton } from "../FigureViewer.js"
 
 /**
  * The sharded DIAMOND search's logo hero and the link card into its Methods
@@ -231,7 +232,9 @@ const jumpToSection = e => {
  * each component. `sectionsPath` is the page holding the sections: leave it
  * empty on the Methods page itself, set it to METHODS_PATH elsewhere.
  * `variant` picks the rendering: "full" is the portrait diagram on the
- * Methods page, "simple" the landscape one on the Software overview.
+ * Methods page, "simple" the landscape one on the Software overview. The
+ * hotspots take the image's clicks, so it opens into the figure viewer from
+ * its Expand chip alone.
  */
 export const ArchitectureFigure = ({
   src,
@@ -240,7 +243,10 @@ export const ArchitectureFigure = ({
   sectionsPath = "",
   width = "36rem",
   variant = "full",
+  title,
+  expandable,
 }) => {
+  const viewer = useFigureViewer(expandable)
   const resolved = src.startsWith("/") ? withPrefix(src) : src
   const base = sectionsPath ? withPrefix(sectionsPath) : ""
   const [active, setActive] = useState(null)
@@ -270,6 +276,9 @@ export const ArchitectureFigure = ({
           ))}
           {spot && <ArchPopover spot={spot} />}
         </ArchInner>
+        {viewer && (
+          <ViewerButton src={resolved} alt={alt} title={title} caption={caption} ground={ARCH_BG} />
+        )}
       </ArchMap>
       {caption && <figcaption>{caption}</figcaption>}
     </ArchWrap>
@@ -313,6 +322,7 @@ const ArchWrap = styled.figure`
 `
 
 const ArchMap = styled.div`
+  position: relative;
   padding: 3%;
   border-radius: 12px;
   background: ${ARCH_BG};

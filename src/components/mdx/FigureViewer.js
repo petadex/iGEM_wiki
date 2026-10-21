@@ -54,9 +54,10 @@ export const ViewableImage = ({ src, alt = "", title, caption, credit, className
 /**
  * The chip alone, for a figure whose image is already taken up by clicks of
  * its own (the dataset flowchart's step links). It sits in the top-right
- * corner of its nearest positioned ancestor.
+ * corner of its nearest positioned ancestor. `ground` is the window's
+ * background behind the image, for a figure drawn for a dark panel.
  */
-export const ViewerButton = ({ src, alt = "", title, caption, credit }) => {
+export const ViewerButton = ({ src, alt = "", title, caption, credit, ground }) => {
   const viewer = useViewerWindow()
   return (
     <>
@@ -70,7 +71,7 @@ export const ViewerButton = ({ src, alt = "", title, caption, credit }) => {
       >
         Expand ⤢
       </Chip>
-      <ViewerWindow viewer={viewer} src={src} alt={alt} title={title} caption={caption} credit={credit} />
+      <ViewerWindow viewer={viewer} src={src} alt={alt} title={title} caption={caption} credit={credit} ground={ground} />
     </>
   )
 }
@@ -103,7 +104,7 @@ const useViewerWindow = () => {
   return { open, show: () => setOpen(true), hide: () => setOpen(false), openerRef, closeRef }
 }
 
-const ViewerWindow = ({ viewer, src, alt, title, caption, credit }) =>
+const ViewerWindow = ({ viewer, src, alt, title, caption, credit, ground }) =>
   viewer.open &&
   createPortal(
     <>
@@ -115,7 +116,7 @@ const ViewerWindow = ({ viewer, src, alt, title, caption, credit }) =>
             Close <span aria-hidden="true">✕</span>
           </Close>
         </Bar>
-        <Stage onClick={viewer.hide}>
+        <Stage onClick={viewer.hide} style={ground ? { background: ground } : undefined}>
           <img src={src} alt={alt} />
         </Stage>
         {(caption || credit) && (
