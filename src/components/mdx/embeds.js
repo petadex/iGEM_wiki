@@ -225,7 +225,9 @@ export const InteractiveEmbed = ({ src, title, caption, dark = false, logical = 
         {open => (
           <ScaledFigure
             href={href}
-            title={title || "Interactive figure"}
+            /* A figure that carries its label in the caption still has to name
+               itself to a screen reader. */
+            title={title || caption || "Interactive figure"}
             dark={dark}
             logical={logical}
             open={open}
