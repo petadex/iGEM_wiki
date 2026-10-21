@@ -46,6 +46,7 @@ const PIECES = [
     team: "Dry Lab",
     to: "/dry-lab/overview/",
     color: "#f2c14e",
+    ink: "#7a5706",
     blurb:
       "Computational discovery, modeling, software, and technical specifications.",
     label: "Dry lab",
@@ -65,6 +66,7 @@ const PIECES = [
     team: "Hardware",
     to: "/hardware/",
     color: "#f08a4b",
+    ink: "#9b4109",
     blurb:
       "How the Hardware team supports practical enzyme testing for PET biorecycling.",
     label: "Hardware",
@@ -84,6 +86,7 @@ const PIECES = [
     team: "Human Practices",
     to: "/human-practices/",
     color: "#ef5a5f",
+    ink: "#bb0e13",
     blurb:
       "Stakeholder engagement, ethics, and how society shaped the PETase project.",
     label: "Human practices",
@@ -103,6 +106,7 @@ const PIECES = [
     team: "Outreach",
     to: "/beyond-the-bench/outreach/",
     color: "#f27ab8",
+    ink: "#b40d63",
     blurb:
       "Community outreach, events, and public engagement progress.",
     label: "Outreach",
@@ -122,6 +126,7 @@ const PIECES = [
     team: "Entrepreneurship",
     to: "/entrepreneurship/",
     color: "#a07cf2",
+    ink: "#672bef",
     blurb:
       "Entrepreneurial thinking, market context, and implementation considerations.",
     label: "Entrepreneurship",
@@ -141,6 +146,7 @@ const PIECES = [
     team: "Web",
     to: "/wiki/",
     color: "#62c883",
+    ink: "#23693a",
     blurb:
       "Design, content, accessibility, and deployment process for the iGEM Toronto 2026 wiki.",
     label: "Web",
@@ -160,6 +166,7 @@ const PIECES = [
     team: "Wet Lab",
     to: "/wet-lab/overview/",
     color: "#55aee9",
+    ink: "#106096",
     blurb:
       "How the Wet Lab converts computational PETase candidates into experimentally validated hits.",
     label: "Wet lab",
@@ -303,8 +310,18 @@ function pieceAt(masks, x, y) {
  * as `burst` rises. Once both are done: hover (or first tap on touch) pops a
  * piece and shows its subteam under the bottle; click (or second tap) opens
  * that subteam's page.
+ *
+ * `whisper` is the homepage's nudge about petamons hiding on other pages; it
+ * names the crabs on that page, so reuses elsewhere turn it off.
+ *
+ * `light` is for a pale background: the copy around the art is written for
+ * the homepage's dark scene, so this swaps in each subteam's darker ink and
+ * drops the shadow the white text needs.
  */
-const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
+const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(
+  { whisper = true, light = false },
+  ref,
+) {
   const [hover, setHover] = useState(null)
   /** Last pointer type, so a tap previews first and only a second tap navigates. */
   const pointerTypeRef = useRef("mouse")
@@ -657,10 +674,11 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
                 $show={ready}
                 $side={piece.labelAt.side}
                 $on={on}
+                $light={light}
                 style={{
                   left: `${((piece.labelAt.x - CROP.x) / CROP.w) * 100}%`,
                   top: `${((piece.labelAt.y - CROP.y) / CROP.h) * 100}%`,
-                  color: piece.color,
+                  color: light ? piece.ink : piece.color,
                 }}
                 onPointerEnter={event => {
                   if (event.pointerType === "mouse" && ready) setHover(piece.id)
@@ -688,7 +706,11 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
           })}
         {/* With labels, the hint steps aside while a description is open (the
             lower labels open down over where it sits). */}
-        <Under $show={ready && !(SUBTEAM_LABELS && activePiece)} aria-live="polite">
+        <Under
+          $show={ready && !(SUBTEAM_LABELS && activePiece)}
+          $light={light}
+          aria-live="polite"
+        >
           {activePiece && !SUBTEAM_LABELS ? (
             <Info>
               <InfoTeam style={{ color: activePiece.color }}>
@@ -702,7 +724,7 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
             </Info>
           ) : (
             <>
-              <Hint aria-hidden={!ready}>
+              <Hint aria-hidden={!ready} $light={light}>
                 <HintBang src={HINT_BANG_SRC} alt="" />
                 <span className="hover-copy">
                   Hover over a piece to meet its PETamon, then click to visit
@@ -714,7 +736,7 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
                 </span>
               </Hint>
               {/* A quiet nudge, a beat later: there's more to find. */}
-              <Whisper aria-hidden={!ready}>
+              <Whisper aria-hidden={!ready} $show={whisper}>
                 <span className="hover-copy">
                   psst… on each subteam's page, its PETamons are up to
                   something too. Hover over anything there that looks alive
@@ -813,7 +835,8 @@ const Under = styled.div`
   transform: translateX(-50%);
   font-family: var(--font-body);
   text-align: center;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow: ${({ $light }) =>
+    $light ? "none" : "0 1px 3px rgba(0, 0, 0, 0.6)"};
   opacity: ${({ $show }) => ($show ? 1 : 0)};
   transition: opacity ${({ $show }) => ($show ? "400ms ease 150ms" : "180ms ease")};
   pointer-events: none;
@@ -831,7 +854,7 @@ const Hint = styled.p`
   justify-content: center;
   gap: 1.2cqw;
   margin: 0;
-  color: #ff6b75;
+  color: ${({ $light }) => ($light ? "#8c3b56" : "#ff6b75")};
   font-size: max(${phoneSize(0.8)}, 2.5cqw);
   font-weight: 700;
   line-height: 1.3;
@@ -846,11 +869,14 @@ const Label = styled(Link)`
   position: absolute;
   z-index: 8;
   width: max-content;
-  max-width: 28cqw;
+  /* Wide enough to hold the name, or it spills to one side instead of
+     centring on its piece; hosts with a narrower bottle raise it. */
+  max-width: var(--bottle-label-max, 28cqw);
   transform: translate(-50%, ${({ $side }) => ($side === "above" ? "-100%" : "0")});
   text-align: center;
   text-decoration: none;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  text-shadow: ${({ $light }) =>
+    $light ? "none" : "0 1px 3px rgba(0, 0, 0, 0.55)"};
   opacity: ${({ $show }) => ($show ? 1 : 0)};
   transition: opacity 500ms ease 200ms;
   pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
@@ -860,7 +886,10 @@ const Label = styled(Link)`
 const LabelName = styled.span`
   display: block;
   font-family: var(--font-body);
-  font-size: max(${phoneSize(0.9)}, 3.4cqw);
+  /* The floor keeps the names readable once the art gets small. Hosts that
+     give the bottle less width than the homepage can lower it so the longer
+     names still fit beside the art. */
+  font-size: max(var(--bottle-name-min, ${phoneSize(0.9)}), 3.4cqw);
   font-weight: 700;
   line-height: 1.1;
   white-space: nowrap;
@@ -883,7 +912,7 @@ const LabelMore = styled.span`
 const LabelBlurb = styled.span`
   display: block;
   margin-top: 0.5cqw;
-  color: #fff;
+  color: var(--bottle-blurb, #fff);
   font-family: var(--font-body);
   font-size: max(${phoneSize(0.75)}, 1.9cqw);
   font-weight: 500;
@@ -940,6 +969,7 @@ const whisperIn = keyframes`
 
 /** Small and faint, fading in a few seconds after the hint. */
 const Whisper = styled.p`
+  display: ${({ $show }) => ($show === false ? "none" : "block")};
   margin: 0.9cqw auto 0;
   max-width: 64cqw;
   color: #fff;
