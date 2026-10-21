@@ -708,6 +708,12 @@ const HEX_FIELD_TOP_PCT = 70.6
 const HEX_FIELD_BELOW_ASPECT = "1 / 1.417"
 /** Hex art row (share of its height) where it turns fully opaque — below the reef. */
 const HEX_OPAQUE_FROM = 1202 / 3831
+/**
+ * Where the same art reads as the blue section. The fade is already the
+ * dark field before the fully opaque row, and the chute bottle was painting
+ * on that field. Row 1156 of the 3831-tall plate (alpha past ~160).
+ */
+const CHUTE_BLUE_EDGE = 1156 / 3831
 /** Scroll (share of vh) the view holds on the ending bottle while petamons burst. */
 const ENDING_HOLD_VH = 1.1
 /**
@@ -1907,6 +1913,7 @@ export function HomeScrollPrototype() {
   /** scrollY when ramp-2 bottle activates (first bottle fully exited). */
   const ramp2StartScrollYRef = useRef(null)
   const chuteBottleMountRef = useRef(null)
+  const chuteBottlePoseRef = useRef(null)
   const chuteBottleImgRef = useRef(null)
   const chuteBottleStage6Ref = useRef(false)
   const frontRootRef = useRef(null)
@@ -3323,11 +3330,31 @@ export function HomeScrollPrototype() {
         const chuteZ = overReef ? "12" : String(CHUTE_Z)
         chute.style.zIndex = chuteZ
         if (chute.parentElement) chute.parentElement.style.zIndex = chuteZ
-        chute.style.transform = `translate3d(-50%, -50%, 0) rotate(${pose.r}deg) scale(${pose.sx}, ${pose.sy})`
+        // Rotation stays on the inner pose so this box stays axis-aligned.
+        // The clip below is a horizontal cut in that box.
+        chute.style.transform = "translate3d(-50%, -50%, 0)"
+        chute.style.transformOrigin = "50% 50%"
+        const poseEl = chuteBottlePoseRef.current
+        if (poseEl) {
+          poseEl.style.transform = `rotate(${pose.r}deg) scale(${pose.sx}, ${pose.sy})`
+        }
         chute.style.opacity = show ? "1" : "0"
         chute.style.visibility = show ? "visible" : "hidden"
-        chute.style.transformOrigin = "50% 45%"
         chute.dataset.sunk = pathT >= 0.86 ? "1" : ""
+        // The reef lift (z 12) also puts the bottle over the hex field.
+        // The field's last fade is already the dark blue, so the cut is
+        // a little above the fully opaque row. Above that line the bottle
+        // still covers the axolotl. Below it, the bottle slides under.
+        const hex = hexOverlapRef.current
+        if (overReef && hex && hex.offsetHeight > 0) {
+          const edge =
+            hex.getBoundingClientRect().top +
+            CHUTE_BLUE_EDGE * hex.offsetHeight
+          const y = edge - chute.getBoundingClientRect().top
+          chute.style.clipPath = `polygon(-150% -300%, 250% -300%, 250% ${y}px, -150% ${y}px)`
+        } else {
+          chute.style.clipPath = ""
+        }
 
         const foam = section5FoamRef.current
         if (pathT < CHUTE_FOAM_BOB_RESET) {
@@ -4662,14 +4689,16 @@ export function HomeScrollPrototype() {
                 ))}
                 <Section5ChuteBottleLayer aria-hidden="true">
                   <ChuteBottleMount ref={chuteBottleMountRef}>
-                    <ChuteBottleIdle>
-                      <ChuteBottleImg
-                        ref={chuteBottleImgRef}
-                        src={BOTTLE_STAGES.section5}
-                        alt=""
-                      />
-                      <BottleBeefed />
-                    </ChuteBottleIdle>
+                    <ChuteBottlePose ref={chuteBottlePoseRef}>
+                      <ChuteBottleIdle>
+                        <ChuteBottleImg
+                          ref={chuteBottleImgRef}
+                          src={BOTTLE_STAGES.section5}
+                          alt=""
+                        />
+                        <BottleBeefed />
+                      </ChuteBottleIdle>
+                    </ChuteBottlePose>
                   </ChuteBottleMount>
                 </Section5ChuteBottleLayer>
                 {SECTION5_LAYERS.filter(layer => layer.id >= 7).map(layer => (
@@ -5381,6 +5410,12 @@ const Section5ChuteBottleLayer = styled.div`
 const ChuteBottleMount = styled(Section5AppsBottleMount)`
   z-index: ${CHUTE_Z};
   width: ${artPx(196)};
+`
+
+/** Spin and squash live here, so the mount can be clipped on a level line. */
+const ChuteBottlePose = styled.div`
+  width: 100%;
+  transform-origin: 50% 45%;
 `
 
 const Section5AppsBottleImg = styled.img`
