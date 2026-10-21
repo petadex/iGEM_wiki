@@ -8,9 +8,9 @@
  * make_landscapes.py), so the only work here is the three things the wiki needs
  * that the standalone version does not:
  *
- *   1. Its images are PNG and JPEG and sit a directory up; the wiki serves AVIF
- *      next to the page, which is what keeps the figure inside iGEM's 5 MB
- *      upload budget (see scripts/trim-pages-artifact.mjs).
+ *   1. Its images are PNG and JPEG and sit a directory up; the wiki serves them
+ *      as AVIF from static.igem.wiki, along with three.js, which keeps them out
+ *      of the repo and iGEM's 5 MB upload budget.
  *   2. While the stacked panels are showing, the figure steps through its views
  *      on the wheel and calls preventDefault. On its own page that is the right
  *      thing; inside the overview page's iframe it would swallow the page's
@@ -48,6 +48,17 @@ const DEFAULT_SOURCE = path.join(
 )
 const sourceRoot = path.resolve(process.argv[2] ?? DEFAULT_SOURCE)
 const destRoot = path.join(process.cwd(), "static/figures/dry-lab-landscape")
+
+// The images and three.js live on static.igem.wiki; only landscape.html stays
+// in the repo. New or changed files are staged in tmp/cdn-upload/ for upload.
+// The CDN caches for 24 h, so a changed file needs a new name (three.js is
+// named by revision for that reason).
+const CDN = "https://static.igem.wiki/teams/6187/wiki"
+const stageRoot = path.join(process.cwd(), "tmp/cdn-upload")
+const THREE = "drylab-page/interactives/three-r149-min.js"  // the uploader turns the inner "." into "-"
+const structurePath = (name) =>
+  `drylab-page/interactives/structure-${name.toLowerCase().replace(/_/g, "-")}.avif`
+const sitePath = (name) => `drylab-page/sites/${name.toLowerCase()}.avif`
 
 // The structures are line-art-like renders on transparency; the site photos are
 // drawn into a 204x80 box. Both ship at about 4x their drawn size, so they stay
@@ -116,9 +127,15 @@ if (CARD) {
 // a wide margin round it; a card has no labels to make room for, so it stands
 // closer, and lifted, since the stack hangs below the point the camera looks
 // at. Its marks are scaled for a figure several times the card's size, so at
-// card size the dots and dashes fall under a pixel and read as noise.
+// card size the dots and dashes fall under a pixel and read as noise. And it
+// turns faster: a turn every 160 s barely moves in a box that small.
 const CARD = location.hash === "#card";
-const CARD_ZOOM = 0.85, CARD_LIFT = 0.08, CARD_MARKS = 1.8;`,
+const CARD_ZOOM = 0.85, CARD_LIFT = 0.08, CARD_MARKS = 1.8, CARD_SPIN = 6;`,
+  ],
+  [
+    "card mode: a faster turn",
+    "    if (spinOn) { spin += SPIN_RATE * dt * spinScale(); dirty = true; }",
+    "    if (spinOn) { spin += SPIN_RATE * (CARD ? CARD_SPIN : 1) * dt * spinScale(); dirty = true; }   // wiki copy: CARD_SPIN",
   ],
   [
     "card mode: thicker marks",
@@ -179,13 +196,13 @@ async function readHtml() {
   const structures = new Set()
   html = html.replace(/"\.\.\/structures\/([A-Za-z0-9_]+)\.png"/g, (_, name) => {
     structures.add(name)
-    return `"structures/${name}.avif"`
+    return `"${CDN}/${structurePath(name)}"`
   })
 
   const sites = new Set()
   html = html.replace(/"sites\/([A-Za-z0-9_-]+)\.jpg"/g, (_, name) => {
     sites.add(name)
-    return `"sites/${name}.avif"`
+    return `"${CDN}/${sitePath(name)}"`
   })
 
   const hits = html.split(WHEEL_ANCHOR).length - 1
@@ -196,6 +213,11 @@ async function readHtml() {
     )
   }
   html = html.replace(WHEEL_ANCHOR, EMBED_GUARD)
+
+  if (!html.includes(`src="vendor/three.min.js"`)) {
+    throw new Error("three.min.js script tag not found; re-check scripts/sync-landscape-figure.mjs.")
+  }
+  html = html.replace(`src="vendor/three.min.js"`, `src="${CDN}/${THREE}"`)
 
   return { html, structures: [...structures].sort(), sites: [...sites].sort() }
 }
@@ -208,47 +230,49 @@ async function convert(from, to, transform) {
 
 const { html, structures, sites } = await readHtml()
 
-await fs.mkdir(path.join(destRoot, "structures"), { recursive: true })
-await fs.mkdir(path.join(destRoot, "sites"), { recursive: true })
-await fs.mkdir(path.join(destRoot, "vendor"), { recursive: true })
+async function isLive(cdnPath) {
+  const res = await fetch(`${CDN}/${cdnPath}`, { method: "HEAD" })
+  return res.status === 200
+}
 
 await fs.writeFile(path.join(destRoot, "landscape.html"), html)
-await fs.copyFile(
-  path.join(sourceRoot, "web/vendor/three.min.js"),
-  path.join(destRoot, "vendor/three.min.js")
-)
 
-let assetBytes = 0
+// Stage only what is not on the CDN yet.
+const staged = []
+const stage = async (cdnPath, write) => {
+  if (await isLive(cdnPath)) return
+  const dest = path.join(stageRoot, cdnPath)
+  await fs.mkdir(path.dirname(dest), { recursive: true })
+  await write(dest)
+  staged.push(cdnPath)
+}
+
+await stage(THREE, (dest) => fs.copyFile(path.join(sourceRoot, "web/vendor/three.min.js"), dest))
 for (const name of structures) {
-  assetBytes += await convert(
-    path.join(sourceRoot, `structures/${name}.png`),
-    path.join(destRoot, `structures/${name}.avif`),
-    (img) => img.resize({ width: STRUCTURE_WIDTH, withoutEnlargement: true }).avif(STRUCTURE_AVIF)
+  await stage(structurePath(name), (dest) =>
+    convert(
+      path.join(sourceRoot, `structures/${name}.png`),
+      dest,
+      (img) => img.resize({ width: STRUCTURE_WIDTH, withoutEnlargement: true }).avif(STRUCTURE_AVIF)
+    )
   )
 }
 for (const name of sites) {
-  assetBytes += await convert(
-    path.join(sourceRoot, `web/sites/${name}.jpg`),
-    path.join(destRoot, `sites/${name}.avif`),
-    (img) => img.resize({ width: SITE_WIDTH, withoutEnlargement: true }).avif(SITE_AVIF)
+  await stage(sitePath(name), (dest) =>
+    convert(
+      path.join(sourceRoot, `web/sites/${name}.jpg`),
+      dest,
+      (img) => img.resize({ width: SITE_WIDTH, withoutEnlargement: true }).avif(SITE_AVIF)
+    )
   )
-}
-
-// Anything the previous copy left behind that this one no longer references.
-for (const [dir, keep, ext] of [
-  ["structures", structures, ".avif"],
-  ["sites", sites, ".avif"],
-]) {
-  for (const entry of await fs.readdir(path.join(destRoot, dir))) {
-    if (keep.includes(path.basename(entry, ext))) continue
-    await fs.rm(path.join(destRoot, dir, entry))
-    console.log(`Removed unreferenced ${dir}/${entry}`)
-  }
 }
 
 const kb = (bytes) => `${(bytes / 1024).toFixed(0)} kB`
 console.log(
   `Story panel only. landscape.html ${kb(Buffer.byteLength(html))}, ` +
-  `${structures.length} structures + ${sites.length} site photos ${kb(assetBytes)}, ` +
-  `three.min.js ${kb((await fs.stat(path.join(destRoot, "vendor/three.min.js"))).size)}`
+  `${structures.length} structures + ${sites.length} site photos on the CDN.`
 )
+if (staged.length) {
+  console.log(`\nStaged ${staged.length} new files in tmp/cdn-upload/; upload each into its folder:`)
+  for (const cdnPath of staged) console.log(`  ${cdnPath}`)
+}

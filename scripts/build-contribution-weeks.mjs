@@ -263,7 +263,7 @@ const content =
 if (flags.check) {
   const current = existsSync(OUTPUT) ? readFileSync(OUTPUT, "utf8") : ""
   if (current !== content) {
-    console.error(`${OUTPUT} is out of date. Run the build script and commit the result.`)
+    console.error(`${OUTPUT} is out of date. Run npm run build:calendar.`)
     process.exit(1)
   }
   console.log("Contribution calendar data is up to date.")

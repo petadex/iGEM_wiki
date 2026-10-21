@@ -8,7 +8,6 @@ description: "Software tools and workflows built for computational PETase discov
 owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
-hideHeaderSub: true
 ---
 
 {/*
@@ -203,12 +202,10 @@ Check out the demo below to see how this looks on two reference enzymes, and see
   5.6.1, the version that frontend runs. Mol* is not bundled (it was ~0.9 MB
   of the 5 MB iGEM archive): its prebuilt viewer is served from
   static.igem.wiki/.../drylab-page/figures/ and loaded with a script tag on
-  mount, so it only reaches a reader who opens this layer. The structures are served from static/figures/record-card/*.pdb
-  (~95 KB each: backbone plus the triad's side chains, no hydrogens), which
-  the build script writes.
-
-  BEFORE PUBLISHING, upload those two .pdb files with the other figures and
-  repoint StructureViewer's src, the way the DIAMOND figures are handled.
+  mount, so it only reaches a reader who opens this layer. The structures are served from
+  static.igem.wiki/.../drylab-page/interactives/record-card-*.pdb (~95 KB
+  each: backbone plus the triad's side chains, no hydrogens), which the build
+  script stages for upload.
 
   Records: IsPETase (ORF 1, WP_054022242.1) and LCC (ORF 33, G9BY57.1), the
   two literature controls LOBSTER was run on (igem-toronto issue 109). Seven

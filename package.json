@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "predevelop": "npm run build:calendar",
+    "prebuild": "npm run build:calendar",
+    "prebuild:gatsby": "npm run build:calendar",
     "prebuild:igem": "npm run build:calendar",
     "develop": "node scripts/build-hardware-code.js && node scripts/run-develop.cjs",
     "build": "node scripts/build-hardware-code.js && npm run validate:content && gatsby build",

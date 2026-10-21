@@ -42,6 +42,17 @@ import {
   PlasticomeFlow,
   PlasticomeStats,
 } from "./interactive/PlasticomeCuration.js"
+import {
+  CathFlow,
+  CathFolds,
+  CathForest,
+  CathStats,
+  CathStructures,
+  MerizoDomainCounts,
+  OverlapExamples,
+  RouteCoverage,
+  TedEvalueHistogram,
+} from "./interactive/CathAssignment.js"
 import { AntibioticSelectionAnimation, GfpBiosensorAnimation } from "./interactive/CopperReleaseAnimation.js"
 import Dropdown, { CodeDropdown } from "../Dropdown.js";
 import { embedComponents } from "./embeds.js"
@@ -228,6 +239,15 @@ export const mdxComponents = {
   PlasticomeExplorer,
   PlasticomeFlow,
   EricksonSequences,
+  CathForest,
+  CathStructures,
+  CathStats,
+  CathFlow,
+  MerizoDomainCounts,
+  TedEvalueHistogram,
+  OverlapExamples,
+  RouteCoverage,
+  CathFolds,
   AntibioticSelectionAnimation,
   GfpBiosensorAnimation,
   CodeDropdown,
