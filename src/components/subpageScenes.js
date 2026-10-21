@@ -95,7 +95,6 @@ const DRY_LAB_CACTUS = {
 
 export const DRY_LAB_SCENE = {
   header: "Dry Lab",
-  headerSub: "Building a computational framework to identify, characterize, and design enzymes that are optimized for specific metadata criteria.",
   assetBase: "https://static.igem.wiki/teams/6187/wiki/drylab-page/",
   plate: [918, 4000],
   /** Shown behind the art while it loads. */

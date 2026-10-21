@@ -1,6 +1,47 @@
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import DATA from "../../../data/plasticomeCuration.json"
+import { COMPONENTS, DomainCalls, FOLD_GROUPS, cathOf, groupOf } from "./plasticomeCath.js"
+import {
+  Arrow,
+  Box,
+  LinkButton,
+  BoxTitle,
+  ChartScroll,
+  FRAME,
+  Flow,
+  Head,
+  INK,
+  INK_SOFT,
+  LINE,
+  Lane,
+  LegendRow,
+  MUTED,
+  MiniBar,
+  Mono,
+  Node,
+  NodeD,
+  NodeN,
+  NodeT,
+  PANEL,
+  Picker,
+  SUNK,
+  Stat,
+  StatLabel,
+  StatValue,
+  Stats,
+  Sub,
+  Swatch,
+  TableToggle,
+  Trail,
+  TrailStep,
+  TrailTitle,
+  Tip,
+  ext,
+  fieldStyle,
+  fmt,
+  tipTransform,
+} from "./plasticomeFigure.js"
 
 /**
  * Plasticome Reference Curation, from the Model page's Dataset Generation
@@ -8,8 +49,8 @@ import DATA from "../../../data/plasticomeCuration.json"
  *
  * Ported from the draft in plasticome/wiki-reference-curation/ (template.html):
  *   PlasticomeStats     the three numbers the overview leads with
- *   PlasticomeCoverage  records per plastic, with a menu for superkingdom and
- *                       for PDB structure and metagenomic origin
+ *   PlasticomeCoverage  a donut of enzymes per plastic, with a menu for
+ *                       superkingdom and for PDB structure
  *   PlasticomeExplorer  every record, with the decisions behind it
  *   PlasticomeFlow      the two PAZy snapshots, merged (Methods)
  *   EricksonSequences   the 21 sequences reset to the paper (Methods)
@@ -25,16 +66,7 @@ import DATA from "../../../data/plasticomeCuration.json"
  * sequence came from the paper (pazy-240826) or the PAZy record (pazy-260701).
  */
 
-const PANEL = "#f5efe8"
-const SUNK = "#e5d9cd"
-const LINE = "#d3c4b3"
-const FRAME = "#c8b388"
-const INK = "#5f3928"
-const INK_SOFT = "#805340"
-const MUTED = "#8a6c57"
-
 const U = DATA.union
-const fmt = (n) => n.toLocaleString("en-US")
 
 /** Where each record came from, in the order the bars stack. */
 const SOURCES = [
@@ -44,7 +76,27 @@ const SOURCES = [
 ]
 const SOURCE = Object.fromEntries(SOURCES.map((s) => [s.key, s]))
 
-/** Full names, for the bar labels' tooltips. */
+/**
+ * Each plastic's entry on petadex.net/substrates/, by its id there. That page
+ * keeps the chosen polymer in state, so the hash only lands on the page until
+ * it learns to read one. PHA has no entry.
+ */
+const PETADEX_SUBSTRATE = {
+  PET: "pet",
+  PA: "pa_group",
+  PLA: "pla",
+  PUR: "pur",
+  PBAT: "pbat",
+  NR: "nr",
+  PC: "pc",
+  PBS: "pbs",
+  PEF: "pef",
+  PE: "pe",
+}
+const substrateHref = (code) =>
+  PETADEX_SUBSTRATE[code] && `https://petadex.net/substrates/#${PETADEX_SUBSTRATE[code]}`
+
+/** Full names, for the table and the tooltips. */
 const PLASTIC_FULL = {
   PET: "Polyethylene terephthalate",
   PA: "Polyamide (nylon)",
@@ -114,63 +166,135 @@ export const PlasticomeStats = () => (
 
 /* ---------- coverage ---------- */
 
+const yesNo = (key, yes, no, test) => [
+  { key, label: yes, rows: U.filter(test) },
+  { key: "None", label: no, rows: U.filter((r) => !test(r)) },
+]
+
 const VIEWS = {
   plastic: {
-    label: "Plastic",
-    sub: "Enzymes per plastic type. An enzyme reported on several plastics counts once for each.",
-    caption:
-      "PET dominates, reflecting where published work has concentrated. Colour shows which PAZy snapshot each enzyme came from.",
+    label: "Plastic type",
+    title: ["Plasticome", "Plastics"],
+    sub: ["Inner ring: plastic type.", "Outer ring: which PAZy snapshot each enzyme came from."],
+    head: "Plastic",
     rows: () =>
-      PLASTICS.map((p) => ({ label: PLASTIC_NAME[p.code], title: PLASTIC_FULL[p.code], rows: p.rows })),
-    // Records repeat across plastics, so the longest bar sets the scale.
-    scale: "max",
+      PLASTICS.map((p) => ({
+        key: p.code,
+        label: PLASTIC_NAME[p.code],
+        full: PLASTIC_FULL[p.code],
+        href: substrateHref(p.code),
+        rows: p.rows,
+      })),
   },
   superkingdom: {
     label: "Superkingdom",
-    sub: "Enzymes per superkingdom of the source organism.",
+    title: ["Enzyme", "Origins"],
+    sub: ["Inner ring: superkingdom of the source organism.", "Outer ring: PAZy snapshot."],
     caption:
       "Most known plastic-degrading enzymes come from bacteria. Unassigned enzymes have no organism recorded in either snapshot.",
+    head: "Superkingdom",
     rows: () =>
       [
         ["Bacteria", "Bacteria"],
         ["Eukaryota", "Eukaryota"],
         ["Archaea", "Archaea"],
         ["NA", "Unassigned"],
-      ].map(([key, label]) => ({ label, rows: U.filter((r) => r.sk === key) })),
-    scale: "total",
+      ].map(([key, label]) => ({
+        key: label,
+        label,
+        rows: U.filter((r) => r.sk === key),
+      })),
   },
-  evidence: {
-    label: "PDB structure and metagenomic origin",
-    sub: `Enzymes with an experimental structure in the PDB, and enzymes found by metagenomics. Bars are out of all ${fmt(U.length)}.`,
+  structure: {
+    label: "Experimental structure",
+    title: ["Solved", "structures"],
+    sub: [
+      "Inner ring: whether the enzyme has an experimental structure in the PDB.",
+      "Outer ring: PAZy snapshot.",
+    ],
     caption:
       "Every plasticome enzyme also has a predicted ESMFold2 structure; this view counts only experimental structures.",
-    rows: () => [
-      { label: "PDB structure", rows: U.filter((r) => has(r.pdb)) },
-      { label: "Metagenomic", rows: U.filter((r) => r.meta) },
-    ],
-    scale: "total",
+    head: "Structure",
+    rows: () => yesNo("PDB", "In the PDB", "No experimental structure", (r) => has(r.pdb)),
   },
+}
+
+/** Donut geometry, in viewBox units: inner ring is the category, outer ring its sources. */
+const C = 170
+const IN0 = 92
+const IN1 = 128
+const OUT0 = 131
+const OUT1 = 156
+/** How far a hovered slice slides out from the centre. */
+const POP = 7
+
+const arcPath = (r0, r1, a0, a1) => {
+  const p = (r, a) => `${(C + r * Math.cos(a)).toFixed(2)},${(C + r * Math.sin(a)).toFixed(2)}`
+  if (a1 - a0 >= 2 * Math.PI - 1e-6) a1 = a0 + 2 * Math.PI - 1e-4
+  const large = a1 - a0 > Math.PI ? 1 : 0
+  return `M${p(r1, a0)}A${r1},${r1} 0 ${large} 1 ${p(r1, a1)}L${p(r0, a1)}A${r0},${r0} 0 ${large} 0 ${p(r0, a0)}Z`
 }
 
 export const PlasticomeCoverage = () => {
   const [view, setView] = useState("plastic")
+  const [active, setActive] = useState(null)
+  const [source, setSource] = useState(null)
   const [tip, setTip] = useState(null)
   const spec = VIEWS[view]
-  const rows = useMemo(
-    () => spec.rows().map((r) => ({ ...r, parts: countBySource(r.rows), n: r.rows.length })),
-    [spec]
-  )
-  const max = spec.scale === "total" ? U.length : Math.max(...rows.map((r) => r.n))
 
-  const showTip = (e, html) => setTip({ x: e.clientX, y: e.clientY, html })
+  const slices = useMemo(() => {
+    const rows = spec.rows().map((r) => ({ ...r, parts: countBySource(r.rows), n: r.rows.length }))
+    const total = rows.reduce((a, r) => a + r.n, 0)
+    let a = -Math.PI / 2
+    return rows.map((r) => {
+      const a0 = a
+      const a1 = a + (2 * Math.PI * r.n) / total
+      a = a1
+      let b = a0
+      const outer = r.parts
+        .filter((p) => p.n)
+        .map((p) => {
+          const b0 = b
+          b += ((a1 - a0) * p.n) / r.n
+          return { ...p, d: arcPath(OUT0, OUT1, b0, b) }
+        })
+      const mid = (a0 + a1) / 2
+      const rr = (IN0 + IN1) / 2
+      const showLabel = a1 - a0 > 0.8 || (a1 - a0 > 0.2 && r.key.length * 7 <= IN1 - IN0)
+      return {
+        ...r,
+        inner: arcPath(IN0, IN1, a0, a1),
+        outer,
+        labelAt: showLabel ? [C + rr * Math.cos(mid), C + rr * Math.sin(mid) + 4] : null,
+        pop: `translate(${(POP * Math.cos(mid)).toFixed(2)}px, ${(POP * Math.sin(mid)).toFixed(2)}px)`,
+      }
+    })
+  }, [spec])
+
+  const clear = () => {
+    setActive(null)
+    setSource(null)
+    setTip(null)
+  }
+  const point = (i, key) => (e) => {
+    setActive(i)
+    setSource(key)
+    setTip({ x: e.clientX, y: e.clientY, slice: slices[i], source: key })
+  }
+  const changeView = (e) => {
+    clear()
+    setView(e.target.value)
+  }
+  // First baseline, so the title's lines sit centred in the hole.
+  const y0 = C - (spec.title.length - 1) * 11 + 7
 
   return (
     <Box>
       <Head>
-        <BoxTitle>Plastics the plasticome acts on</BoxTitle>
+        <BoxTitle>What is the Plasticome?</BoxTitle>
         <Picker>
           <span>Show enzymes by</span>
-          <select value={view} onChange={(e) => setView(e.target.value)}>
+          <select value={view} onChange={changeView}>
             {Object.entries(VIEWS).map(([key, v]) => (
               <option key={key} value={key}>
                 {v.label}
@@ -179,56 +303,134 @@ export const PlasticomeCoverage = () => {
           </select>
         </Picker>
       </Head>
-      <Sub>{spec.sub}</Sub>
+      <Sub>
+        {spec.sub.map((line, i) => {
+          // "Inner ring: plastic type." -> bold "Inner ring:", then the rest.
+          const [ring, ...rest] = line.split(": ")
+          return (
+            <React.Fragment key={ring}>
+              {i > 0 && <br />}
+              <b>{ring}:</b> {rest.join(": ")}
+            </React.Fragment>
+          )
+        })}
+      </Sub>
       <Legend />
-      <Bars onPointerLeave={() => setTip(null)}>
-        {rows.map((row) => (
-          <BarRow
-            key={row.label}
-            aria-label={`${row.label}: ${fmt(row.n)} records, ${row.parts
-              .map((p) => `${fmt(p.n)} ${p.label}`)
+      <DonutWrap>
+        <Donut $dim={active !== null} $source={source}>
+          <svg
+            viewBox="0 0 340 340"
+            role="img"
+            aria-label={`${spec.title.join(" ")}: ${slices
+              .map((s) => `${s.label} ${fmt(s.n)}`)
               .join(", ")}`}
           >
-            <BarLabel title={row.title}>{row.label}</BarLabel>
-            <BarTrack aria-hidden="true">
-              {row.parts
-                .filter((p) => p.n)
-                .map((p) => (
-                  <Segment
+            {slices.map((s, i) => (
+              <Slice
+                key={s.key}
+                $hl={active === i}
+                style={active === i ? { transform: s.pop } : undefined}
+                onPointerEnter={() => setActive(i)}
+                onPointerMove={point(i, null)}
+                onPointerLeave={clear}
+              >
+                <path className="inner" d={s.inner} />
+                {s.outer.map((p) => (
+                  <path
                     key={p.key}
-                    style={{ width: `${(100 * p.n) / max}%`, background: p.color }}
-                    onPointerMove={(e) =>
-                      showTip(e, {
-                        title: row.label,
-                        line: `${p.label}: ${fmt(p.n)} of ${fmt(row.n)}`,
-                      })
-                    }
+                    d={p.d}
+                    fill={p.color}
+                    data-src={p.key}
+                    onPointerMove={(e) => {
+                      e.stopPropagation()
+                      point(i, p.key)(e)
+                    }}
                   />
                 ))}
-            </BarTrack>
-            <BarValue>{fmt(row.n)}</BarValue>
-          </BarRow>
-        ))}
-      </Bars>
-      <Sub>{spec.caption} Hover a bar segment for counts.</Sub>
+                {s.labelAt && (
+                  <text x={s.labelAt[0].toFixed(1)} y={s.labelAt[1].toFixed(1)} textAnchor="middle">
+                    {s.key}
+                  </text>
+                )}
+              </Slice>
+            ))}
+            <text className="title" textAnchor="middle">
+              {spec.title.map((line, i) => (
+                <tspan key={line} x={C} y={y0 + i * 22}>
+                  {line}
+                </tspan>
+              ))}
+            </text>
+          </svg>
+        </Donut>
+        <TableToggle>
+          <summary>Show the table</summary>
+          <DonutTable>
+            <thead>
+              <tr>
+                <th>{spec.head}</th>
+                <th className="num">Enzymes</th>
+                <th>By source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {slices.map((s, i) => (
+                <DonutRow
+                  key={s.key}
+                  $hl={active === i}
+                  onPointerEnter={() => setActive(i)}
+                  onPointerLeave={() => setActive(null)}
+                >
+                  <td>
+                    {s.href ? ext(s.href, s.label) : s.label}
+                    {s.full && s.full !== s.label && <small>{s.full}</small>}
+                  </td>
+                  <td className="num">{fmt(s.n)}</td>
+                  <td>
+                    <SourceBar onPointerLeave={clear}>
+                      {s.parts
+                        .filter((p) => p.n)
+                        .map((p) => (
+                          <SourceSegment
+                            key={p.key}
+                            type="button"
+                            $on={source === null || source === p.key || active !== i}
+                            style={{ flex: p.n, background: p.color }}
+                            aria-label={`${s.label}, ${p.label}: ${fmt(p.n)} of ${fmt(s.n)}`}
+                            onPointerMove={point(i, p.key)}
+                            onFocus={(e) => {
+                              const box = e.currentTarget.getBoundingClientRect()
+                              point(i, p.key)({ clientX: box.left, clientY: box.bottom })
+                            }}
+                            onBlur={clear}
+                          />
+                        ))}
+                    </SourceBar>
+                  </td>
+                </DonutRow>
+              ))}
+            </tbody>
+          </DonutTable>
+        </TableToggle>
+      </DonutWrap>
+      {spec.caption && <Sub>{spec.caption}</Sub>}
       {tip && (
         <Tip style={{ transform: tipTransform(tip) }}>
-          <b>{tip.html.title}</b>
-          <span>{tip.html.line}</span>
+          <b>
+            {tip.slice.full && tip.slice.full !== tip.slice.label
+              ? `${tip.slice.label} (${tip.slice.full})`
+              : tip.slice.label}
+            : {fmt(tip.slice.n)}
+          </b>
+          {tip.slice.parts.map((p) => (
+            <span key={p.key} style={tip.source === p.key ? { fontWeight: 700 } : undefined}>
+              {p.label}: {fmt(p.n)}
+            </span>
+          ))}
         </Tip>
       )}
     </Box>
   )
-}
-
-/** Below and right of the pointer, flipped near the viewport's edges. */
-const tipTransform = ({ x, y }) => {
-  const pad = 14
-  const flipX = x + 290 > window.innerWidth
-  const flipY = y + 80 > window.innerHeight
-  return `translate(${flipX ? `calc(${x - pad}px - 100%)` : `${x + pad}px`}, ${
-    flipY ? `calc(${y - pad}px - 100%)` : `${y + pad}px`
-  })`
 }
 
 const Legend = () => (
@@ -244,22 +446,50 @@ const Legend = () => (
 
 /* ---------- explorer ---------- */
 
+/** Each example also picks the card tab that tells its story. */
 const EXAMPLES = [
-  ["IsPETase", (r) => r.name === "ISPETase"],
-  ["Cut190 (two records)", (r) => r.name === "Cut190"],
-  ["An Erickson enzyme", (r) => ERICKSON.has(r.name) && r.seqsrc.startsWith("Taken from the paper")],
-  ["A hand-recovered sequence", (r) => r.seqnote && /primers/i.test(r.seqnote)],
-  ["Indirect activity", (r) => r.act === "Indirect"],
+  ["IsPETase", (r) => r.name === "ISPETase", "curation"],
+  ["Cut190 (two records)", (r) => r.name === "Cut190", "curation"],
+  [
+    "An Erickson enzyme",
+    (r) => ERICKSON.has(r.name) && r.seqsrc.startsWith("Taken from the paper"),
+    "curation",
+  ],
+  ["A hand-recovered sequence", (r) => r.seqnote && /primers/i.test(r.seqnote), "curation"],
+  ["Indirect activity", (r) => r.act === "Indirect", "curation"],
+  ["An inserted domain", (r) => r.id === 52, "domains"],
+  ["Not in CATH (Lcp)", (r) => cathOf(r).comp === "C024", "domains"],
+  ["Old label corrected", (r) => [78, 65, 66, 68, 574].includes(r.id), "domains"],
+  ["Routes disagree", (r) => cathOf(r).agree === "conflict", "domains"],
 ]
 
 const LIST_LIMIT = 300
+
+/** The text a search matches: identifiers, organism, and the CATH and Pfam calls. */
+const haystack = (r) => {
+  const c = cathOf(r)
+  return [r.name, r.acc, r.org, `pl${r.id}`, r.pdb, r.uni, c.cat, c.acc_cath, c.Cn, c.Ca]
+    .join(" ")
+    .toLowerCase()
+}
+
+/**
+ * Links of the form #fold=g00 or #comp=C001, from the CATH forest's fold
+ * buttons or a record card, open the explorer filtered to that set.
+ */
+const HASH_FILTER = /^#(fold|comp)=(g\d+|C\d+)$/
 
 export const PlasticomeExplorer = () => {
   const [query, setQuery] = useState("")
   const [source, setSource] = useState("")
   const [plastic, setPlastic] = useState("")
+  const [fold, setFold] = useState("")
+  const [comp, setComp] = useState("")
   const [example, setExample] = useState(null)
   const [selected, setSelected] = useState(U[0].id)
+  const [tab, setTab] = useState("curation")
+  const [open, setOpen] = useState(false)
+  const boxRef = useRef(null)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -269,9 +499,11 @@ export const PlasticomeExplorer = () => {
         (!test || test(r)) &&
         (!source || r.src === source) &&
         (!plastic || plasticsOf(r).includes(plastic)) &&
-        (!q || [r.name, r.acc, r.org, `pl${r.id}`, r.pdb, r.uni].join(" ").toLowerCase().includes(q))
+        (!fold || groupOf(r)?.g === fold) &&
+        (!comp || cathOf(r).comp === comp) &&
+        (!q || haystack(r).includes(q))
     )
-  }, [query, source, plastic, example])
+  }, [query, source, plastic, fold, comp, example])
 
   const current = rows.find((r) => r.id === selected) ?? rows[0]
 
@@ -279,10 +511,23 @@ export const PlasticomeExplorer = () => {
     setQuery("")
     setSource("")
     setPlastic("")
+    setFold("")
+    setComp("")
+  }
+  /** Change one filter; any example chip gives way to it. */
+  const filter = (set) => (e) => {
+    setExample(null)
+    set(e.target.value)
   }
   const pickExample = (i) => {
+    // A second click on the pressed chip turns it off and shows every record again.
+    if (example === i) {
+      setExample(null)
+      return
+    }
     clearFilters()
     setExample(i)
+    setTab(EXAMPLES[i][2])
     const hit = U.find(EXAMPLES[i][1])
     if (hit) setSelected(hit.id)
   }
@@ -291,105 +536,135 @@ export const PlasticomeExplorer = () => {
     setExample(null)
     setSelected(id)
   }
+  const showComponent = (key) => {
+    clearFilters()
+    setExample(null)
+    setComp(key)
+  }
+
+  useEffect(() => {
+    const fromHash = () => {
+      const m = window.location.hash.match(HASH_FILTER)
+      if (!m) return
+      setQuery("")
+      setSource("")
+      setPlastic("")
+      setExample(null)
+      setFold(m[1] === "fold" ? m[2] : "")
+      setComp(m[1] === "comp" ? m[2] : "")
+      setOpen(true)
+      boxRef.current?.scrollIntoView({ block: "start" })
+    }
+    fromHash()
+    window.addEventListener("hashchange", fromHash)
+    return () => window.removeEventListener("hashchange", fromHash)
+  }, [])
 
   return (
-    <Box>
+    <Box ref={boxRef} id="plasticome-explorer">
       <BoxTitle>Explore the plasticome</BoxTitle>
       <Sub>
-        Every one of the {fmt(U.length)} enzymes, with the trail of decisions behind it. Pick an
-        example or search by name, accession or organism.
+        Every one of the {fmt(U.length)} enzymes, with the trail of curation decisions behind it and
+        its domain calls from CATH Assignment. Pick an example or search by name, accession,
+        organism, CATH code or Pfam family.
       </Sub>
-      <Explorer>
-        <div>
-          <Controls>
-            <input
-              type="search"
-              placeholder="Search name, accession, organism"
-              aria-label="Search records"
-              value={query}
-              onChange={(e) => {
-                setExample(null)
-                setQuery(e.target.value)
-              }}
-            />
-            <select
-              aria-label="Source"
-              value={source}
-              onChange={(e) => {
-                setExample(null)
-                setSource(e.target.value)
-              }}
-            >
-              <option value="">All sources</option>
-              {SOURCES.map((s) => (
-                <option key={s.key} value={s.key}>
-                  {s.label}
-                </option>
+      <TableToggle open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+        <summary>Open the explorer</summary>
+        <Explorer>
+          <div>
+            <Controls>
+              <input
+                type="search"
+                placeholder="Search name, accession, organism, CATH, Pfam"
+                aria-label="Search records"
+                value={query}
+                onChange={filter(setQuery)}
+              />
+              <select aria-label="Source" value={source} onChange={filter(setSource)}>
+                <option value="">All sources</option>
+                {SOURCES.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              <select aria-label="Plastic" value={plastic} onChange={filter(setPlastic)}>
+                <option value="">All plastics</option>
+                {PLASTICS.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {PLASTIC_NAME[p.code]}
+                  </option>
+                ))}
+              </select>
+              <select aria-label="Fold group" value={fold} onChange={filter(setFold)}>
+                <option value="">All fold groups</option>
+                {FOLD_GROUPS.map((g) => (
+                  <option key={g.g} value={g.g}>
+                    {g.fold}
+                  </option>
+                ))}
+              </select>
+              <select aria-label="Component" value={comp} onChange={filter(setComp)}>
+                <option value="">All components</option>
+                {COMPONENTS.map((c) => (
+                  <option key={c.key} value={c.key}>
+                    {c.key} · {c.dom} ({c.n})
+                  </option>
+                ))}
+              </select>
+            </Controls>
+            <Chips>
+              {EXAMPLES.map(([label], i) => (
+                <Chip
+                  key={label}
+                  type="button"
+                  aria-pressed={example === i}
+                  onClick={() => pickExample(i)}
+                >
+                  {label}
+                </Chip>
               ))}
-            </select>
-            <select
-              aria-label="Plastic"
-              value={plastic}
-              onChange={(e) => {
-                setExample(null)
-                setPlastic(e.target.value)
-              }}
-            >
-              <option value="">All plastics</option>
-              {PLASTICS.map((p) => (
-                <option key={p.code} value={p.code}>
-                  {PLASTIC_NAME[p.code]}
-                </option>
+            </Chips>
+            <List role="listbox" aria-label="Records">
+              {rows.slice(0, LIST_LIMIT).map((r) => (
+                <ListItem
+                  key={r.id}
+                  type="button"
+                  role="option"
+                  aria-selected={current?.id === r.id}
+                  onClick={() => setSelected(r.id)}
+                >
+                  <Mono>PL{r.id}</Mono>
+                  <ItemName>{r.name}</ItemName>
+                  <SourceTag $color={SOURCE[r.src].color}>{SOURCE[r.src].label}</SourceTag>
+                </ListItem>
               ))}
-            </select>
-          </Controls>
-          <Chips>
-            {EXAMPLES.map(([label], i) => (
-              <Chip
-                key={label}
-                type="button"
-                aria-pressed={example === i}
-                onClick={() => pickExample(i)}
-              >
-                {label}
-              </Chip>
-            ))}
-          </Chips>
-          <List role="listbox" aria-label="Records">
-            {rows.slice(0, LIST_LIMIT).map((r) => (
-              <ListItem
-                key={r.id}
-                type="button"
-                role="option"
-                aria-selected={current?.id === r.id}
-                onClick={() => setSelected(r.id)}
-              >
-                <Mono>PL{r.id}</Mono>
-                <ItemName>{r.name}</ItemName>
-                <SourceTag $color={SOURCE[r.src].color}>{SOURCE[r.src].label}</SourceTag>
-              </ListItem>
-            ))}
-          </List>
-          <Count>
-            {fmt(rows.length)} of {fmt(U.length)} records
-            {rows.length > LIST_LIMIT ? `, first ${LIST_LIMIT} shown` : ""}
-          </Count>
-        </div>
-        <Card aria-live="polite">
-          {current ? <RecordCard record={current} goTo={goTo} /> : <Sub>No records match.</Sub>}
-        </Card>
-      </Explorer>
+            </List>
+            <Count>
+              {fmt(rows.length)} of {fmt(U.length)} records
+              {rows.length > LIST_LIMIT ? `, first ${LIST_LIMIT} shown` : ""}
+            </Count>
+          </div>
+          <Card aria-live="polite">
+            {current ? (
+              <RecordCard
+                record={current}
+                goTo={goTo}
+                showComponent={showComponent}
+                tab={tab}
+                setTab={setTab}
+              />
+            ) : (
+              <Sub>No records match.</Sub>
+            )}
+          </Card>
+        </Explorer>
+      </TableToggle>
     </Box>
   )
 }
 
-const ext = (href, text) => (
-  <a href={href} target="_blank" rel="noopener noreferrer">
-    {text}
-  </a>
-)
-
-const RecordCard = ({ record: r, goTo }) => {
+const RecordCard = ({ record: r, goTo, showComponent, tab, setTab }) => {
   const twins = U.filter((o) => o.id !== r.id && o.name.toLowerCase() === r.name.toLowerCase())
   const dois = has(r.doi)
     ? r.doi
@@ -405,7 +680,10 @@ const RecordCard = ({ record: r, goTo }) => {
 
   const steps = []
   if (r.src !== "v1.1") {
-    steps.push({ title: "In pazy-260701", body: `PAZy ID ${r.pazy}, retrieved 30 June 2026` })
+    steps.push({
+      title: "In pazy-260701",
+      body: `PAZy ID ${r.pazy}, retrieved 30 June 2026`,
+    })
   }
   if (r.src !== "v260701") {
     steps.push({
@@ -420,11 +698,23 @@ const RecordCard = ({ record: r, goTo }) => {
     if (r.act) bits.push(`${r.act} evidence of activity`)
     if (r.accfix) bits.push("accession added or corrected by the curator")
     if (r.renamed) bits.push("name changed to the one in the paper")
-    steps.push({ title: "Checked against the paper", body: bits.join("; ") || "Kept as pulled", quote: r.note })
+    steps.push({
+      title: "Checked against the paper",
+      body: bits.join("; ") || "Kept as pulled",
+      quote: r.note,
+    })
   } else {
-    steps.push({ title: "Not curated in 2026", body: "Not in pazy-260701", skip: true })
+    steps.push({
+      title: "Not curated in 2026",
+      body: "Not in pazy-260701",
+      skip: true,
+    })
   }
-  steps.push({ title: "Sequence", body: `${r.len} aa · ${r.seqsrc}`, quote: r.seqnote })
+  steps.push({
+    title: "Sequence",
+    body: `${r.len} aa · ${r.seqsrc}`,
+    quote: r.seqnote,
+  })
   steps.push({
     title: "Merged into the plasticome",
     body: (
@@ -475,10 +765,30 @@ const RecordCard = ({ record: r, goTo }) => {
         <dt>Accession</dt>
         <dd>{accession}</dd>
         <dt>Plastics</dt>
-        <dd>{plasticsOf(r).map((s) => PLASTIC_NAME[s] || s).join(", ") || "Not recorded"}</dd>
-        <dt>Fold (CATH)</dt>
         <dd>
-          <Mono>{r.cath}</Mono> · {r.dom.split(";")[0]}
+          {plasticsOf(r)
+            .map((s) => PLASTIC_NAME[s] || s)
+            .join(", ") || "Not recorded"}
+        </dd>
+        <dt>Component</dt>
+        <dd>
+          {cathOf(r).comp ? (
+            <LinkButton type="button" onClick={() => showComponent(cathOf(r).comp)}>
+              {cathOf(r).comp}
+            </LinkButton>
+          ) : (
+            "None"
+          )}
+        </dd>
+        <dt>Fold group</dt>
+        <dd>
+          {groupOf(r) ? (
+            <>
+              {groupOf(r).fold} <Mono>{groupOf(r).g}</Mono>
+            </>
+          ) : (
+            "None"
+          )}
         </dd>
         <dt>Structure</dt>
         <dd>
@@ -503,35 +813,42 @@ const RecordCard = ({ record: r, goTo }) => {
             : "None recorded"}
         </dd>
       </Fields>
-      <Trail>
-        {steps.map((s) => (
-          <TrailStep key={s.title} $skip={s.skip}>
-            <TrailTitle>{s.title}</TrailTitle>
-            {s.body}
-            {s.quote && <Quote>“{s.quote}”</Quote>}
-          </TrailStep>
+      <Tabs role="tablist">
+        {[
+          ["curation", "Curation"],
+          ["domains", "Domain calls"],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => setTab(key)}
+          >
+            {label}
+          </button>
         ))}
-      </Trail>
+      </Tabs>
+      <div role="tabpanel">
+        {tab === "curation" ? (
+          <Trail>
+            {steps.map((s) => (
+              <TrailStep key={s.title} $skip={s.skip}>
+                <TrailTitle>{s.title}</TrailTitle>
+                {s.body}
+                {s.quote && <Quote>“{s.quote}”</Quote>}
+              </TrailStep>
+            ))}
+          </Trail>
+        ) : (
+          <DomainCalls record={r} goTo={goTo} />
+        )}
+      </div>
     </>
   )
 }
 
 /* ---------- methods: curation flow ---------- */
-
-const MiniBar = ({ parts }) => {
-  const total = parts.reduce((a, p) => a + p.n, 0)
-  return (
-    <Mini>
-      {parts.map((p) => (
-        <i
-          key={p.label}
-          style={{ flex: p.n, background: p.color }}
-          title={`${p.label}: ${fmt(p.n)} (${Math.round((100 * p.n) / total)}%)`}
-        />
-      ))}
-    </Mini>
-  )
-}
 
 export const PlasticomeFlow = () => {
   const { pull, cleaned, v1, manual, nr, centroids } = DATA
@@ -548,9 +865,21 @@ export const PlasticomeFlow = () => {
             <NodeD>Retrieved 30 June 2026, through the API</NodeD>
             <MiniBar
               parts={[
-                { n: pull.status.in_v1, color: SOURCE.both.color, label: "Already in the PETadex v1 seed set" },
-                { n: pull.status.new_since_v1, color: SOURCE.v260701.color, label: "New since PETadex v1" },
-                { n: pull.status.no_sequence, color: LINE, label: "No sequence" },
+                {
+                  n: pull.status.in_v1,
+                  color: SOURCE.both.color,
+                  label: "Already in the PETadex v1 seed set",
+                },
+                {
+                  n: pull.status.new_since_v1,
+                  color: SOURCE.v260701.color,
+                  label: "New since PETadex v1",
+                },
+                {
+                  n: pull.status.no_sequence,
+                  color: LINE,
+                  label: "No sequence",
+                },
               ]}
             />
           </Node>
@@ -568,8 +897,16 @@ export const PlasticomeFlow = () => {
             <NodeD>{manual.activity["-"]} without reported activity removed, 4 added</NodeD>
             <MiniBar
               parts={[
-                { n: cleaned.activity.Direct, color: SOURCE.v260701.color, label: "Direct activity" },
-                { n: cleaned.activity.Indirect, color: LINE, label: "Indirect activity" },
+                {
+                  n: cleaned.activity.Direct,
+                  color: SOURCE.v260701.color,
+                  label: "Direct activity",
+                },
+                {
+                  n: cleaned.activity.Indirect,
+                  color: LINE,
+                  label: "Indirect activity",
+                },
               ]}
             />
           </Node>
@@ -591,7 +928,13 @@ export const PlasticomeFlow = () => {
               {fmt(src.v260701)} pazy-260701 only · {fmt(src.both)} in both · {fmt(src["v1.1"])}{" "}
               pazy-240826 only
             </NodeD>
-            <MiniBar parts={SOURCES.map((s) => ({ n: src[s.key], color: s.color, label: s.label }))} />
+            <MiniBar
+              parts={SOURCES.map((s) => ({
+                n: src[s.key],
+                color: s.color,
+                label: s.label,
+              }))}
+            />
           </Node>
           <Node>
             <NodeN>{fmt(nr.n)}</NodeN>
@@ -663,7 +1006,14 @@ export const EricksonSequences = () => {
                 </text>
                 <line x1={x(r.old)} x2={x(r.new)} y1={y} y2={y} stroke={MUTED} strokeWidth="2" />
                 <circle cx={x(r.old)} cy={y} r="5" fill={MUTED} stroke={PANEL} strokeWidth="2" />
-                <circle cx={x(r.new)} cy={y} r="5" fill={SOURCE["v1.1"].color} stroke={PANEL} strokeWidth="2" />
+                <circle
+                  cx={x(r.new)}
+                  cy={y}
+                  r="5"
+                  fill={SOURCE["v1.1"].color}
+                  stroke={PANEL}
+                  strokeWidth="2"
+                />
                 {i < 3 && (
                   <text x={x(Math.max(r.old, r.new)) + 10} y={y + 4} fontSize="11" fill={INK_SOFT}>
                     {d > 0 ? "+" : "−"}
@@ -677,10 +1027,10 @@ export const EricksonSequences = () => {
       </ChartScroll>
       <Sub>
         These enzymes were found by functional metagenomics, and their database records differ from
-        the constructs reported in the paper. Several database sequences were nearly twice as long as
-        the reported construct, so all {rows.length} were replaced with the sequences printed in the
-        paper. The paper's sequence is kept in the plasticome only where there is no accession to
-        retrieve one from; elsewhere the retrieved sequence wins (see Sequences, below).
+        the constructs reported in the paper. Several database sequences were nearly twice as long
+        as the reported construct, so all {rows.length} were replaced with the sequences printed in
+        the paper. The paper's sequence is kept in the plasticome only where there is no accession
+        to retrieve one from; elsewhere the retrieved sequence wins (see Sequences, below).
       </Sub>
     </Box>
   )
@@ -688,179 +1038,147 @@ export const EricksonSequences = () => {
 
 /* ---------- styles ---------- */
 
-const Box = styled.div`
-  && {
-    position: relative;
-    display: grid;
-    gap: 0.85rem;
-    min-width: 0;
-    margin: var(--space-lg) 0;
-    padding: 1.1rem 1.25rem;
-    border: 2px solid ${FRAME};
-    border-radius: 12px;
-    background: ${PANEL};
-    color: ${INK};
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-
-  p {
-    margin: 0;
-  }
-
-  @media (max-width: 640px) {
-    && {
-      padding: 1rem;
-    }
-  }
-`
-
 /* Not a heading: the page's sidebar lists every h2 and h3 it finds. */
-const BoxTitle = styled.div`
-  color: ${INK_SOFT};
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-`
 
-const Sub = styled.p`
-  && {
-    margin: 0;
-    color: ${INK_SOFT};
-    font-size: 0.82rem;
-  }
-`
-
-const Stats = styled.div`
+const DonutWrap = styled.div`
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
   gap: 0.75rem;
-  margin: var(--space-lg) 0;
+`
 
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr 1fr;
+const Donut = styled.div`
+  justify-self: center;
+  width: 100%;
+  max-width: 360px;
 
-    & > :first-child {
-      grid-column: 1 / -1;
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  path {
+    stroke: ${PANEL};
+    stroke-width: 2;
+    stroke-linejoin: round;
+    transition: opacity 0.12s;
+  }
+
+  ${({ $dim }) => ($dim ? `g:not([data-hl="true"]) path { opacity: 0.3; }` : "")}
+  ${({ $source }) =>
+    $source
+      ? `g[data-hl="true"] path[data-src]:not([data-src="${$source}"]) { opacity: 0.3; }`
+      : ""}
+
+  .title {
+    fill: ${INK};
+    font-family: var(--font-display), serif;
+    font-size: 20px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    path {
+      transition: none;
     }
   }
 `
 
-const Stat = styled.div`
-  padding: 0.9rem 1rem;
-  border: 2px solid ${FRAME};
-  border-radius: 12px;
-  background: ${({ $hero }) => ($hero ? SUNK : PANEL)};
-  color: ${INK};
-`
+const Slice = styled.g.attrs(({ $hl }) => ({
+  "data-hl": $hl ? "true" : "false",
+}))`
+  cursor: default;
+  transition: transform 0.18s ease-out;
 
-const StatValue = styled.div`
-  font-family: var(--font-display), serif;
-  font-size: 2.2rem;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-`
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 
-const StatLabel = styled.div`
-  margin-top: 0.2rem;
-  color: ${INK_SOFT};
-  font-size: 0.85rem;
-  line-height: 1.35;
-`
+  .inner {
+    fill: ${({ $hl }) => ($hl ? FRAME : SUNK)};
+  }
 
-const Head = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-`
-
-const fieldStyle = `
-  min-width: 0;
-  padding: 0.35rem 0.55rem;
-  border: 1px solid ${FRAME};
-  border-radius: 7px;
-  background: #fffaf6;
-  color: ${INK};
-  font: inherit;
-  font-size: 0.85rem;
-`
-
-const Picker = styled.label`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${INK_SOFT};
-  font-size: 0.82rem;
-
-  select {
-    ${fieldStyle}
-    max-width: 100%;
+  text {
+    fill: ${INK};
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
   }
 `
 
-const LegendRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 1rem;
-  color: ${INK_SOFT};
-  font-size: 0.8rem;
-
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+const DonutTable = styled.table`
+  && {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: 0.84rem;
   }
-`
 
-const Swatch = styled.i`
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-`
+  th,
+  td {
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid ${SUNK};
+    text-align: left;
+    vertical-align: middle;
+  }
 
-const Bars = styled.div`
-  display: grid;
-  gap: 0.3rem;
-`
+  th {
+    color: ${MUTED};
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
 
-const BarRow = styled.div`
-  display: grid;
-  grid-template-columns: 8.5rem minmax(0, 1fr) 3rem;
-  gap: 0.75rem;
-  align-items: center;
-  font-size: 0.86rem;
+  /* Wide enough for the "Enzymes" header, and no wider. */
+  .num {
+    width: 4.75rem;
+    min-width: 4.75rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  small {
+    display: block;
+    color: ${MUTED};
+    font-size: 0.72rem;
+  }
+
+  td:last-child {
+    width: 50%;
+    min-width: 80px;
+  }
+
+  a {
+    color: ${INK};
+  }
 
   @media (max-width: 640px) {
-    grid-template-columns: 6.5rem minmax(0, 1fr) 2.6rem;
-    gap: 0.5rem;
-    font-size: 0.8rem;
+    small {
+      display: none;
+    }
   }
 `
 
-const BarLabel = styled.span`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`
-
-const BarTrack = styled.span`
+const SourceBar = styled.div`
   display: flex;
-  height: 1.1rem;
-  border-radius: 4px;
-  background: ${SUNK};
+  height: 12px;
+  border-radius: 3px;
   overflow: hidden;
 `
 
-const Segment = styled.i`
+const SourceSegment = styled.button`
+  all: unset;
+  min-width: 3px;
   height: 100%;
-  transition: width 0.3s ease;
+  opacity: ${({ $on }) => ($on ? 1 : 0.35)};
+  cursor: pointer;
+  transition: opacity 0.12s;
 
   & + & {
-    box-shadow: inset 1px 0 0 ${PANEL};
+    box-shadow: inset 1px 0 0 #fffaf6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${INK};
+    outline-offset: -2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -868,28 +1186,8 @@ const Segment = styled.i`
   }
 `
 
-const BarValue = styled.span`
-  justify-self: end;
-  color: ${INK_SOFT};
-  font-variant-numeric: tabular-nums;
-`
-
-const Tip = styled.div`
-  position: fixed;
-  z-index: 50;
-  top: 0;
-  left: 0;
-  display: grid;
-  gap: 0.2rem;
-  max-width: min(280px, calc(100vw - 32px));
-  padding: 0.5rem 0.7rem;
-  border-radius: 8px;
-  background: ${INK};
-  box-shadow: 0 8px 24px -8px rgba(40, 20, 10, 0.45);
-  color: ${PANEL};
-  font-size: 0.8rem;
-  line-height: 1.4;
-  pointer-events: none;
+const DonutRow = styled.tr`
+  background: ${({ $hl }) => ($hl ? SUNK : "transparent")};
 `
 
 const Explorer = styled.div`
@@ -1000,12 +1298,6 @@ const SourceTag = styled.span`
   white-space: nowrap;
 `
 
-const Mono = styled.span`
-  color: ${MUTED};
-  font-family: var(--font-mono), monospace;
-  font-size: 0.8em;
-`
-
 const Count = styled.p`
   && {
     margin: 0.4rem 0 0;
@@ -1053,35 +1345,31 @@ const Fields = styled.dl`
   }
 `
 
-const Trail = styled.ol`
-  display: grid;
-  gap: 0.5rem;
-  margin: 0.3rem 0 0;
-  padding: 0 0 0 1rem;
-  border-left: 2px solid ${LINE};
-  list-style: none;
-  font-size: 0.83rem;
-`
+const Tabs = styled.div`
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+  border-bottom: 1px solid ${LINE};
 
-const TrailStep = styled.li`
-  position: relative;
-  color: ${({ $skip }) => ($skip ? MUTED : INK)};
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0.35rem;
-    left: calc(-1rem - 6px);
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: ${({ $skip }) => ($skip ? LINE : INK_SOFT)};
+  button {
+    all: unset;
+    padding: 0.35rem 0.7rem;
+    border-bottom: 2px solid transparent;
+    color: ${INK_SOFT};
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
   }
-`
 
-const TrailTitle = styled.span`
-  display: block;
-  font-weight: 700;
+  button[aria-selected="true"] {
+    border-bottom-color: ${INK};
+    color: ${INK};
+  }
+
+  button:focus-visible {
+    outline: 2px solid ${INK_SOFT};
+    outline-offset: -2px;
+  }
 `
 
 const Quote = styled.q`
@@ -1090,88 +1378,4 @@ const Quote = styled.q`
   color: ${INK_SOFT};
   font-style: italic;
   quotes: none;
-`
-
-const LinkButton = styled.button`
-  all: unset;
-  color: ${INK};
-  text-decoration: underline;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid ${INK_SOFT};
-  }
-`
-
-const Flow = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 0.6rem;
-  align-items: center;
-
-  @media (max-width: 760px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-`
-
-const Lane = styled.div`
-  display: grid;
-  gap: 0.6rem;
-`
-
-const Arrow = styled.span`
-  color: ${MUTED};
-  font-size: 1.3rem;
-  text-align: center;
-
-  @media (max-width: 760px) {
-    transform: rotate(90deg);
-  }
-`
-
-const Node = styled.div`
-  padding: 0.7rem 0.8rem;
-  border: ${({ $out }) => ($out ? `2px solid ${INK_SOFT}` : `1px solid ${LINE}`)};
-  border-radius: 10px;
-  background: #fffaf6;
-`
-
-const NodeN = styled.div`
-  font-family: var(--font-display), serif;
-  font-size: 1.6rem;
-  line-height: 1.1;
-`
-
-const NodeT = styled.div`
-  font-weight: 700;
-  font-size: 0.86rem;
-`
-
-const NodeD = styled.div`
-  color: ${INK_SOFT};
-  font-size: 0.78rem;
-  line-height: 1.4;
-`
-
-const Mini = styled.div`
-  display: flex;
-  height: 8px;
-  margin-top: 0.5rem;
-  border-radius: 3px;
-  overflow: hidden;
-
-  i + i {
-    box-shadow: inset 1px 0 0 #fffaf6;
-  }
-`
-
-const ChartScroll = styled.div`
-  overflow-x: auto;
-
-  svg {
-    display: block;
-    width: 100%;
-    min-width: 520px;
-    height: auto;
-  }
 `

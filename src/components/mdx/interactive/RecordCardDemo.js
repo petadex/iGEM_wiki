@@ -199,8 +199,9 @@ const StructureLayer = ({ record }) => {
   const [mode, setMode] = useState("chain")
   const [spin, setSpin] = useState(true)
   // Drops the cartoon to plain white, so only the catalytic triad carries
-  // any colour. The chosen ramp is remembered for when it is switched back.
-  const [plain, setPlain] = useState(false)
+  // any colour. On by default; the chosen ramp is remembered for when it is
+  // switched off.
+  const [plain, setPlain] = useState(true)
 
   useEffect(() => {
     if (

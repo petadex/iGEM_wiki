@@ -127,9 +127,15 @@ if (CARD) {
 // a wide margin round it; a card has no labels to make room for, so it stands
 // closer, and lifted, since the stack hangs below the point the camera looks
 // at. Its marks are scaled for a figure several times the card's size, so at
-// card size the dots and dashes fall under a pixel and read as noise.
+// card size the dots and dashes fall under a pixel and read as noise. And it
+// turns faster: a turn every 160 s barely moves in a box that small.
 const CARD = location.hash === "#card";
-const CARD_ZOOM = 0.85, CARD_LIFT = 0.08, CARD_MARKS = 1.8;`,
+const CARD_ZOOM = 0.85, CARD_LIFT = 0.08, CARD_MARKS = 1.8, CARD_SPIN = 6;`,
+  ],
+  [
+    "card mode: a faster turn",
+    "    if (spinOn) { spin += SPIN_RATE * dt * spinScale(); dirty = true; }",
+    "    if (spinOn) { spin += SPIN_RATE * (CARD ? CARD_SPIN : 1) * dt * spinScale(); dirty = true; }   // wiki copy: CARD_SPIN",
   ],
   [
     "card mode: thicker marks",
