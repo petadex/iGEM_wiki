@@ -15,7 +15,11 @@
  *      on the wheel and calls preventDefault. On its own page that is the right
  *      thing; inside the overview page's iframe it would swallow the page's
  *      scroll, so an embedded copy leaves the wheel alone and is stepped with
- *      the ↑ Back / ↓ Next buttons, the step list and the arrow keys.
+ *      the ↑ Back / ↓ Next buttons, the step list and the arrow keys, until
+ *      the page posts { wheel: true } (the figure is filling the screen or its
+ *      expand window, with the page held still behind it). Even then, past
+ *      either end of the walk it leaves the wheel alone, so the page can count
+ *      that scroll toward letting the figure go.
  *   3. The wiki wants the Story panel alone. Panels 1-7 share almost every code
  *      path with the stacked panel the story is built on, so rather than cut
  *      them out they are made unreachable: goTo refuses any index but the story
@@ -71,10 +75,19 @@ const STRUCTURE_WIDTH = 448   // about 4x the ~100 px the cards draw them at
 
 const EMBED_GUARD = `// Embedded in the wiki's overview page: the host page owns the wheel, so the
 // walkthrough is stepped with the buttons, the step list and the arrow keys
-// instead. Added by scripts/sync-landscape-figure.mjs.
+// instead, until the page hands the wheel over ({ wheel: true }) while the
+// figure fills the screen or its window. Added by scripts/sync-landscape-figure.mjs.
 const EMBEDDED = (() => { try { return window.self !== window.top; } catch { return true; } })();
+let hostWheel = false;
+window.addEventListener("message", e => {
+  if (e.origin === location.origin && e.data && "wheel" in e.data) hostWheel = !!e.data.wheel;
+});
 stage.addEventListener("wheel", e => {
-  if (EMBEDDED) return;`
+  if (EMBEDDED && !hostWheel) return;
+  // Handed the wheel, past either end of the walk it hands it back, so the
+  // page can count the scroll toward letting the figure go.
+  if (EMBEDDED && !wheelLocked && Math.abs(e.deltaY) > Math.abs(e.deltaX) &&
+      ((e.deltaY > 0 && stepI >= STEPS.length - 1 && !expanding()) || (e.deltaY < 0 && stepI <= 0))) return;`
 
 const WHEEL_ANCHOR = `stage.addEventListener("wheel", e => {`
 

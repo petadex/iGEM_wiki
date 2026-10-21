@@ -2689,10 +2689,19 @@ function stepFocusedView(d) {
 }
 // Embedded in the wiki's overview page: the host page owns the wheel, so the
 // walkthrough is stepped with the buttons, the step list and the arrow keys
-// instead. Added by scripts/sync-landscape-figure.mjs.
+// instead, until the page hands the wheel over ({ wheel: true }) while the
+// figure fills the screen or its window. Added by scripts/sync-landscape-figure.mjs.
 const EMBEDDED = (() => { try { return window.self !== window.top; } catch { return true; } })();
+let hostWheel = false;
+window.addEventListener("message", e => {
+  if (e.origin === location.origin && e.data && "wheel" in e.data) hostWheel = !!e.data.wheel;
+});
 stage.addEventListener("wheel", e => {
-  if (EMBEDDED) return;
+  if (EMBEDDED && !hostWheel) return;
+  // Handed the wheel, past either end of the walk it hands it back, so the
+  // page can count the scroll toward letting the figure go.
+  if (EMBEDDED && !wheelLocked && Math.abs(e.deltaY) > Math.abs(e.deltaX) &&
+      ((e.deltaY > 0 && stepI >= STEPS.length - 1 && !expanding()) || (e.deltaY < 0 && stepI <= 0))) return;
   if (!isStacked(idx) || cur.stack < 0.5) return;
   e.preventDefault();
   clearTimeout(wheelQuiet);

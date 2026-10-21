@@ -30,14 +30,16 @@ opening: "We introduce the PETadex model. This largest-of-its-kind enzyme discov
   dennis-scratch/) smeared the dots. The poster shows until it has drawn, so
   it is the card mode's own first frame: landscape.html#card at a 960x720
   viewport and 2x pixel ratio, saved as a 1920x1440 AVIF (quality 60).
-  The game card is the game's title screen with its blurb, buttons and colour
-  picker hidden: petadex-game.html at a 1000x750 viewport (wide enough that
-  the title survives the expand window's tall crop) and 1.92x pixel ratio,
-  saved as a 1920x1440 AVIF (quality 55). The calendar card draws the
+  The game card is the game itself in its #card mode: the title screen with
+  its blurb, buttons and colour picker hidden, laid out at 1000x750 (wide
+  enough that the title survives the expand window's tall crop) and scaled to
+  cover the card, its litter drifting only while the card is on screen. Its
+  poster is that screen at 1.92x pixel ratio, saved as a 1920x1440 AVIF
+  (quality 55). The calendar card draws the
   season from the calendar's own data (DryLabSeasonRibbon).
 */}
 
-<Expandable title="PETadex in three ways" wide>
+<Expandable title="PETadex in three ways" wide grow>
 
 <FeatureCards>
   <FeatureCard
@@ -50,18 +52,19 @@ opening: "We introduce the PETadex model. This largest-of-its-kind enzyme discov
     300 million proteins in three layers: what we found, what we know about each, and what we predict.
   </FeatureCard>
   <FeatureCard
-    href="#petamon-game"
+    href="#play-petamon"
     title="PETamon Game"
-    img="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/game-title.avif"
+    poster="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/game-title.avif"
+    live="/figures/petadex-game/petadex-game.html#card"
     cta="Play"
   >
     One enzyme, a beach full of plastic, and a planet's worth of sites to clean up.
   </FeatureCard>
   <FeatureCard
-    href="#petadex-project-calendar"
+    href="#see-our-journey"
     title="PETadex Project Calendar"
     picture={<DryLabSeasonRibbon />}
-    cta="See the season"
+    cta="See our journey"
   >
     Our season week by week, including what went wrong and what we changed.
   </FeatureCard>
@@ -87,23 +90,24 @@ opening: "We introduce the PETadex model. This largest-of-its-kind enzyme discov
 <InteractiveEmbed
   src="/figures/dry-lab-landscape/landscape.html"
   title="The PETadex adjacency landscape"
-  caption="Three layers over one map of sequence space: the dataset we built, the annotations hung on it, and what we read off them. Step through with ↓ Next, pick a step from the list on the right, or move sideways through a layer's views with ‹ View / View ›; drag to orbit."
+  grow
+  hint="Arrow keys recommended · ↑ ↓ arrow keys, scroll or ↑ Back / ↓ Next: walk the steps · ← → arrow keys or ‹ View / View ›: change a layer's view · Drag: orbit"
   dark
 />
 
 ## PETamon Game
 
-Gotta degrade 'em all! You start with one enzyme, IsPETase, and a beach covered in plastic film. Each battle you win lets you sequence the enzyme the next site needs, and your growing team heads into hotter, harsher sites to battle hardier plastic types. The game takes you on an odyssey through the environments where plastic is found: polyurethane foam in a landfill, fishing line at a nylon works only an amidase can cut, a sorting line, a 72°C recycling reactor, and a final boss plastic that no known enzyme can break down. No single enzyme can clean up every plastic type on Earth, so we built PETadex to find the best enzyme for each and every application.
+Gotta degrade 'em all! No single enzyme can clean up every plastic type on Earth, so we've built the PETadex to find the best enzyme for any application.
 
 *Stats are made up for play, but the problem and the story are very real.*
 
-<PetadexGame />
+<PetadexGame grow anchor="play-petamon" />
 
 ## PETadex Project Calendar
 
 How the Dry Lab's work came together week by week, from the first meeting in March to the wiki in October. Pick a week to see what each workstream did, and open anything under "What went wrong, and what we changed" to follow it from the test that caught it to the change it led to.
 
-<Expandable title="PETadex Project Calendar">
+<Expandable title="PETadex Project Calendar" grow continueTo="/dry-lab/model/" anchor="see-our-journey">
 
 <DryLabCalendar />
 

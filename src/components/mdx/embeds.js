@@ -215,13 +215,13 @@ function Photo({ src, alt }) {
  */
 const LOGICAL = [1600, 900]
 
-export const InteractiveEmbed = ({ src, title, caption, dark = false, logical = LOGICAL }) => {
+export const InteractiveEmbed = ({ src, title, caption, dark = false, logical = LOGICAL, grow = false, hint }) => {
   const href = src.startsWith("/") ? withPrefix(src) : src
   const frameRef = useRef(null)
 
   return (
     <EmbedFigure>
-      <ExpandWindow title={title} dark={dark} focusRef={frameRef}>
+      <ExpandWindow title={title} dark={dark} focusRef={frameRef} grow={grow} hint={hint}>
         {open => (
           <ScaledFigure
             href={href}

@@ -20,13 +20,13 @@ import { ExpandWindow } from "./mdx/ExpandWindow.js"
 const SRC = "/figures/petadex-game/petadex-game.html"
 const GROUND = "#16181a"
 
-const PetadexGame = () => {
+const PetadexGame = ({ grow = false, anchor }) => {
   const href = withPrefix(SRC)
   const frameRef = useRef(null)
 
   return (
     <Figure>
-      <ExpandWindow title="PETamon" inlineTitle={false} dark ground={GROUND} focusRef={frameRef}>
+      <ExpandWindow title="PETamon" inlineTitle={false} dark ground={GROUND} focusRef={frameRef} grow={grow} anchor={anchor}>
         {open => (
           <Box $open={open}>
             <Frame ref={frameRef} src={href} title="PETadex game" loading="lazy" />
