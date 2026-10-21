@@ -9,13 +9,13 @@ const READOUTS = {
         key: "embed",
         label: "Copper is fused into PET",
         caption:
-          "Copper is melted into the PET film; the cell carries an un-induced antibiotic resistance plasmid.",
+          "Copper is embedded into the PET mesh; the cell carries an un-induced antibiotic resistance gene.",
       },
       {
         key: "release",
         label: "PETase releases copper, inducing resistance",
         caption:
-          "PETase degrades the PET and releases copper, which induces the resistance plasmid. Cells with good PETases survive.",
+          "PETase degrades the PET and releases copper, which induces the resistance gene. Cells with good PETases survive.",
       },
     ],
     inducedLabel: "Cell with copper\ninduced antibiotic\nresistance plasmid",
@@ -28,7 +28,7 @@ const READOUTS = {
         key: "embed",
         label: "Copper is fused into PET",
         caption:
-          "Copper is melted into the PET film; the cell carries an un-induced GFP plasmid.",
+          "Copper is embedded into the PET mesh; the cell carries an un-induced GFP gene.",
       },
       {
         key: "release",

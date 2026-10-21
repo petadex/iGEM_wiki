@@ -32,9 +32,7 @@ The PD-V2 plasmid uses pUC57-Mini-Key IIS Free as its base vector. The promoter-
 
 ### PETase Display System Design
 
-The PETase display system uses the glycosylphosphatidylinositol anchoring of INPs to localize PETases to the outer membrane of E. coli, and has previously been well-validated for surface display of other classes of enzymes, such as carboxymethylcellulases and laccases [@pmc91897; @bit10892; @analytica2024; @trends2002; @bioresource2023]
-
-The sequence for the INP was obtained from BBa_K523013.
+The PETase display system uses the glycosylphosphatidylinositol anchoring of INPs to localize PETases to the outer membrane of *E. coli*, and has previously been well-validated for surface display of other classes of enzymes, such as carboxymethylcellulases and laccases [@pmc91897; @bit10892; @analytica2024; @trends2002; @bioresource2023]. The sequence for the INP was obtained from BBa_K523013.
 
 A 20-residue flexible GS linker (GGSGGGGSGGGGSGGGSGGG) was designed using the principles in Chen et al. 2013 [@chen2013linkers], and fused to the C-terminal end of the INP, followed by a pair of outwards-facing BsmBI restriction sites and a spacer from the pGGASelect vector. The BsmBI sites were arranged so that the vector overhang corresponded to the last four nucleotides of the GS linker, ensuring the GGA “scar” would not impact the reading frame of any PETases cloned in. Downstream of the BsmBI sites, there is a second GS linker (GGGGS) and FLAG tag to allow for verification of PETase surface display. A stop codon was added inside the pGGASelect spacer to prevent the expression of the C-terminal FLAG tag in constructs that don’t contain a PETase, allowing for detection of PETase surface display.
 
