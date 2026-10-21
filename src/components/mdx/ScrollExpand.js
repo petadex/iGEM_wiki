@@ -24,8 +24,10 @@ import styled from "styled-components"
  * (the last block on a page, which has no next block to go to). `anchor` is an id
  * for links to it: a link to `#anchor` scrolls straight to it grown and held
  * (or, when it doesn't grow, the browser's own jump lands on the figure
- * itself). Off (`off`), on a narrow screen, or with reduced motion, it stays
- * as `children(false, false)`.
+ * itself). `minimizeOnLeave` has leaving it downward (Continue, a firm scroll
+ * down, or a jump past it) minimize it as well, so it is back in the text
+ * once the reader has moved on. Off (`off`), on a narrow screen, or with
+ * reduced motion, it stays as `children(false, false)`.
  */
 
 /** Where the grow starts: the block's top this far down the window (0-1). */
@@ -125,6 +127,7 @@ export const ScrollExpand = ({
   continueButton = true,
   continueTo,
   anchor,
+  minimizeOnLeave = false,
   children,
 }) => {
   const [wide, setWide] = useState(false)
@@ -173,6 +176,8 @@ export const ScrollExpand = ({
     // Minimized: it stays at rest for good, and once shrunk its track gives
     // back the scroll it held, so the page reads straight past it.
     let minimized = false
+    // What to do once a shrink has finished and the track collapsed.
+    let afterShrink = null
     // Scroll toward letting go while held (see PUSH).
     let heldAt = 0
     let push = 0
@@ -236,9 +241,7 @@ export const ScrollExpand = ({
     const self = { track, arrive }
     blocks.add(self)
 
-    proceed.current = () => {
-      if (holding) letGo()
-      passed = true
+    const goOn = () => {
       const next = nextBlock(track)
       if (next) {
         next.arrive()
@@ -248,14 +251,26 @@ export const ScrollExpand = ({
       const by = track.getBoundingClientRect().bottom - pinTopPx()
       window.scrollBy({ top: by, behavior: "smooth" })
     }
-    minimize.current = () => {
+    const shrinkAway = then => {
       if (holding) letGo()
       passed = true
       arriving = false
       minimized = true
       shrunkAt = performance.now()
+      afterShrink = then || null
       schedule()
     }
+    proceed.current = () => {
+      // Shrunk back into the text first, then on from where it now ends.
+      if (minimizeOnLeave && !minimized) {
+        shrinkAway(goOn)
+        return
+      }
+      if (holding) letGo()
+      passed = true
+      goOn()
+    }
+    minimize.current = () => shrinkAway()
     // The track back to the block's own height, keeping what is on screen
     // where it is: if the page was scrolled into the track, it scrolls up by
     // as much as the block had been pinned past its place, and never by more
@@ -281,7 +296,21 @@ export const ScrollExpand = ({
         pin.style.height = `${fullH}px`
       }
 
-      const { top } = track.getBoundingClientRect()
+      const { top, bottom } = track.getBoundingClientRect()
+      // Gone past it by a jump or the scroll: minimized at once, off screen.
+      if (minimizeOnLeave && !minimized && !holding && bottom < 0) {
+        minimized = true
+        passed = true
+        collapse()
+        frame.style.left = frame.style.width = frame.style.height = ""
+        frame.style.setProperty("--grow", 0)
+        if (wasGrown) {
+          wasGrown = false
+          setGrown(false)
+        }
+        lastTop = track.getBoundingClientRect().top
+        return
+      }
       if (top >= vh * START_AT) passed = false
       if (arriving && !holding && !minimized && Math.abs(top - pinTop) < 2) {
         arriving = false
@@ -304,6 +333,11 @@ export const ScrollExpand = ({
         else if (minimized) {
           shrunkAt = 0
           collapse()
+          if (afterShrink) {
+            const then = afterShrink
+            afterShrink = null
+            then()
+          }
         }
       }
       if (minimized && !shrunkAt) p = 0
@@ -342,6 +376,10 @@ export const ScrollExpand = ({
       pushQuiet = setTimeout(() => (push = 0), PUSH_QUIET_MS)
       if (Math.abs(push) < PUSH) return
       const down = push > 0
+      if (down && minimizeOnLeave) {
+        shrinkAway()
+        return
+      }
       letGo()
       if (down) passed = true
     }
@@ -385,7 +423,7 @@ export const ScrollExpand = ({
       for (const el of [track, pin, frame]) el.removeAttribute("style")
       setGrown(false)
     }
-  }, [live, anchor])
+  }, [live, anchor, minimizeOnLeave])
 
   // Always the same wrappers, live or not: changing them would remount the
   // figure and reload its iframe. Without the script's heights they are inert.

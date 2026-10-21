@@ -118,9 +118,13 @@ const WikiMdxTemplate = ({ data, children }) => {
   const wideSideTabs = frontmatter.wideSideTabs === true
   const wideProse    = frontmatter.wideProse    === true
 
-  const pageHeader = (frontmatter.description || owners.length > 0 || updated || frontmatter.status) && (
+  // `hideDescription` keeps the description for search engines and the page
+  // card while leaving it off the page, for a page that opens with a figure.
+  const showDescription = Boolean(frontmatter.description) && !frontmatter.hideDescription
+
+  const pageHeader = (showDescription || owners.length > 0 || updated || frontmatter.status) && (
     <PageMeta $wide={wideSideTabs} aria-label="Page metadata">
-      {frontmatter.description && <Description>{frontmatter.description}</Description>}
+      {showDescription && <Description>{frontmatter.description}</Description>}
       <MetaRow>
         {frontmatter.status && <StatusBadge>{frontmatter.status}</StatusBadge>}
         {owners.length > 0 && <span>Maintained by {owners.join(", ")}</span>}
@@ -180,6 +184,7 @@ export const query = graphql`
         path
         navTitle
         description
+        hideDescription
         owners
         updated
         status
