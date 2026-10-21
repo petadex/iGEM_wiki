@@ -8,6 +8,7 @@ description: "How every PETadex-PAZy enzyme was given a CATH superfamily three i
 owners: ["Dry Lab"]
 updated: "2026-10-21"
 status: "draft"
+bibliography: "../../dry-lab.bib"
 ---
 
 {/*
@@ -93,17 +94,17 @@ Routes A and B are the core design: one reads the structure, the other the seque
 
 ## Inputs and references
 
-The input is one predicted structure per PETadex-PAZy enzyme: 609 single-chain ESMFold models, with per-residue confidence (pLDDT) in the B-factor column. Each file also contains the full sequence, so Route B reads its sequences from the same files and nothing has to be matched up between a FASTA and a structure. Sequences range from 28 to 734 residues (median 313). Residues are numbered 1 to *L* in both routes, so domains from different routes can be compared residue by residue.
+The input is one predicted structure per PETadex-PAZy enzyme: 609 single-chain ESMFold [@lin2023esm2] models, with per-residue confidence (pLDDT) in the B-factor column. Each file also contains the full sequence, so Route B reads its sequences from the same files and nothing has to be matched up between a FASTA and a structure. Sequences range from 28 to 734 residues (median 313). Residues are numbered 1 to *L* in both routes, so domains from different routes can be compared residue by residue.
 
 | Component | Version used | Notes |
 |---|---|---|
-| CATH S40 (Route A) | v4.3.0, September 2019 | Reference of record. Re-checked against v4.4.0 ([Validation](#validation)). |
-| TED50 (Route A′) | Foldseek `databases TED50`, AlphaFold DB v4, built February 2025 | The only TED release published |
-| Gene3D (Route B) | v21.0.1 (CATH v4.3.0), July 2019 | Newest available. Gene3D has not been rebuilt since. |
-| Pfam-A (Route C) | 38.2, January 2026 | Current release |
-| Merizo | commit `c7dbbd1` | Domain segmentation |
-| Foldseek | master build `7f4b946` (July 2026) | See [Reproducing](#reproducing) |
-| HMMER / cath-resolve-hits | 3.4 / v0.16.10 | |
+| CATH S40 (Route A) [@sillitoe2021cath] | v4.3.0, September 2019 | Reference of record. Re-checked against v4.4.0 [@waman2024cath] ([Validation](#validation)). |
+| TED50 (Route A′) [@lau2024ted] | Foldseek `databases TED50`, AlphaFold DB [@varadi2022afdb] v4, built February 2025 | The only TED release published |
+| Gene3D (Route B) [@lewis2018gene3d] | v21.0.1 (CATH v4.3.0), July 2019 | Newest available. Gene3D has not been rebuilt since. |
+| Pfam-A (Route C) [@paysanlafosse2025pfam] | 38.2, January 2026 | Current release |
+| Merizo [@lau2023merizo] | commit `c7dbbd1` | Domain segmentation |
+| Foldseek [@vankempen2024foldseek] | master build `7f4b946` (July 2026) | See [Reproducing](#reproducing) |
+| HMMER / cath-resolve-hits [@eddy2011hmmer; @lewis2019crh] | 3.4 / v0.16.10 | |
 
 ## Cutting structures into domains
 
@@ -189,7 +190,7 @@ We landed on this rule after trying two simpler ones on the same data, and revie
 
 After Routes A, A′ and B, eleven cluster centroids still had no label. One was MGS0084 (see [The final table](#the-final-table)). The other ten made up the whole of one component, C024: 15 structures (11 distinct sequences, 10 centroids) that all superpose on each other at TM ≥ 0.89. A whole family without a single hit looked at first like it could be a new fold, but the fact that they were all one component pointed to something simpler: a single fold missing from CATH.
 
-It isn't. A quick BLASTp search identifies it straight away as the latex clearing protein (Lcp), a well-studied rubber oxygenase with a solved crystal structure (PDB [5O1L](https://www.rcsb.org/structure/5O1L), 2017). The problem was the reference: CATH has never assigned Lcp a superfamily. Route A's reference *is* CATH, and Route B's Gene3D models are *built from* CATH, so a family missing from CATH is invisible to both, and running either more sensitively wouldn't have helped. The lack of hits here really highlighted a limitation of our approach: CATH doesn't contain an exhaustive collection of domains.
+It isn't. A quick BLASTp [@camacho2009blast] search identifies it straight away as the latex clearing protein (Lcp), a well-studied rubber oxygenase with a solved crystal structure (PDB [5O1L](https://www.rcsb.org/structure/5O1L), 2017). The problem was the reference: CATH has never assigned Lcp a superfamily. Route A's reference *is* CATH, and Route B's Gene3D models are *built from* CATH, so a family missing from CATH is invisible to both, and running either more sensitively wouldn't have helped. The lack of hits here really highlighted a limitation of our approach: CATH doesn't contain an exhaustive collection of domains.
 
 Route C asks a database built independently of CATH. We searched every sequence against Pfam-A, using each family's own curated gathering threshold:
 
@@ -280,7 +281,7 @@ The calls agree on **186 of 191** comparable enzymes (97.4%). All five disagreem
 
 ### Against a newer CATH release
 
-Our reference, CATH v4.3.0, dates from 2019. To check whether any result depends on that, we rebuilt Route A's reference from CATH v4.4.0 (December 2024) and re-ran it on the same Merizo domains, so every difference comes from the reference.
+Our reference, CATH v4.3.0, dates from 2019. To check whether any result depends on that, we rebuilt Route A's reference from CATH v4.4.0 (December 2024) [@waman2024cath] and re-ran it on the same Merizo domains, so every difference comes from the reference.
 
 | Domain, v4.3.0 → v4.4.0 | Domains |
 |---|---|

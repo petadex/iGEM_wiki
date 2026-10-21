@@ -8,6 +8,7 @@ description: "The two datasets the PETadex model learns from, the corpus of cand
 owners: ["Dry Lab"]
 updated: "2026-10-18"
 status: "draft"
+bibliography: "../../dry-lab.bib"
 ---
 
 {/*
@@ -78,10 +79,10 @@ The model learns from two datasets that we publish separately and join on sequen
 
 The corpus is the output of [Dataset Generation](/dry-lab/model/#dataset-generation) on the Model page, which gives the methods for each step. In outline:
 
-1. **Known enzymes.** We gathered the plastic-degrading enzymes already reported in PAZy and the literature into a curated reference set, [PETadex-PAZy](/dry-lab/model/#petadex-pazy-reference-curation), and grouped them by [fold](/dry-lab/model/#cath-assignment) and by [homology component](/dry-lab/model/#component-assignment).
+1. **Known enzymes.** We gathered the plastic-degrading enzymes already reported in PAZy [@buchholz2022pazy] and the literature into a curated reference set, [PETadex-PAZy](/dry-lab/model/#petadex-pazy-reference-curation), and grouped them by [fold](/dry-lab/model/#cath-assignment) and by [homology component](/dry-lab/model/#component-assignment).
 2. **Catalytic profiles.** For each component we built a [seed alignment and a profile HMM](/dry-lab/model/#seed-msas-and-catalytic-hmms) of its catalytic domain, with the positions of its catalytic residues.
 3. **NCBI nr.** We searched NCBI's non-redundant protein database for [homologs of the references](/dry-lab/model/#ncbi-nr-homology-expansion) and kept a hit only if a profile HMM found its catalytic domain.
-4. **Logan.** We clustered those proteins and used them as queries against [Logan](/dry-lab/model/#logan-query-extraction), which assembles the public sequencing runs in the Sequence Read Archive, with the same HMM filter.
+4. **Logan.** We clustered those proteins and used them as queries against [Logan](/dry-lab/model/#logan-query-extraction) [@chikhi2024logan], which assembles the public sequencing runs in the Sequence Read Archive, with the same HMM filter.
 5. **Clustering.** We [clustered](/dry-lab/model/#clustering-and-corpus-structure) everything at 90%, 60% and 30% identity.
 
 The result holds 307,155,746 open reading frames (ORFs): 211 from PAZy, 4,723,128 from NCBI nr and 302,432,407 from Logan.
@@ -96,13 +97,13 @@ Every ORF comes with each annotation we could key to it. The [Sequence Annotatio
 |---|---|---|
 | [Catalytic domain](/dry-lab/model/#domain-annotation) | Which PETadex profile HMM matched, the domain's coordinates and its catalytic residues | Every ORF |
 | [Clusters](/dry-lab/model/#clustering-and-corpus-structure) | The ORF's cluster at 90%, 60% and 30% identity: 18,172,960, 1,814,296 and 22,235 clusters | Every ORF |
-| [Signal peptide](/dry-lab/model/#localization-and-signal-peptides) | SignalP 6 class probabilities and cleavage site | Every ORF; unreliable for Logan ORFs (below) |
+| [Signal peptide](/dry-lab/model/#localization-and-signal-peptides) | SignalP 6 [@teufel2022signalp] class probabilities and cleavage site | Every ORF; unreliable for Logan ORFs (below) |
 | [Biochemical properties](/dry-lab/model/#biochemical-properties-and-ancestral-reconstruction) | Molecular weight, isoelectric point, hydrophobicity (GRAVY), instability index and aromaticity | Every ORF; recomputed for the mature protein on the 13.8% with a signal peptide |
 | [Sample metadata](/dry-lab/model/#biosample-metadata-annotations) | The sequencing run and BioSample a Logan ORF was assembled from: environment, [metadata profile](/dry-lab/model/#biosample-metadata-profiles), location, and temperature and pH where recorded | Logan ORFs, through 6.2 million runs and 6.8 million BioSamples |
 | Taxonomy | Organism and lineage | NCBI nr ORFs (0.9% of the corpus) |
-| [Structures](/dry-lab/model/#predicted-structures) | Links to AlphaFold DB models | ORFs whose nr accession matches an AlphaFold entry (0.1%) |
+| [Structures](/dry-lab/model/#predicted-structures) | Links to AlphaFold DB [@varadi2022afdb] models | ORFs whose nr accession matches an AlphaFold entry (0.1%) |
 | [Reference membership](/dry-lab/model/#petadex-pazy-reference-curation) | Whether the ORF is a PETadex-PAZy enzyme, and the fold of each homology component | 522 ORFs |
-| [Families](/dry-lab/software/#esm-atlas) | Membership in the 64,730 enzyme families of the atlas, with InterProScan domains for each family representative | Family representatives |
+| [Families](/dry-lab/software/#esm-atlas) | Membership in the 64,730 enzyme families of the atlas, with InterProScan [@jones2014interproscan] domains for each family representative | Family representatives |
 
 Two layers need care. Logan ORFs are read from one stop codon to the next, so only about 3% begin with a methionine, and annotations that depend on the protein's start (signal peptides and mature-protein properties) are unreliable for them. And few BioSamples record a temperature (0.7%) or a pH (0.15%), so environmental values exist for only part of the corpus; [Closing the loop](#closing-the-loop) describes how we use them.
 
@@ -167,7 +168,7 @@ The two datasets play different roles. The corpus is the raw material for discov
 
 We treat choosing what to test as Bayesian optimisation. Testing only the candidates with the highest predicted activity would confirm what the model already believes and teach it little. Testing only the candidates it is least sure about would spend assays on clusters that are unlikely to work. We pick clusters where the model's uncertainty is high and other evidence suggests activity, so that each result either finds an active enzyme or corrects the model where it was weakest. The round 2 library will be chosen this way, and its results will return to the labels for the next round.
 
-The other evidence is environmental metadata: the temperature, pH and environment of the samples a cluster was assembled from. Sequence alone cannot separate enzymes that work in different conditions. IsPETase, LCC, TfCut2 and Cut190 fall in a single enzyme family, yet IsPETase works at mild temperatures and LCC and TfCut2 near 70 °C. Mapping each region's median sample temperature over the family atlas shows the same thing in both directions: families far apart in sequence can come from equally warm or cold environments, and close relatives can come from different ones.
+The other evidence is environmental metadata: the temperature, pH and environment of the samples a cluster was assembled from. Sequence alone cannot separate enzymes that work in different conditions. IsPETase [@yoshida2016], LCC [@sulaiman2012lcc], TfCut2 [@roth2014tfcut2] and Cut190 [@kawai2014cut190] fall in a single enzyme family, yet IsPETase works at mild temperatures and LCC and TfCut2 near 70 °C. Mapping each region's median sample temperature over the family atlas shows the same thing in both directions: families far apart in sequence can come from equally warm or cold environments, and close relatives can come from different ones.
 
 We use this as a weak prior, not as evidence of activity. Only 0.7% of BioSamples state a temperature and 0.15% a pH, so of the 61,900 atlas families whose representative we could trace into the corpus, 28,481 have a temperature and 20,531 a pH. Smoothed over the atlas, temperatures mostly sit between 14 and 22 °C, and pH barely varies, from 7.0 to 7.5. We have not yet tested whether temperature is more similar between neighbouring families than chance would predict. Until we do, metadata decides between clusters the model is equally unsure about; it does not outweigh the model.
 

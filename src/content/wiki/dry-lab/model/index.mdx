@@ -8,6 +8,7 @@ description: "Modeling approach and assumptions used to analyze PETase candidate
 owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
+bibliography: "../dry-lab.bib"
 ---
 
 {/*
@@ -45,9 +46,9 @@ status: "draft"
 
 #### Current landscape of plastic-degrading enzymes
 Plastic-degrading enzymes offer a promising route to bioremediating plastic waste, but only a small
-number have been characterised. The *Plastics-Active Enzymes Database* (PAZy) [PAZy citation]
+number have been characterised. The *Plastics-Active Enzymes Database* (PAZy) [@buchholz2022pazy]
 catalogues experimentally validated plastic-degrading enzymes, and holds just 495 of them.
-*PlasticDB* [PlasticDB citation] adds organism and environmental metadata, but records only 875
+*PlasticDB* [@gambarini2022plasticdb] adds organism and environmental metadata, but records only 875
 plastic-degrading organisms, active across a relatively narrow set of environmental conditions. 
 This known set is a small, biased sample of what exists in nature.
 
@@ -58,7 +59,7 @@ existing datasets, into the sequence and environmental landscape that public seq
 The advent of artificial intelligence in biology may offer a path to navigating these landscapes, but existing datasets
 are far too small to train such models. In prior work, our supervising lab (RNAlab) built the *PETadex*: 47.2 million
 non-redundant plastic-degrading enzyme homologs, mined from *Logan*, an assembly of 38 million experiments held in the Sequence
-Read Archive [citation]. Screening randomly sampled *Is*PETase homologs from *PETadex* on BHET yielded two novel enzymes more
+Read Archive [@chikhi2024logan]. Screening randomly sampled *Is*PETase homologs from *PETadex* on BHET yielded two novel enzymes more
 active than FAST-PETase, the field's engineered benchmark.
 
 **Random sampling alone was enough to beat the benchmark, but the original *PETadex* lacked the
@@ -123,7 +124,7 @@ used for other enzyme families and other reaction conditions.
   Should cover: seed MSAs and catalytic HMMs; clustering and corpus structure.
 */}
 ### Background and Overview
-The creation of the PETadex in prior work [Logan citiation] and the creation of PETadex V2 here, relies on the foundation 
+The creation of the PETadex in prior work [@chikhi2024logan] and the creation of PETadex V2 here, relies on the foundation 
 built by our supervising lab (RNAlab) through the *Logan* project. *Logan* is the assembly of the Sequence Read Archive (SRA), 
 the leading public repositiory for global sequencing experiments (38M experiments). Researchers often require only a little 
 portion of the total sequencing dataset, and thus will not run a genome assembly algorithm over the sample due to its expensive 
@@ -132,7 +133,7 @@ compressing the 87.0 Petabases of raw data into 1.8 Petabases of searchable cont
 
 We searched for plastic-degrading enzyme homologs through a sequence alignment search against the *Logan* assembly, retrieving over
 1.7 billion putative plastic-degrading enzyme homologs. The well studied polyethylene terephthalate (PET)-degrading enzyme, *Is*PETase, 
-was discovered using similar means [IsPETase citation]. The researchers identified a bacterium, *Ideonella sakaiensis*, able to degrade
+was discovered using similar means [@yoshida2016]. The researchers identified a bacterium, *Ideonella sakaiensis*, able to degrade
 PET using an unknown enzyme. They discovered the identity of this enzyme by performing an alignment search of a known plastic-degrading
 enzyme called TfH against the *I. sakaiensis* genome. Our dataset generation pipeline mirrors these methods, but lacks a key feature:
 we do not know which genomes belong to plastic-degrading organisms.
@@ -167,7 +168,7 @@ we do not know which genomes belong to plastic-degrading organisms.
   same 609.
 */}
 
-We created the query search of validated plastic-degrading enzymes by combing two versions of the PAZy database [PAZy citation]:
+We created the query search of validated plastic-degrading enzymes by combing two versions of the PAZy database [@buchholz2022pazy]:
 the one used to generate the original PETadex (pulled August 26th, 2024) and a recently updated version (pulled July 1st, 2026). 
 Manual curation of the union of these two datasets resulted in a total of 609 curated, experimentally validation plastic-degrading
 enzymes, which we call PETadex-PAZy.
@@ -243,13 +244,13 @@ enzymes, which we call PETadex-PAZy.
 
 The first set of annotations of the PETadex is which CATH domain these proteins are from. We assigned
 each PETadex-PAZy protein a structural label from CATH, the standard system for sorting protein domains
-according to their 3D structural folds [citaiton].
+according to their 3D structural folds [@sillitoe2021cath; @waman2024cath].
 
-Each enzyme was labelled by comparing its predicted structure to known structures, and by matching its sequence 
-to both known CATH and Pfam [citaiton] sequence models. We then made a phylogenetic tree of the dataset, which
+Each enzyme was labelled by comparing its predicted structure to known structures [@lau2023merizo; @vankempen2024foldseek], and by matching its sequence 
+to both known CATH [@lewis2018gene3d] and Pfam [@paysanlafosse2025pfam] sequence models. We then made a phylogenetic tree of the dataset, which
 shows that the distinct PETadex domains are unalignable to each other, forming independent roots. Additionally,
 the tree demonstrates that most of our database is dominated by α/β-hydrolases, which include several landmark
-enzymes such as *Is*PETase and LCC.
+enzymes such as *Is*PETase [@yoshida2016] and LCC [@sulaiman2012lcc].
 
 <CathForest />
 
@@ -294,7 +295,7 @@ enzymes such as *Is*PETase and LCC.
 
 The PETadex-PAZy dataset can be organized into alignable components: groups in which each sequence aligns with at least one other, and so on, while sharing at least 30% amino acid identity. These groups are useful in telling us about shared ancestry, the novelty of new enzymes, and the overall family shape of the dataset.
 
-Here we show all of the 46 components that comprise the PETadex-PAZy dataset. A single component dominates the dataset, containing 232 centroids, including both IsPETase and LCC.
+Here we show all of the 46 components that comprise the PETadex-PAZy dataset. A single component dominates the dataset, containing 232 centroids, including both IsPETase and LCC [@yoshida2016; @sulaiman2012lcc].
 
 <ComponentMap />
 
@@ -405,7 +406,7 @@ The environment alone carries information that isn't obvious from the sequence. 
 
 ### Biosample Metadata Annotations
 
-A plastic-degrading enzyme is only useful if we know where its host organism lives and what conditions it tolerates. We started from 932 validated plastic-degrading organisms and 2,535 organism-polymer records in PlasticDB (Figure 2A) and found that only 527 records (21%) carry an enzyme sequence, from 77% for PET down to 0.9% for LDPE (Figure 2B). We then added laboratory growth tests for 455 BacDive strains: 44% of 421 grow at 25°C or below (Figure 2C), 71% of 75 at pH 9 or above (Figure 2D) and 50% of 155 at 5% NaCl or above (Figure 2E). Environment classes for 646 BioSamples are led by soil and sediment (Figure 2F), yet two sources agree on the class for only 46% of organisms. Together these results set assay conditions of 25°C, pH 8 to 9 and added NaCl, and give a first panel of 27 cold-active strains with a protein and a closed genome.
+A plastic-degrading enzyme is only useful if we know where its host organism lives and what conditions it tolerates. We started from 932 validated plastic-degrading organisms and 2,535 organism-polymer records in PlasticDB [@gambarini2022plasticdb] (Figure 2A) and found that only 527 records (21%) carry an enzyme sequence, from 77% for PET down to 0.9% for LDPE (Figure 2B). We then added laboratory growth tests for 455 BacDive [@reimer2022bacdive] strains: 44% of 421 grow at 25°C or below (Figure 2C), 71% of 75 at pH 9 or above (Figure 2D) and 50% of 155 at 5% NaCl or above (Figure 2E). Environment classes for 646 BioSamples are led by soil and sediment (Figure 2F), yet two sources agree on the class for only 46% of organisms. Together these results set assay conditions of 25°C, pH 8 to 9 and added NaCl, and give a first panel of 27 cold-active strains with a protein and a closed genome.
 
 <Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/biosample-annotations.avif" alt="Biosample Annotations Figure" width="100%" 
 caption={<><strong>Figure 2.</strong> Known plastic-degrading organisms and the metadata layers joined to them: <strong>A.</strong> data flow from PlasticDB through BacDive to NCBI BioSample, <strong>B.</strong> protein-linked records by polymer, <strong>C.</strong> growth temperature range, <strong>D.</strong> growth pH range, <strong>E.</strong> strains that grow at each condition, <strong>F.</strong> environment class of BioSamples.{" "}
@@ -444,7 +445,7 @@ caption={<><strong>Figure 2.</strong> Known plastic-degrading organisms and the 
   pH propagation and the unweighted-means caveat.
 */}
 
-Each of these enzymes that we've mined from Logan comes from a BioSample. This tells us where, when and how the sequencing was done, as well as where and in what conditions the sample was taken from. In our PETadex dataset, we have 6.8M biosamples, of which 2.74M contains real and usable features. To organize these BioSamples into discrete "categories", we've built a classification system to organize each of these samples into one of 21 environment profiles.
+Each of these enzymes that we've mined from Logan [@chikhi2024logan] comes from a BioSample [@barrett2012biosample]. This tells us where, when and how the sequencing was done, as well as where and in what conditions the sample was taken from. In our PETadex dataset, we have 6.8M biosamples, of which 2.74M contains real and usable features. To organize these BioSamples into discrete "categories", we've built a classification system to organize each of these samples into one of 21 environment profiles.
 
 {/*
   VERIFY (propagation): the handoff README and the Methods page describe it
@@ -517,9 +518,9 @@ Despite these limitations, the PETadex pilot dataset produced two putative novel
 
 ### Predicted Structures
 
-Existing protein structure prediction databases such as AlphaFold DB (AFDB) [https://console.cloud.google.com/storage/browser/public-datasets-deepmind-alphafold-v4] contain predicted protein structure cif files, alongside quality metrics such as pLDDT, pTM and the PAE matrix. These metrics measure structural quality and position pairwise error which are useful for identifying domains/components. We used our set of downloaded structures to validate the PETadex v2 HMMs' domain coverage, as well as novel domain analysis. With the advent of novel structural bioinformatics methods such as structural clustering, docking, and FoldSeek, these structures can and will be used for further analysis.
+Existing protein structure prediction databases such as AlphaFold DB (AFDB) [@varadi2022afdb] contain predicted protein structure cif files, alongside quality metrics such as pLDDT, pTM and the PAE matrix. These metrics measure structural quality and position pairwise error which are useful for identifying domains/components. We used our set of downloaded structures to validate the PETadex v2 HMMs' domain coverage, as well as novel domain analysis. With the advent of novel structural bioinformatics methods such as structural clustering, docking, and FoldSeek, these structures can and will be used for further analysis.
 
-We searched these databases to search for predicted structures for 7.8M PETadex v2 significant hits. AFDB is indexed by Uniprot accession, so PETadex accessions were converted to Uniprot accessions using the Uniprot idmapping [https://ftp.uniprot.org/pub/databases/uniprot/current_release/]. In total, structures and metrics for 575,770 PETadex v2 proteins were found in the AFDB, emphasizing the unexplored nature of the PETadex. This number is after accounting for proteins with multiple AFDB structures, as well as those with malformed header rows. Below are the distributions of the downloaded structures grouped by component and domain. We found that Component 16 (Cytochrome P450) was the most common component, while Alpha/Beta hydrolase was the most common domain.
+We searched these databases to search for predicted structures for 7.8M PETadex v2 significant hits. AFDB is indexed by Uniprot accession, so PETadex accessions were converted to Uniprot accessions using the Uniprot [idmapping file](https://ftp.uniprot.org/pub/databases/uniprot/current_release/) [@uniprot2025]. In total, structures and metrics for 575,770 PETadex v2 proteins were found in the AFDB, emphasizing the unexplored nature of the PETadex. This number is after accounting for proteins with multiple AFDB structures, as well as those with malformed header rows. Below are the distributions of the downloaded structures grouped by component and domain. We found that Component 16 (Cytochrome P450) was the most common component, while Alpha/Beta hydrolase was the most common domain.
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain-distribution.svg"
   alt="Two panels: (A) the number of AlphaFold DB structures downloaded for each PETadex domain; (B) the number of PETadex structures searched compared with the number found on AlphaFold DB"
@@ -662,7 +663,7 @@ The two datasets meet in a loop. Rather than testing only the candidates the mod
 
 ### Embedding Controls
 
-Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for the 30%pid PETadex centroids. These 640 dimensional embeddings were then UMAPed to 2 dimensions using the umap-learn (https://umap-learn.readthedocs.io/en/latest/) Python library.
+Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for the 30%pid PETadex centroids. These 640 dimensional embeddings were then UMAPed to 2 dimensions using the umap-learn Python library [@mcinnes2018umap].
 
 
 <Figure
@@ -674,7 +675,7 @@ Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for th
 
 Finally, we ran controls on this UMAP to verify that this clustering does not appear by chance. Our objectives are the following: 
 Generate negative controls (random and shuffled sequences) from the 64,730 family representatives, designed to disentangle amino-acid composition from sequence order.
-Generate positive / real-world controls (random UniProt proteins, real-sequence fragments) for comparison against the real centroids.
+Generate positive / real-world controls (random UniProt [@uniprot2025] proteins, real-sequence fragments) for comparison against the real centroids.
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/real-vs-controls-stacked.avif"

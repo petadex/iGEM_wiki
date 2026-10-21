@@ -8,6 +8,7 @@ description: "How two snapshots of the PAZy database were curated against their 
 owners: ["Dry Lab"]
 updated: "2026-10-21"
 status: "draft"
+bibliography: "../../dry-lab.bib"
 ---
 
 {/*
@@ -59,7 +60,7 @@ This page is the full write-up behind the [PETadex-PAZy Reference Curation](/dry
 
 ## Why curate?
 
-The breadth and diversity of existing plastic-degrading enzyme databases is very constrained. The plastics-active enzymes database (PAZy) contains 495 experimentally verified plastic-active enzymes, most of them being homologs of leaf-branch compost cutinase (LCC) or IsPETase. Using established homology-based retrieval and expansion pipelines, we built a workflow for the retrieval of plastic-degrading enzymes from the SRA as well as the NCBI-nr by leveraging the Logan assembly.
+The breadth and diversity of existing plastic-degrading enzyme databases is very constrained. The plastics-active enzymes database (PAZy) [@buchholz2022pazy] contains 495 experimentally verified plastic-active enzymes, most of them being homologs of leaf-branch compost cutinase (LCC) [@sulaiman2012lcc] or IsPETase [@yoshida2016]. Using established homology-based retrieval and expansion pipelines, we built a workflow for the retrieval of plastic-degrading enzymes from the SRA as well as the NCBI-nr by leveraging the Logan assembly [@chikhi2024logan].
 
 PETadex-PAZy is the part of PETadex that links back to characterized enzymes. Everything else in PETadex is a putative enzyme that hasn't been tested in the lab.
 
@@ -79,7 +80,7 @@ To generate this updated PETadex-260701 dataset, a starting search query was cre
 | pazy-260701, curated | After curation against each source publication | 473 | `cleaned_pazy-260701` |
 | Original PETadex seed set | Plasticome v1, used to build PETadex v1 | 213 | `plasticome.v1` |
 | pazy-240826 | The seed set after cleaning (plasticome v1.1) | 212 | `plasticome.v1.1` |
-| Erickson changes | Sequences reset to the paper's supplement | 21 | `erickson-changes` |
+| Erickson changes [@erickson2022] | Sequences reset to the paper's supplement | 21 | `erickson-changes` |
 
 ## Curating pazy-260701
 
@@ -104,7 +105,7 @@ For 53 records the curator left a note on why something was changed, and for 21 
 |---|---|
 | PLE628 | This gene is correlational to plastic degradation through RNA-seq upregulation and plastic-degrading enzyme homology, but there is no concrete evidence. |
 | Mors1 | Changed the accession to the accession from the paper. |
-| Cut190 | Wt has very little PET degradation, Mt has more |
+| Cut190 [@kawai2014cut190] | Wt has very little PET degradation, Mt has more |
 | Est1 | BAI99230.2 = Est119 |
 | CalB | The first two citations on PAZy didn't mention CalB exactly, but third does, so I removed the first 2. |
 
@@ -154,13 +155,13 @@ So the paper's sequence only survives for 12 of the 21 Erickson enzymes. The oth
 
 We then joined each record back to its source tables to pull in substrate, organism, superkingdom, metagenomic origin, UniProt accession and PDB structure. Where the two snapshots disagreed, we went with pazy-260701. Some PDB IDs in the sources were typos or obsolete, so we checked each fix by aligning the RCSB sequence against the record's own sequence. After these fixes, 91 records link to an experimental structure.
 
-We predicted a structure for every enzyme with ESMFold2. Across the 609 enzymes the mean pLDDT was 0.94, and 605 (99.3%) had a mean pLDDT of at least 0.70. These structures are what goes into [CATH Assignment](/dry-lab/model/#cath-assignment).
+We predicted a structure for every enzyme with ESMFold2 [@lin2023esm2]. Across the 609 enzymes the mean pLDDT was 0.94, and 605 (99.3%) had a mean pLDDT of at least 0.70. These structures are what goes into [CATH Assignment](/dry-lab/model/#cath-assignment).
 
 <PlasticomeCoverage />
 
 ## Outputs
 
-The 609 sequences were clustered at 90% amino acid identity with USEARCH v11.0.667 in a reference-seeded scheme. Thirteen well-characterized enzymes were fixed as cluster centroids, and the remaining sequences were first recruited to these centroids. Those left unassigned were clustered *de novo* with centroids chosen by decreasing length. This produced 411 clusters (13 reference-seeded, and 398 *de novo*). The 411 centroids are the query set for the NCBI-nr search. Separately, collapsing PETadex-PAZy at 100% identity gives 493 non-redundant proteins, which were used to seed the profile HMMs.
+The 609 sequences were clustered at 90% amino acid identity with USEARCH v11.0.667 [@edgar2010usearch] in a reference-seeded scheme. Thirteen well-characterized enzymes were fixed as cluster centroids, and the remaining sequences were first recruited to these centroids. Those left unassigned were clustered *de novo* with centroids chosen by decreasing length. This produced 411 clusters (13 reference-seeded, and 398 *de novo*). The 411 centroids are the query set for the NCBI-nr search. Separately, collapsing PETadex-PAZy at 100% identity gives 493 non-redundant proteins, which were used to seed the profile HMMs.
 
 | Set | How it is made | Size | Used for |
 |---|---|---|---|
