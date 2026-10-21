@@ -13,7 +13,7 @@
   }
   html,body{margin:0;background:var(--paper);color:var(--ink);
     font-family:"DM Sans","Helvetica Neue",Helvetica,Arial,sans-serif}
-  .wrap{width:800px;margin:0;padding:0}
+  .wrap{width:672px;margin:0;padding:0}
   svg{width:100%;height:auto;display:block}
   .lbl{font-weight:700;letter-spacing:.02em;fill:var(--ink)}
   .edge{font-size:12px;font-weight:600;fill:var(--water-2);
@@ -23,11 +23,16 @@
   button{font:inherit;color:inherit;background:none;border:1px solid #d8cbbd;border-radius:999px;padding:5px 14px;cursor:pointer}
   button:hover{border-color:var(--ink-2)}
   label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  /* Each petamon disc links to its subteam. */
+  a.disc{cursor:pointer;outline:none}
+  a.disc .ring{opacity:0;transition:opacity 160ms ease}
+  a.disc:hover .ring,a.disc:focus-visible .ring{opacity:.95}
+  @media (prefers-reduced-motion:reduce){a.disc .ring{transition:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<svg id="fig" viewBox="0 0 800 800" width="800" height="800" role="img" aria-labelledby="figtitle figdesc">
+<svg id="fig" viewBox="64 64 672 672" width="672" height="672" role="group" aria-labelledby="figtitle figdesc">
   <title id="figtitle">PetaBite: the loop and the thrusters</title>
   <desc id="figdesc">Three engine petamons (Dry Lab, Wet Lab, Hardware) circle the PetaBite core in a
   design-build-test-learn loop, inside an outer ring of thruster petamons for the teams beyond the bench.
@@ -48,8 +53,6 @@
     </marker>
   </defs>
 
-  <!-- Rounded off-white card. -->
-  <rect x="14" y="14" width="772" height="772" rx="30" fill="var(--paper)" stroke="#e6ddd0" stroke-width="1.5"/>
 
   <g id="figbody" transform="translate(20 50)">
   <!-- Full rings, painted as soft water bands behind the discs. -->
@@ -82,15 +85,15 @@
   --------------------------------------------------------------------- */
   var ICON = { w: 363, h: 250, cx: 181.5, cy: 125, r: 97.5 };
   var ENGINES = [
-    { name: 'Dry lab',  icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/dry-lab.webp',  color: '#f2c14e' },
-    { name: 'Wet lab',  icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/wet-lab.webp',  color: '#55aee9' },
-    { name: 'Hardware', icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/hardware.webp', color: '#f08a4b' }
+    { name: 'Dry lab',  to: '/dry-lab/overview/', icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/dry-lab.webp',  color: '#f2c14e' },
+    { name: 'Wet lab',  to: '/wet-lab/overview/', icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/wet-lab.webp',  color: '#55aee9' },
+    { name: 'Hardware', to: '/hardware/',         icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/hardware.webp', color: '#f08a4b' }
   ];
   var THRUSTERS = [
-    { name: 'Human practices',  icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/human-practices.webp',  color: '#ef5a5f' },
-    { name: 'Entrepreneurship', icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/entrepreneurship.webp', color: '#a07cf2' },
-    { name: 'Web',              icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/web.webp',              color: '#62c883' },
-    { name: 'Outreach',         icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/outreach.webp',         color: '#f27ab8' }
+    { name: 'Human practices',  to: '/human-practices/',           icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/human-practices.webp',  color: '#ef5a5f' },
+    { name: 'Entrepreneurship', to: '/entrepreneurship/',          icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/entrepreneurship.webp', color: '#a07cf2' },
+    { name: 'Web',              to: '/wiki/',                      icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/web.webp',              color: '#62c883' },
+    { name: 'Outreach',         to: '/beyond-the-bench/outreach/', icon: 'https://static.igem.wiki/teams/6187/wiki/project/figure-1-image/outreach.webp',         color: '#f27ab8' }
   ];
   /* Inner loop, clockwise: Dry lab -> Wet lab -> Hardware -> Dry lab. */
   var EDGE_LABELS = ['PETase library', 'assay design', 'activity data'];
@@ -137,15 +140,25 @@
   }
   function tr(e, p) { e.setAttribute('transform', 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')'); }
 
+  /* The figure is served from <prefix>/figures/project-description/, so this recovers
+     the wiki's path prefix ('' locally, '/toronto' on igem.wiki) for the disc links. */
+  var PREFIX = location.pathname.split('/figures/')[0];
+
   /* One petamon disc: a watercolour rim in the team colour, the team's icon inside it
-     (its petamon may break out of the circle), and the name on a tag at the bottom edge. */
+     (its petamon may break out of the circle), and the name on a tag at the bottom edge.
+     Each disc links to its subteam; the figure sits in an iframe, so target _top
+     navigates the page around it. The PetaBite core is not a link. */
   function disc(spec, r, parent) {
-    var g = el('g', { 'class': 'node' }, parent);
+    var a = el('a', { 'class': 'disc', href: PREFIX + spec.to, target: '_top' }, parent);
+    el('title', {}, a).textContent = spec.name;
+    var g = el('g', { 'class': 'node' }, a);
     el('circle', { r: r + 5, fill: spec.color, opacity: 0.25, filter: 'url(#bleed)' }, g);
     el('circle', { r: r, fill: '#fffdf8', filter: 'url(#wash)' }, g);
     var body = el('circle', { r: r, fill: spec.color, opacity: 0.55, filter: 'url(#wash)' }, g);
     var k = (r - 6) / ICON.r;
     el('image', { href: spec.icon, x: -ICON.cx * k, y: -ICON.cy * k, width: ICON.w * k, height: ICON.h * k }, g);
+    /* Hover and keyboard-focus ring, under the name tag so the pill stays on top. */
+    el('circle', { 'class': 'ring', r: r + 2, fill: 'none', stroke: spec.color, 'stroke-width': 3 }, g);
     var fs = r < 55 ? 11 : 12, tag = el('g', { transform: 'translate(0,' + (r - 2) + ')' }, g);
     var rect = el('rect', { y: -9.5, height: 19, rx: 9.5, fill: '#fffdf8', stroke: spec.color, 'stroke-width': 1.6 }, tag);
     var t = el('text', { 'class': 'lbl', 'text-anchor': 'middle', 'font-size': fs, y: fs * 0.36 }, tag);
