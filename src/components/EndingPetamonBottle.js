@@ -9,7 +9,6 @@ import { Link, navigate } from "gatsby"
 import styled, { keyframes } from "styled-components"
 import { inputCopyCss, phone, phoneSize } from "./artScale.js"
 import { PlateImg, drawPlateRegion } from "./PlateImg.js"
-
 const CDN =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/ending-petamon-eating-bottle"
 /** Same bang as the waterfall's popup hint. */
@@ -183,7 +182,7 @@ const PIECES = [
  */
 const SUBTEAM_LABELS = true
 
-/** Hover enlargement of a piece and its petamon. */
+/** Hover enlargement of a piece and its petamon. The creatures on the pieces do not play their own hover motions. */
 const POP_SCALE = 1.25
 /** Longest fly-in delay; every piece still lands by assemble = 1. */
 const FLY_DELAY_MAX = 0.15
@@ -718,13 +717,11 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
               <Whisper aria-hidden={!ready}>
                 <span className="hover-copy">
                   psst… on each subteam's page, its petamons are up to
-                  something too. Hover over anything there that looks alive
-                  (the crabs on this page are in on it too).
+                  something too. Hover over anything there that looks alive.
                 </span>
                 <span className="touch-copy">
                   psst… on each subteam's page, its petamons are up to
-                  something too. Tap anything there that looks alive (the
-                  crabs on this page are in on it too).
+                  something too. Tap anything there that looks alive.
                 </span>
               </Whisper>
             </>

@@ -21,5 +21,9 @@ export const HARDWARE_ITERATIONS = [
     "label": "Version 2",
     "overview": "Placeholder: add the goals, overall design, and key lessons from Version 2."
   },
-
+  {
+    "id": "version-3",
+    "label": "Final",
+    "overview": "Placeholder: add the goals, overall design, and key lessons from the final version."
+  },
 ]

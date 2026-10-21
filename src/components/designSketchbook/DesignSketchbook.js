@@ -9,6 +9,7 @@ import React, {
 import { createPortal } from "react-dom"
 import styled from "styled-components"
 import { PopupClose } from "../PopupClose"
+import { flashConferenceMentions } from "../mdx/embeds.js"
 import {
   DESIGN_SKETCHBOOK_PAGES,
   DESIGN_SKETCHBOOK_SECTIONS,
@@ -1903,7 +1904,7 @@ const SketchSubtitle = styled.p`
   }
 `
 
-const SketchBody = styled.p`
+const SketchBodyText = styled.p`
   && {
     font-family: var(--font-body);
     font-size: clamp(0.75rem, 3.5cqw, 0.95rem);
@@ -1912,6 +1913,10 @@ const SketchBody = styled.p`
     max-width: 36rem;
   }
 `
+
+function SketchBody({ children, ...props }) {
+  return <SketchBodyText {...props}>{flashConferenceMentions(children)}</SketchBodyText>
+}
 
 const TocList = styled.ul`
   list-style: none;
@@ -2086,7 +2091,7 @@ const SketchImage = styled.img`
   filter: drop-shadow(0 1px 2px rgba(34, 34, 34, 0.18));
 `
 
-const SketchCaption = styled.figcaption`
+const SketchCaptionText = styled.figcaption`
   flex-shrink: 0;
   margin-top: 0.4rem;
   font-family: var(--font-body);
@@ -2094,6 +2099,10 @@ const SketchCaption = styled.figcaption`
   line-height: 1.4;
   color: var(--color-muted);
 `
+
+function SketchCaption({ children, ...props }) {
+  return <SketchCaptionText {...props}>{flashConferenceMentions(children)}</SketchCaptionText>
+}
 
 /** Off-screen copies of the pages, laid out only to be measured. */
 const MeasureLayer = styled.div`

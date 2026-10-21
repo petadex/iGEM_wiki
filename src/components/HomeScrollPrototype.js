@@ -6,13 +6,14 @@ import React, {
   useState,
 } from "react"
 import styled, { css, keyframes } from "styled-components"
-import { Link } from "gatsby"
+import { Link, withPrefix } from "gatsby"
 import { WikiTopBar, WIKI_TOP_BAR_Z_INDEX } from "./WikiTopBar.js"
 import { WaterfallSideText, PETASE_EXPLANATION } from "./WaterfallSideText.js"
 import { SwipeInBox } from "./SwipeInBox.js"
 import { ExplainTerm } from "./ExplainTermPopover.js"
 import { HomePlaza, PetamonProvider, usePetamonsMet } from "./HomePlaza.js"
 import EndingPetamonBottle from "./EndingPetamonBottle.js"
+import { LoopTarget, PetamonAct, TreeHide } from "./petamonHovers.js"
 import { HomeAutoplay } from "./HomeAutoplay.js"
 import { LabConstellation, WindowSky } from "./LabConstellation.js"
 import { LabBench, WET_TIP, wetStage } from "./LabBench.js"
@@ -133,6 +134,12 @@ const TURTLE_CROP = { x: 0, y: 1124, w: 130, h: 100 }
 const TURTLE_HQ_CROP = { x: 0, y: 1126, w: 132, h: 110 }
 /** Turtle size relative to how he's painted. */
 const TURTLE_SCALE = 0.8
+/**
+ * Surfaced pose, left of the painted crop. The lightning shiver reaches
+ * about 7% right (plus a small rotation), so this tuck keeps the cut edge
+ * of the shell under the bank at the rightmost point of that shake.
+ */
+const TURTLE_REST_X = "-22%"
 /** Turtle surfaces once his spot rises above this share of the view height. */
 const TURTLE_SURFACE_VIEW_Y = 0.8
 const WATERFALL_BAND_TOP = 395 / FRONT_ART_HEIGHT
@@ -691,41 +698,22 @@ const SECTION5_CDN =
 /** Hex field after the reef. Transparent top (~26%) fades into the honeycomb. */
 const HEX_FIELD_SRC =
   "https://static.igem.wiki/teams/6187/wiki/homepage-components/bg-new-use-this.avif"
-/** Full hex plate. The painted crop starts at row 981; the file is 1440×3831. */
-const HEX_PLATE = { w: 1440, h: 3831 }
 /** Plate % where the hex art starts, low enough to cover the bottom of the reef. */
 const HEX_FIELD_TOP_PCT = 70.6
 /**
- * "Discover more about PetaBite" ends near plate row 1512. The ending
- * bottle sits just under that line, and the hex is cropped there: the
- * rest of the plate is empty honeycomb and is not shown.
+ * Width-relative height of the hex image that sticks out past section 5.
+ * hexH/W − (1 − topPct) × section5H/W
  */
-const HEX_CTA_END_ROW = 1580
-/** Gap between that line and the ending bottle, in the cropped frame. */
-const HEX_BELOW_CTA = "1.75rem"
-/** A little honeycomb left under the bottle before the crop. */
-const HEX_UNDER_BOTTLE = "2.25rem"
-/** Room under the crop for the bottle's hint, on the same dark field. */
-const HEX_HINT_ROOM = "14vh"
-/** Same cap as EndingBottleSlot, so the crop stays wrapped around the bottle. */
-const ENDING_BOTTLE_H = "min(calc(90vw * 1060 / 1340), 74vh)"
-/** Hex art through the bottle. Shares the plate's top, so the reef still lines up. */
-const HEX_ART_HEIGHT = `calc(${artPx(HEX_CTA_END_ROW)} + ${HEX_BELOW_CTA} + ${ENDING_BOTTLE_H} + ${HEX_UNDER_BOTTLE})`
-/** Cropped art plus the hint. This is the whole ending frame. */
-const HEX_BAND_HEIGHT = `calc(${HEX_ART_HEIGHT} + ${HEX_HINT_ROOM})`
-/**
- * How much of section 5 is still below the hex's top, in widths.
- * (1 − topPct) × section5H/W. The band past this is the only scroll left
- * after the reef plate.
- */
-const HEX_SECTION5_TAIL =
-  (1 - HEX_FIELD_TOP_PCT / 100) * (4000 / 946)
+const HEX_FIELD_BELOW_ASPECT = "1 / 1.417"
 /** Hex art row (share of its height) where it turns fully opaque — below the reef. */
-const HEX_OPAQUE_FROM = 1202 / HEX_PLATE.h
-/** Scroll (share of vh) the view holds on the Discover-more frame while petamons burst. */
+const HEX_OPAQUE_FROM = 1202 / 3831
+/** Scroll (share of vh) the view holds on the ending bottle while petamons burst. */
 const ENDING_HOLD_VH = 1.1
-/** While held, "Discover more about PetaBite" sits at this share of the view. */
-const ENDING_HOLD_CTA_VH = 0.34
+/**
+ * While held, the bottle sits this share of the view below center, so the
+ * descriptions that open above the top labels stay on screen.
+ */
+const ENDING_HOLD_DROP_VH = 0.05
 
 /**
  * The treatment plant and the sea under it, repainted as one picture on the
@@ -955,9 +943,8 @@ const SECTION5_FISHES = [
 ]
 
 /**
- * Cut-out petamons. Each file is one creature (its own hover target).
- * Upload the files in ~/Downloads/petamon-splits/ to this directory;
- * the page points at them already, so a 404 until then is expected.
+ * Cut-out petamons. Each file is one creature.
+ * Bundled with the site so the creatures do not depend on a separate CDN upload.
  *
  *   outreach-pink-rabbit-right.avif  forest, right branch
  *   outreach-pink-rabbit-left.avif   forest, left edge
@@ -969,8 +956,7 @@ const SECTION5_FISHES = [
  *   section5-yellow-axolotl.avif      reef, lower middle
  *   section5-green-axolotl.avif       reef, lower right
  */
-const BOTTOM_PETAMON_CDN =
-  "https://static.igem.wiki/teams/6187/wiki/homepage-components/bottompetamon"
+const BOTTOM_PETAMON_BASE = withPrefix("/homepage-petamons")
 
 /**
  * Outreach rabbits. The source sheet is the 2360×1640 frame of the pinned
@@ -981,13 +967,16 @@ const BOTTOM_PETAMON_CDN =
 const FOREST_PETAMONS = [
   {
     id: "pink-rabbit-right",
-    src: `${BOTTOM_PETAMON_CDN}/outreach-pink-rabbit-right.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/outreach-pink-rabbit-right.avif`,
     box: { left: 84.07, top: 58.9, width: 9.53, height: 6.88 },
+    /** Ears, as a fraction of the cut-out, so the acorn lands on the head. */
+    head: { x: 0.7, y: 0.28 },
   },
   {
     id: "pink-rabbit-left",
-    src: `${BOTTOM_PETAMON_CDN}/outreach-pink-rabbit-left.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/outreach-pink-rabbit-left.avif`,
     box: { left: 3.22, top: 67.76, width: 3.14, height: 6.48 },
+    head: { x: 0.5, y: 0.16 },
   },
 ]
 
@@ -1000,38 +989,43 @@ const FOREST_PETAMONS = [
 const SECTION5_PETAMONS = [
   {
     id: "tan-fox",
-    src: `${BOTTOM_PETAMON_CDN}/section5-tan-fox.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/section5-tan-fox.avif`,
     box: { left: 4.12, top: 6.6, width: 12.26, height: 3 },
   },
   {
     id: "kangaroo",
-    src: `${BOTTOM_PETAMON_CDN}/section5-kangaroo.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/section5-kangaroo.avif`,
     box: { left: 66.81, top: 32.45, width: 24.63, height: 7.08 },
   },
   {
     id: "snail",
-    src: `${BOTTOM_PETAMON_CDN}/section5-snail.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/section5-snail.avif`,
     box: { left: 79.39, top: 41.28, width: 18.39, height: 2.63 },
   },
   {
     id: "turtle",
-    src: `${BOTTOM_PETAMON_CDN}/section5-turtle.avif`,
-    box: { left: 7.19, top: 57.33, width: 13.85, height: 2.55 },
+    src: "https://static.igem.wiki/teams/6187/wiki/homepage-components/separate-petamon/turtle.avif",
+    // Full-plate sprite. Crop is the opaque turtle, with a few pixels of pad.
+    crop: { x0: 64, y0: 2282, x1: 207, y1: 2408 },
+    box: { left: 6.77, top: 57.05, width: 15.12, height: 3.15 },
   },
   {
     id: "pink-axolotl",
-    src: `${BOTTOM_PETAMON_CDN}/section5-pink-axolotl.avif`,
-    box: { left: 14.17, top: 55.53, width: 24.95, height: 6.48 },
+    src: "https://static.igem.wiki/teams/6187/wiki/homepage-components/separate-petamon/acolotl.avif",
+    // Full-plate sprite (filename is acolotl). Crop includes the lower whisker.
+    // Body sits below the turtle (turtle bottom is 60.2%).
+    crop: { x0: 127, y0: 2214, x1: 377, y1: 2486 },
+    box: { left: 13.42, top: 61.5, width: 26.43, height: 6.8 },
   },
   {
     id: "yellow-axolotl",
-    src: `${BOTTOM_PETAMON_CDN}/section5-yellow-axolotl.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/section5-yellow-axolotl.avif`,
     aboveHex: true,
     box: { left: 52.54, top: 78.6, width: 20.51, height: 4.5 },
   },
   {
     id: "green-axolotl",
-    src: `${BOTTOM_PETAMON_CDN}/section5-green-axolotl.avif`,
+    src: `${BOTTOM_PETAMON_BASE}/section5-green-axolotl.avif`,
     aboveHex: true,
     box: { left: 73.78, top: 75.65, width: 18.18, height: 4.93 },
   },
@@ -1043,6 +1037,77 @@ const petamonSpotStyle = ({ left, top, width, height }) => ({
   width: `${width}%`,
   height: `${height}%`,
 })
+
+/** Show one rectangle of a full-plate sprite, without clipping the spot. */
+function plateFillStyle(src, crop) {
+  const plateW = 946
+  const plateH = 4000
+  const w = crop.x1 - crop.x0
+  const h = crop.y1 - crop.y0
+  return {
+    backgroundImage: `url(${src})`,
+    backgroundRepeat: "no-repeat",
+    backgroundSize: `${(plateW / w) * 100}% ${(plateH / h) * 100}%`,
+    backgroundPosition: `${(crop.x0 / (plateW - w)) * 100}% ${(crop.y0 / (plateH - h)) * 100}%`,
+  }
+}
+
+/**
+ * Section 5 cut-outs, from the treatment plant down through the reef.
+ * The plant-rim kangaroo head (tan-fox cutout) throws coins from its mouth.
+ * The sitting kangaroo throws coins too. The sewer turtle flashes lightning, biased left so
+ * its cropped side stays covered. The shell beside the plant fans three bolts
+ * from its head and shivers slightly. Every water axolotl glows and floats clear; the pink one drifts
+ * straight down, into the open water under it. The fox does not react. Ocean copy
+ * stays above the creatures (`z` 12) and does not take hits.
+ */
+function section5Act(id) {
+  if (id === "kangaroo" || id === "tan-fox") return "coins"
+  if (id === "turtle" || id === "snail") return "lightning"
+  if (id.endsWith("axolotl")) return "dodge"
+  return null
+}
+
+function Section5Petamon({ pet, z }) {
+  const kind = section5Act(pet.id)
+  const shake =
+    pet.id === "turtle" ? "left" : pet.id === "snail" ? "slight" : undefined
+  return (
+    <PetamonSpot
+      $z={z}
+      style={petamonSpotStyle(pet.box)}
+      aria-hidden="true"
+    >
+      <PetamonAct
+        kind={kind}
+        hitInset="0"
+        glow={kind === "dodge"}
+        shake={shake}
+        bolt={
+          pet.id === "snail" || pet.id === "turtle" ? "fan" : undefined
+        }
+        fanAt={
+          pet.id === "turtle"
+            ? { x: 0.14, y: 0.16 }
+            : pet.id === "snail"
+              ? { x: 0.18, y: 0.2 }
+              : undefined
+        }
+        mouth={pet.id === "tan-fox" ? { x: 0.24, y: 0.56 } : undefined}
+        drift={
+          pet.id === "pink-axolotl" ? { x: 0, y: 1 } : undefined
+        }
+        refWidth={pet.id === "tan-fox" ? 150 : kind === "coins" ? 273 : 201}
+      >
+        {pet.crop ? (
+          <PlateFill style={plateFillStyle(pet.src, pet.crop)} />
+        ) : (
+          <img src={pet.src} alt="" draggable={false} />
+        )}
+      </PetamonAct>
+    </PetamonSpot>
+  )
+}
 
 /**
  * Floating bottle: the stage-0 bottle above the waterline, and the painted
@@ -1406,8 +1471,10 @@ const SECTION3_ANIMALS = [
     originX: 72.7,
     originY: 37.5,
     hover: true,
-    /** Empty transparent column on the right of the plate — drop it so scale doesn't widen the page. */
-    clipRightPct: 24,
+    /** Right-hand bird. Clockwise, and the circle stays left of the perch so the wing is not cropped. */
+    loop: { left: "67%", top: "33%", width: "11%", height: "9%" },
+    loopSpan: 0.02,
+    facing: -1,
     flapMs: 480,
     delayMs: 40,
   },
@@ -1421,6 +1488,10 @@ const SECTION3_ANIMALS = [
     originX: 35.9,
     originY: 36.3,
     hover: true,
+    /** Left-hand bird. Counterclockwise. */
+    loop: { left: "31%", top: "32%", width: "10%", height: "9%" },
+    loopSpan: 0.02,
+    facing: 1,
     flapMs: 720,
     delayMs: 160,
   },
@@ -1654,6 +1725,103 @@ function UntilMet({ id, children }) {
  * and pin the bottle centered; (2) stay pinned through the bottom of the page so it does not
  * vanish. Unpin only when the user scrolls back up past TP1 (`scrollY` below that capture minus slack).
  */
+/** Forest birds loop. Every other plate keeps the plain flap. */
+function BirdPlate({ loop, facing, origin, span, children }) {
+  const frames = <CrabFlapper>{children}</CrabFlapper>
+  if (!loop) return frames
+  return (
+    <LoopTarget box={loop} facing={facing || 1} origin={origin} span={span}>
+      {frames}
+    </LoopTarget>
+  )
+}
+
+function ForestCritter({ animal, stealRef }) {
+  let plate = animal.static ? (
+    <CrabFlapper>
+      <StaticPlateImg src={animal.src} alt="" />
+    </CrabFlapper>
+  ) : (
+    <AnimalMotion
+      $scale={animal.scale || 1}
+      $ox={animal.originX}
+      $oy={animal.originY}
+      $hover={animal.hover}
+      $delayMs={animal.delayMs}
+      $clipRightPct={animal.clipRightPct || 0}
+    >
+      <BirdPlate
+        loop={animal.loop}
+        facing={animal.facing}
+        origin={
+          animal.originX != null
+            ? `${animal.originX}% ${animal.originY}%`
+            : undefined
+        }
+        span={animal.loopSpan}
+      >
+        <CrabFrame
+          $phase="a"
+          $durationMs={animal.flapMs}
+          $delayMs={animal.delayMs}
+          $hoverFlap={animal.hover}
+          src={animal.a}
+          alt=""
+        />
+        <CrabFrame
+          $phase="b"
+          $durationMs={animal.flapMs}
+          $delayMs={animal.delayMs}
+          $hoverFlap={animal.hover}
+          src={animal.b}
+          alt=""
+        />
+      </BirdPlate>
+    </AnimalMotion>
+  )
+
+  if (animal.id === "axolotl") {
+    plate = (
+      <TreeHide
+        hit={{ left: "76%", top: "60%", width: "20%", height: "16%" }}
+        shift="12%"
+      >
+        {plate}
+      </TreeHide>
+    )
+  }
+
+  let body = plate
+  if (animal.id.startsWith("crab")) {
+    body = (
+      <CrabScuttle
+        originX={animal.originX}
+        originY={animal.originY}
+        label={`Crab ${animal.id}`}
+      >
+        {plate}
+      </CrabScuttle>
+    )
+  }
+  if (animal.revealOnArrive) {
+    body = <PetamonReveal $delayMs={animal.delayMs}>{body}</PetamonReveal>
+  } else if (animal.id === STEAL_BIRD_ID) {
+    body = <BirdStealMount ref={stealRef}>{body}</BirdStealMount>
+  }
+
+  return (
+    <CrabMount
+      $xPct={animal.xPct}
+      $yPct={animal.yPct}
+      $z={
+        animal.id === STEAL_BIRD_ID ? 12 : animal.id === "axolotl" ? 2 : 0
+      }
+    >
+      {body}
+    </CrabMount>
+  )
+}
+
 export function HomeScrollPrototype() {
   const stackRef = useRef(null)
   const bottleTouchRef = useRef(null)
@@ -1720,7 +1888,6 @@ export function HomeScrollPrototype() {
   const hexOverlapRef = useRef(null)
   const endingSlotRef = useRef(null)
   const endingBottleRef = useRef(null)
-  const section5CtaRef = useRef(null)
   const endingReleasedRef = useRef(false)
   const section5FoamRef = useRef(null)
   const section5SplashLayerRef = useRef(null)
@@ -3025,6 +3192,17 @@ export function HomeScrollPrototype() {
         const show = onPlate && inBand
         chute.style.left = `${left}px`
         chute.style.top = `${top}px`
+        // The mount is position:fixed inside the chute layer, so its own
+        // z-index never leaves that layer. The layer has to rise. Foam
+        // (z 11) stays in front through the splash. In the reef the layer
+        // paints over the axolotls (also z 11), glow included. Copy is
+        // z 12 and later in the tree, so it stays in front. The layer is
+        // otherwise empty, so an axolotl that does not touch the bottle
+        // still shows.
+        const overReef = yPct >= 68
+        const chuteZ = overReef ? "12" : String(CHUTE_Z)
+        chute.style.zIndex = chuteZ
+        if (chute.parentElement) chute.parentElement.style.zIndex = chuteZ
         chute.style.transform = `translate3d(-50%, -50%, 0) rotate(${pose.r}deg) scale(${pose.sx}, ${pose.sy})`
         chute.style.opacity = show ? "1" : "0"
         chute.style.visibility = show ? "visible" : "hidden"
@@ -3063,7 +3241,7 @@ export function HomeScrollPrototype() {
       }
 
       // Ending bottle: pieces fly in as the hex field scrolls up, then the
-      // sticky track holds the Discover-more frame while petamons burst out.
+      // sticky track holds the view (bottle centered) while petamons burst out.
       const holdTrack = endingHoldTrackRef.current
       const holdSticky = endingHoldStickyRef.current
       const holdSpacer = endingHoldSpacerRef.current
@@ -3078,12 +3256,11 @@ export function HomeScrollPrototype() {
         const released = endingReleasedRef.current
         const holdPx = reduce || released ? 0 : Math.round(vh * ENDING_HOLD_VH)
         const hexOff = hexOverlap.offsetTop
-        const cta = section5CtaRef.current
-        const ctaWithin = cta
-          ? cta.getBoundingClientRect().top -
-            holdSticky.getBoundingClientRect().top
-          : hexOff
-        const stickyTop = Math.round(vh * ENDING_HOLD_CTA_VH - ctaWithin)
+        const bottleOff =
+          hexOff + endingSlot.offsetTop + endingSlot.offsetHeight / 2
+        const stickyTop = Math.round(
+          vh * (0.5 + ENDING_HOLD_DROP_VH) - bottleOff,
+        )
         if (holdSticky.style.top !== `${stickyTop}px`) {
           holdSticky.style.top = `${stickyTop}px`
         }
@@ -3092,11 +3269,9 @@ export function HomeScrollPrototype() {
         }
         // Track top (un-stuck flow position): assembly runs from the reef
         // leaving the top of the view (hex art fully opaque there) to the
-        // Discover-more line reaching its hold.
+        // bottle reaching center.
         const trackTop = holdTrack.getBoundingClientRect().top
-        const plateH =
-          hexOverlap.offsetWidth * (HEX_PLATE.h / HEX_PLATE.w)
-        const flyFrom = -(hexOff + HEX_OPAQUE_FROM * plateH)
+        const flyFrom = -(hexOff + HEX_OPAQUE_FROM * hexOverlap.offsetHeight)
         const assemble = reduce
           ? 1
           : clamp01((flyFrom - trackTop) / Math.max(1, flyFrom - stickyTop))
@@ -3736,6 +3911,7 @@ export function HomeScrollPrototype() {
 
               <TurtleWindow
                 ref={turtleRef}
+                $out={turtleOut}
                 aria-hidden="true"
                 style={{
                   left: `${(TURTLE_CROP.x / FRONT_ART_WIDTH) * 100}%`,
@@ -3746,6 +3922,12 @@ export function HomeScrollPrototype() {
               >
                 <TurtleSneak $out={turtleOut}>
                   <TurtleFloat $out={turtleOut}>
+                    <PetamonAct
+                      kind="lightning"
+                      hitInset="0"
+                      bolt="fan"
+                      fanAt={{ x: 0.8, y: 0.28 }}
+                    >
                     <TurtleImg
                       src={ASSETS.turtle}
                       alt=""
@@ -3768,6 +3950,7 @@ export function HomeScrollPrototype() {
                         visibility: turtleHqReady ? undefined : "hidden",
                       }}
                     />
+                    </PetamonAct>
                   </TurtleFloat>
                 </TurtleSneak>
               </TurtleWindow>
@@ -4026,80 +4209,19 @@ export function HomeScrollPrototype() {
                 $z={3}
               >
                 <ForestAnimalsStack aria-hidden="true">
-                  {SECTION3_ANIMALS.map(animal => {
-                    let plate = animal.static ? (
-                      <CrabFlapper>
-                        <StaticPlateImg src={animal.src} alt="" />
-                      </CrabFlapper>
-                    ) : (
-                      <AnimalMotion
-                        $scale={animal.scale || 1}
-                        $ox={animal.originX}
-                        $oy={animal.originY}
-                        $hover={animal.hover}
-                        $delayMs={animal.delayMs}
-                        $clipRightPct={animal.clipRightPct || 0}
-                      >
-                        <CrabFlapper>
-                          <CrabFrame
-                            $phase="a"
-                            $durationMs={animal.flapMs}
-                            $delayMs={animal.delayMs}
-                            $hoverFlap={animal.hover}
-                            src={animal.a}
-                            alt=""
-                          />
-                          <CrabFrame
-                            $phase="b"
-                            $durationMs={animal.flapMs}
-                            $delayMs={animal.delayMs}
-                            $hoverFlap={animal.hover}
-                            src={animal.b}
-                            alt=""
-                          />
-                        </CrabFlapper>
-                      </AnimalMotion>
-                    )
-
-                    let body = plate
-                    if (animal.id.startsWith("crab")) {
-                      plate = (
-                        <CrabScuttle
-                          originX={animal.originX}
-                          originY={animal.originY}
-                          label={`Crab ${animal.id}`}
-                        >
-                          {plate}
-                        </CrabScuttle>
-                      )
-                      body = plate
-                    }
-                    if (animal.revealOnArrive) {
-                      body = (
-                        <PetamonReveal $delayMs={animal.delayMs}>
-                          {plate}
-                        </PetamonReveal>
-                      )
-                    } else if (animal.id === STEAL_BIRD_ID) {
-                      body = (
-                        <BirdStealMount ref={birdStealRef}>
-                          {plate}
-                        </BirdStealMount>
-                      )
-                    }
-
-                    return (
-                      <CrabMount
-                        key={animal.id}
-                        $xPct={animal.xPct}
-                        $yPct={animal.yPct}
-                        $z={animal.id === STEAL_BIRD_ID ? 12 : 0}
-                      >
-                        {body}
-                      </CrabMount>
-                    )
-                  })}
+                  {SECTION3_ANIMALS.filter(animal => !animal.loop).map(animal => (
+                    <ForestCritter
+                      key={animal.id}
+                      animal={animal}
+                      stealRef={birdStealRef}
+                    />
+                  ))}
                 </ForestAnimalsStack>
+                {/* Same pixels as the right trunk, above the axolotl (z 2)
+                    so the slide goes under the bark. Birds stay in a higher band. */}
+                <TrunkCover aria-hidden="true">
+                  <img src={ASSETS.front} alt="" />
+                </TrunkCover>
               </ArtBand>
 
               <ArtBand
@@ -4108,15 +4230,33 @@ export function HomeScrollPrototype() {
                 $z={6}
               >
                 {FOREST_PETAMONS.map(pet => (
-                  <PetamonSpot
+                  <PetamonReveal
                     key={pet.id}
+                    $placed
                     style={petamonSpotStyle(pet.box)}
                     aria-hidden="true"
                   >
-                    <button type="button" tabIndex={-1} />
-                    <img src={pet.src} alt="" draggable={false} />
-                  </PetamonSpot>
+                    <PetamonAct kind="acorn" head={pet.head} hitInset="4%">
+                      <img src={pet.src} alt="" draggable={false} />
+                    </PetamonAct>
+                  </PetamonReveal>
                 ))}
+              </ArtBand>
+
+              <ArtBand
+                $top={FOREST_BAND_TOP}
+                $height={FOREST_BAND_HEIGHT}
+                $z={7}
+              >
+                <ForestAnimalsStack $pass aria-hidden="true">
+                  {SECTION3_ANIMALS.filter(animal => animal.loop).map(animal => (
+                    <ForestCritter
+                      key={animal.id}
+                      animal={animal}
+                      stealRef={birdStealRef}
+                    />
+                  ))}
+                </ForestAnimalsStack>
               </ArtBand>
 
               <ArtBand
@@ -4326,9 +4466,7 @@ export function HomeScrollPrototype() {
                   ref={hexOverlapRef}
                   $topPct={HEX_FIELD_TOP_PCT}
                 >
-                  <HexFieldClip>
-                    <HexFieldImg src={HEX_FIELD_SRC} alt="" />
-                  </HexFieldClip>
+                  <HexFieldImg src={HEX_FIELD_SRC} alt="" />
                   <EndingBottleSlot ref={endingSlotRef}>
                     <EndingPetamonBottle ref={endingBottleRef} />
                   </EndingBottleSlot>
@@ -4345,15 +4483,17 @@ export function HomeScrollPrototype() {
                   />
                 ))}
                 {SECTION5_PETAMONS.filter(pet => !pet.aboveHex).map(pet => (
-                  <PetamonSpot
+                  <Section5Petamon
                     key={pet.id}
-                    $z={7}
-                    style={petamonSpotStyle(pet.box)}
-                    aria-hidden="true"
-                  >
-                    <button type="button" tabIndex={-1} />
-                    <img src={pet.src} alt="" draggable={false} />
-                  </PetamonSpot>
+                    pet={pet}
+                    z={
+                      pet.id === "kangaroo" || pet.id === "tan-fox"
+                        ? 11
+                        : pet.id === "turtle"
+                          ? 8
+                          : 7
+                    }
+                  />
                 ))}
                 <Section5ChuteBottleLayer aria-hidden="true">
                   <ChuteBottleMount ref={chuteBottleMountRef}>
@@ -4512,15 +4652,7 @@ export function HomeScrollPrototype() {
                   ))}
                 </Section5SplashLayer>
                 {SECTION5_PETAMONS.filter(pet => pet.aboveHex).map(pet => (
-                  <PetamonSpot
-                    key={pet.id}
-                    $z={11}
-                    style={petamonSpotStyle(pet.box)}
-                    aria-hidden="true"
-                  >
-                    <button type="button" tabIndex={-1} />
-                    <img src={pet.src} alt="" draggable={false} />
-                  </PetamonSpot>
+                  <Section5Petamon key={pet.id} pet={pet} z={11} />
                 ))}
                 <Section5RampPatch aria-hidden="true" />
                 <Section5TextStack aria-hidden="false">
@@ -4558,7 +4690,7 @@ export function HomeScrollPrototype() {
                     and to champion the idea of plastic-degrading enzymes for
                     microplastic cleanup.
                   </Section5OceanLine>
-                  <Section5Cta ref={section5CtaRef}>
+                  <Section5Cta>
                     Discover more about{" "}
                     <Link to="/project/description/">PetaBite</Link>.
                   </Section5Cta>
@@ -4644,10 +4776,12 @@ const EndingHoldSpacer = styled.div`
 const EndingBottleSlot = styled.div`
   position: absolute;
   left: 50%;
-  /* Just under "Discover more", inside the cropped hex — not at the bottom of the full plate. */
-  top: calc(${artPx(HEX_CTA_END_ROW)} + ${HEX_BELOW_CTA});
-  z-index: 2;
-  /* As big as the view allows while held (frame is 1340×1060),
+  /* Raised off the bottom of the hex art: some room below it before the footer.
+     Above the reef axolotls (z 11) so the bottle covers them where they overlap.
+     Copy stays at z 12 and is painted later, so it stays in front of the bottle. */
+  bottom: 30vh;
+  z-index: 12;
+  /* As big as the view allows while held mid-screen (frame is 1340×1060),
      leaving room for the hint under it. */
   width: min(90vw, calc(74vh * 1340 / 1060));
   width: min(90vw, calc(74svh * 1340 / 1060));
@@ -4665,54 +4799,34 @@ const Section5Root = styled.div`
   background: transparent;
 `
 
-/**
- * Above the chute bottle (z 8) and bubbles (z 10) so they scroll underneath.
- * Height is the cropped frame (through the bottle and its hint), not the
- * full 3831-row plate.
- */
+/** No z-index of its own, so the hex image and the bottle can stack apart. */
 const HexFieldOverlap = styled.div`
   position: absolute;
   left: 0;
   top: ${({ $topPct }) => `${$topPct}%`};
-  z-index: 11;
   width: 100%;
-  height: ${HEX_BAND_HEIGHT};
-  background: #101133;
-  pointer-events: none;
-`
-
-/** Clips the hex plate to the cropped frame. The image stays top-aligned. */
-const HexFieldClip = styled.div`
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
   pointer-events: none;
 `
 
 const HexFieldImg = styled(PlateImg)`
-  position: absolute;
-  left: 0;
-  top: 0;
+  position: relative;
+  z-index: 11;
   display: block;
   width: 100%;
-  max-width: none;
   height: auto;
+  max-width: 100%;
   pointer-events: none;
   user-select: none;
 `
 
-/** Scroll space for the cropped hex that still sticks out past the reef plate. */
+/** Scroll space for the hex image that extends past the reef plate. */
 const HexFieldRoot = styled.div`
   position: relative;
   z-index: 0;
   width: 100%;
   min-width: 0;
-  height: max(
-    0px,
-    calc(
-      ${HEX_BAND_HEIGHT} - var(${ART_WIDTH_VAR}, 100vw) * ${HEX_SECTION5_TAIL}
-    )
-  );
+  aspect-ratio: ${HEX_FIELD_BELOW_ASPECT};
+  padding-bottom: 22vh;
   background: #101133;
 `
 
@@ -4831,8 +4945,12 @@ const PlateCropImg = styled(PlateImg)`
 const Section5FishStack = styled.div`
   position: absolute;
   inset: 0;
-  z-index: 10;
-  pointer-events: auto;
+  /* Under the chute bottle (z 8) so the school passes behind it and behind
+     the burst riding on that bottle. Still above the reef painting. */
+  z-index: 7;
+  /* The fish themselves take the pointer. The rest of the plate stays
+     click-through so the petamons under this stack can still be hovered. */
+  pointer-events: none;
   overflow: hidden;
 `
 
@@ -4872,7 +4990,7 @@ const FishDrift = styled.div`
 const Section5FishPlane = styled.div`
   position: absolute;
   z-index: ${({ $z }) => $z ?? 5};
-  pointer-events: none;
+  pointer-events: auto;
 `
 
 const fishHoverBob = keyframes`
@@ -4896,28 +5014,20 @@ const fishHoverBobStrong = keyframes`
 `
 
 /**
- * One cut-out petamon. The box is its plate slot; the button is the hover
- * target (inset so neighbours that share a corner, the turtle and the pink
- * axolotl, don't steal each other). Hover lifts just that creature.
+ * One cut-out petamon. The box is its plate slot. Creatures that react do it
+ * through PetamonAct; nothing here lifts on hover.
  */
+const PlateFill = styled.div`
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+`
+
 const PetamonSpot = styled.div`
   position: absolute;
   z-index: ${({ $z }) => $z ?? 1};
   pointer-events: none;
-
-  button {
-    position: absolute;
-    inset: 18%;
-    z-index: 1;
-    display: block;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    appearance: none;
-    background: transparent;
-    pointer-events: auto;
-    cursor: pointer;
-  }
+  overflow: visible;
 
   img {
     display: block;
@@ -4926,20 +5036,6 @@ const PetamonSpot = styled.div`
     object-fit: contain;
     pointer-events: none;
     user-select: none;
-    transform: translate3d(0, 0, 0);
-    transition: transform 240ms ease;
-  }
-
-  button:hover ~ img {
-    transform: translate3d(0, -10%, 0);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    img,
-    button:hover ~ img {
-      transition: none;
-      transform: none;
-    }
   }
 `
 
@@ -5227,6 +5323,7 @@ const section5LineBase = `
   line-height: 1.35;
   text-align: center;
   overflow-wrap: break-word;
+  pointer-events: none;
 
   a {
     pointer-events: auto;
@@ -5551,6 +5648,42 @@ const BushLayer = styled.div`
 `
 
 /** Overlay band as a fraction of the unified front canvas. */
+/**
+ * The right forest trunk, copied from the front plate and stacked above the
+ * yellow axolotl. Clipped to the bark so the face still peeks out beside it
+ * at rest; on hover the axolotl eases under this layer.
+ */
+const TrunkCover = styled.div`
+  position: absolute;
+  left: 0;
+  width: 100%;
+  z-index: 5;
+  height: ${(1 / FOREST_BAND_HEIGHT) * 100}%;
+  top: ${-(FOREST_BAND_TOP / FOREST_BAND_HEIGHT) * 100}%;
+  pointer-events: none;
+  clip-path: polygon(
+    92.4% 80.4%,
+    92.2% 80.9%,
+    92% 81.6%,
+    92% 82.2%,
+    91% 82.6%,
+    90.2% 83.1%,
+    88.6% 83.6%,
+    87% 84.1%,
+    92% 84.6%,
+    100% 84.8%,
+    100% 80.2%
+  );
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    user-select: none;
+  }
+`
+
 const ArtBand = styled.div`
   position: absolute;
   left: 0;
@@ -5571,7 +5704,7 @@ const CrabsStack = styled.div`
 `
 
 const ForestAnimalsStack = styled(CrabsStack)`
-  pointer-events: auto;
+  pointer-events: ${({ $pass }) => ($pass ? "none" : "auto")};
 `
 
 const petamonPopIn = keyframes`
@@ -5592,11 +5725,25 @@ const petamonPopIn = keyframes`
 /** Crabs + axolotls stay off the plate until the walker is surprised. */
 /** Shown once the walk arrives (`data-walk` on the forest composition). */
 const PetamonReveal = styled.div`
-  width: 100%;
+  width: ${({ $placed }) => ($placed ? "auto" : "100%")};
   opacity: 0;
   pointer-events: none;
   /* Only bites on the way out — the pop-in keyframes own the entry. */
   transition: opacity 240ms ease;
+
+  ${({ $placed }) =>
+    $placed &&
+    css`
+      position: absolute;
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+      }
+    `}
 
   button {
     pointer-events: none;
@@ -7037,21 +7184,26 @@ const turtleFloat = keyframes`
 
 const TurtleWindow = styled.div`
   position: absolute;
-  z-index: 2;
-  overflow: hidden;
+  /* Above the waterfall copy band (z 2) so the bolt and its hit aren't
+     covered by that band's full-bleed pointer layer. */
+  z-index: 3;
+  /* Clipped while he is still behind the page edge. Once he has surfaced,
+     the lightning bolt is allowed to extend past the crop. */
+  overflow: ${({ $out }) => ($out ? "visible" : "hidden")};
   pointer-events: none;
 `
 
 /**
  * Slides out from behind the page edge when the reader reaches the waterfall
  * (see turtleOut), and back behind it if they scroll up above his section.
- * He eases in without overshooting: he's painted cut off at the page edge,
- * so going past it would show that cut.
+ * He eases in without overshooting the tucked pose. He's painted cut off
+ * at the page edge, so the rest pose stays left of that cut: the shiver
+ * can travel right and the cropped back still stays under the bank.
  */
 const TurtleSneak = styled.div`
   position: absolute;
   inset: 0;
-  transform: translate3d(${({ $out }) => ($out ? "0" : "-100%")}, 0, 0);
+  transform: translate3d(${({ $out }) => ($out ? TURTLE_REST_X : "-100%")}, 0, 0);
   transition: transform
     ${({ $out }) =>
       $out
@@ -7082,6 +7234,7 @@ const TurtleImg = styled(PlateImg)`
   display: block;
   height: auto;
   max-width: none;
+  pointer-events: none;
   user-select: none;
 `
 
@@ -7090,6 +7243,7 @@ const TurtleHqImg = styled.img`
   display: block;
   height: auto;
   max-width: none;
+  pointer-events: none;
   user-select: none;
 `
 
