@@ -1267,6 +1267,8 @@ export const PROJECT_SCENE = {
   footerButton: { bg: "#e2662c", text: "#111926" },
   text: {
     name: "project-box",
+    /** Callouts, tables and figures span the box, like the text does. */
+    fullWidthBlocks: true,
     box: [285, 256, 864, 2001],
     // Preserve the full painted border when the menu narrows the text column.
     artBox: [63, 256, 864, 2001],

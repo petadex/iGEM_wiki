@@ -9,30 +9,25 @@ updated: "2026-05-16"
 status: "draft"
 ---
 
-We discovered over **300 million plastic-degrading enzymes** hidden within public sequencing datasets. Using machine learning, high-throughput screening, and bioreactor validation, we identify and engineer enzymes capable of completely **breaking down PET plastic polymers at room temperature.** Everything we've built is **open source**, from the PETadex dataset and machine learning models to the ethical insights gathered through stakeholder interviews and the regulatory roadmap guiding the project's path toward commercialization.
+Nature has evolved enzymes for nearly every environment on Earth, and our long-term goal is to create a workflow that can utilize the breadth of public sequencing data to find or design a plastic-degrading enzyme *for any condition and any plastic type*. This year, we built this workflow and set our **North Star Goal** as designing an enzyme that breaks down **PET** at **room temperature**.
 
-Our aim is to accelerate this field so that the next set of scientists or founders (or iGEM team) can take what we have built and use it to make a dent in the plastic pollution crisis.
+We have **open-sourced** everything we have built, from the PETadex dataset to the regulatory roadmap guiding the project's path toward commercialization. Our vision for PetaBite is to accelerate this field and inspire the next generation of scientists, founders, or iGEM teams to join this cause and collectively make a dent in the plastic pollution crisis.
 
 <PaperCallouts>
   <PaperCallout paper="peach" title="The PETadex and PlasticESM. ">
     Before 2026, the world had **495** experimentally validated plastic-degrading
-    enzymes. We screened Logan, the petabase-scale assembly of the Sequence
-    Read Archive, and recovered 300 million putative plastic-degrading enzyme
-    sequences, a **600,000-fold expansion** of the known catalogue. We then
-    fine-tuned a protein language model, **PlasticESM**, on this corpus to rank
-    which sequences are most likely to be active, and created an algorithm
-    that can efficiently create a library for wet lab to test.
+    enzymes. We searched 27.3 million public sequencing datasets, with the Logan index, and recovered more than 300 million putative plastic-degrading enzyme sequences, a **600,000-fold increase** over the known catalogue. We then fine-tuned a protein language model, **PlasticESM**, on this dataset to rank which sequences are most likely to be active. We also created the LOBSTER algorithm that can optimize a library and reduce nucleotide costs by ~45% for experimental validation.
   </PaperCallout>
-  <PaperCallout paper="mauve" title="Novel high-throughput assays and a low-cost bioreactor. ">
-    To test enzymes at scale, Wet Lab built a copper-release biosensor in E. coli, where PET degradation frees copper that switches on a fluorescent reporter or an antibiotic resistance marker.
+  <PaperCallout paper="mauve" title="Novel High-Throughput Assays and a Low-Cost Bioreactor. ">
+    To test enzymes at scale, Wet Lab built two novel high-throughput assays: Biosensor and Selection. In E. coli, PET degradation frees copper that switches on a fluorescent reporter or an antibiotic resistance marker.
 
-    Hardware built low-cost, open-source Arduino bioreactors that hold temperature and read optical density, so every run yields a labelled sequence, condition, and activity data point that feeds back into the model.
+    Hardware built low-cost, open-source Arduino bioreactors that hold temperature and read optical density. The goal being to generate rich condition, and activity data and to optimize the best-performing candidates from wet-lab for our industrial use-case.
 
   </PaperCallout>
-  <PaperCallout paper="blue" title="Beyond the bench ">
-    Through interviews with wastewater researchers, operators, and engineers, we learned that current enzymes capable of functioning only at 70°C would be impractical for any industrial deployment. As a result, we established room-temperature activity as a core design requirement.
+  <PaperCallout paper="blue" title="Beyond the Bench ">
+    Through interviews with wastewater researchers, operators, and engineers, we learned that current enzymes capable of functioning only at 70°C would be impractical for any industrial deployment. As a result, we focused our **North Star Goal** around room-temperature enzymatic activity.
 
-    Stakeholder feedback also guided us toward using purified enzymes rather than live organisms and informed our decision to pursue a contained bioreactor as our initial pilot-scale deployment strategy. We translated these insights into a business model and regulatory roadmap for future commercialization, co-organized the University of Toronto Microplastics Conference with the UofT Trash Team, and launched a synthetic biology mentorship program for high school students. Our wiki documents this progress so the next team can build upon this foundation.
+    Along with extensive stakeholder feedback, we also co-organized the University of Toronto Microplastics Conference, and launched a synthetic biology mentorship program for high school students. Our wiki documents this progress so future iGEM teams can build upon this foundation.
 
   </PaperCallout>
 </PaperCallouts>
@@ -44,64 +39,113 @@ Our aim is to accelerate this field so that the next set of scientists or founde
   Under prefers-reduced-motion it shows round 1 held, all four arrows formed.
 */}
 
+<div style={{ maxWidth: "70%", margin: "0 auto" }}>
 <InteractiveEmbed
   src="/figures/project-description/petabite-loop.html"
-  title="Figure 1. One loop, three engines"
-  caption="Figure 1. One loop, three engines, and the teams that steer it. Dry Lab hands Wet Lab a PETase library, Wet Lab's assay design sets what Hardware runs, and Hardware's activity data is built to return to the model. Each time the loop pauses, Entrepreneurship and Human Practices both feed one lab while Web and Outreach feed the other two. Arrows run both ways because each exchange went in both directions."
-  logical={[800, 800]}
+  caption="Figure 1. Overview of PetaBite. Dry Lab creates a library out of ranked PETases from the PETadex, Wet Lab tests it, Hardware runs further tests under diverse conditions, and all of the activity data is fed back to the model. The teams on the outer ring steer each team on the inside and provide crucial feedback and guidance."
+  logical={[672, 672]}
 />
+</div>
 
-## 1. The problem
+## 1. The Problem
 
-Plastic is the most successful material of the last century, and this material paved the way for the development of computers, cell phones, and most of the lifesaving advances of modern medicine. In 2019 alone, the world made about 460 million tonnes of it. However, an immense amount of plastic was discarded, and of the 353 million tonnes that became waste that year, 9% was recycled, 19% was incinerated, and the rest went to landfill or into the environment [@oecdGlobalPlasticsOutlook2022]. Since mass production began, people have made roughly 8.3 billion tonnes of plastic and recycled less than a tenth of it [@geyerProductionUseFate2017]. Plastic does not disappear; rather, it fragments into microplastics under 5 mm that are now found in rivers, soil, drinking water and, in recent research, human blood [@leslieDiscoveryQuantificationPlastic2022].
+Plastic is the most successful material of the last century, and this material paved the way for the development of computers, cell phones, and most of the lifesaving advances of modern medicine. In 2019 alone, the world made about **460 million tonnes of it**. However, an immense amount of plastic was discarded, and of the 353 million tonnes that became waste that year, 9% was recycled, 19% was incinerated, and the rest went to landfill or into the environment [@oecdGlobalPlasticsOutlook2022]. Since mass production began, people have made roughly 8.3 billion tonnes of plastic and recycled less than a tenth of it [@geyerProductionUseFate2017].
 
-To date, most solutions have focused on managing plastic waste rather than eliminating it. Mechanical recycling melts PET into new products, but the material degrades in quality with every cycle. Chemical recycling can recover PET's building blocks, yet virgin plastic produced from fossil fuels remains cheaper, preventing these technologies from scaling economically. Incineration simply transforms solid waste into atmospheric emissions without addressing the root problem. Most importantly, none of these approaches remove or destroy the plastic that has already entered our waterways.
+**Unfortunately, plastic does not disappear**; rather, it fragments into microplastics under 5 mm that are now found in rivers, soil, drinking water and, in recent research, human blood [@leslieDiscoveryQuantificationPlastic2022].
+
+**To date, most solutions have focused on managing plastic waste rather than eliminating it.** Mechanical recycling melts PET into new products, but the material degrades in quality with every cycle. Chemical recycling can recover PET's building blocks, yet virgin plastic produced from fossil fuels remains cheaper, preventing these technologies from scaling economically. Incineration simply transforms solid waste into atmospheric emissions without addressing the root problem. Most importantly, none of these approaches remove or destroy the plastic that has already entered our waterways.
 
 That's why we're focused on wastewater. Every wastewater treatment plant acts as a collection point for a city's microplastic pollution, concentrating these particles in sludge and effluent streams. Yet despite capturing vast quantities of plastic, treatment plants lack any process capable of actually degrading it.
 
 That bottleneck is the opportunity we're targeting. By integrating plastic-degrading enzymes directly into wastewater treatment infrastructure, we aim to transform treatment plants from passive collection systems into active microplastic degradation systems.
 
-### 1b. Enzymes and the plastic they break down
+### 1b. Enzymes and the Plastic they Break Down
+
+{/*
+  The same structure viewer the Dry Lab software page uses, here showing the
+  enzyme the section describes. The structure file and the catalytic-triad
+  positions come from the PETadex record for IsPETase.
+*/}
+
+<SideFigure
+  width="50%"
+  caption="Figure 2. The α/β-hydrolase fold: the most common plastic-degrading enzyme fold, with a substrate sitting in its active site. Drag it to turn and scroll to zoom."
+  figure={
+    <StructureViewer
+      src="https://static.igem.wiki/teams/6187/wiki/drylab-page/cath-structures/01-alpha-beta-hydrolase-model-4.pdb"
+      label="α/β-hydrolase fold with a bound substrate"
+      surface
+      zoom={1.3}
+      background="#fbf8f2"
+      face={[0.9412, -0.3349, 0.0456]}
+      color="#c9a06a"
+      substrateColor="#4a93e0"
+      spin
+    />
+  }
+>
 
 **Proteins** are chains of amino acids that fold into complex three-dimensional shapes. An **enzyme** is a protein that speeds up a chemical reaction, and its structure has specialized pockets called active sites. These active sites bind specific molecules and position them so that particular chemical bonds are easier to break or form. After the reaction occurs, the enzyme releases the product and can repeat the process millions of times, allowing living organisms to carry out complex chemistry efficiently at the temperatures at which they naturally live.
 
-## have an image of a nice looking structure of a petase with the PET in its active site
+</SideFigure>
 
-**Two key things to note:** an enzyme’s shape, and therefore its function, is determined by its amino acid sequence. This means that a sequence database like the PETadex can be transformed into a functional database, allowing us to predict which enzymes are likely to degrade PET and prioritize the most promising candidates for experimental testing. Fortunately, nature has spent billions of years evolving proteins for virtually every environment on Earth. As a result, for many chemical reactions, **a version of the enzyme already exists somewhere** that is adapted to the conditions we care about, whether that's cold temperatures, high salinity, extreme acidity, or other challenging environments. The challenge is finding those enzymes among nature's vast diversity.
 
-PET, the plastic used in most water bottles, is built from two small molecules, terephthalic acid (TPA) and ethylene glycol (EG), linked together by ester bonds. Because ester bonds are common in nature, many bacteria and fungi already produce enzymes capable of breaking them apart. In 2016, researchers discovered the bacterium *Ideonella sakaiensis* growing on discarded PET near a recycling facility [@yoshidaBacteriumDegradesAssimilates2016]. It uses two enzymes in sequence: PETase first breaks PET into smaller intermediates, primarily MHET, and MHETase then converts those intermediates into TPA and EG. These products are the same monomers used to manufacture new PET, meaning complete enzymatic depolymerization can enable true circular recycling. At the molecular level, PETase relies on a catalytic triad of three amino acids, serine, histidine, and aspartate, and many of today's most advanced PET-degrading enzymes, including FAST-PETase, HotPETase, and LCC-ICCG, are engineered descendants of PETase or closely related cutinases.
 
-## Figure 0. How an enzyme breaks down PET. The polymer chain (TPA and EG units linked by ester bonds) → PETase hydrolyses an ester bond at the surface → MHET and BHET → MHETase → TPA and EG monomers → feedstock for new PET. Schematic; may be drawn by the team.
+**Two key facts to note:** an enzyme’s shape, and therefore its function, is determined by its amino acid sequence. This means that a sequence database like the PETadex can be transformed into a functional database, allowing us to predict which enzymes are likely to degrade PET and prioritize the most promising candidates for experimental testing. Fortunately, nature has spent billions of years evolving proteins for virtually every environment on Earth. As a result, for many chemical reactions, **a version of the enzyme already exists somewhere** that is adapted to the conditions we care about, whether that's cold temperatures, high salinity, extreme acidity, or other challenging environments. The challenge is finding those enzymes among nature's vast diversity.
 
-There are two crucial facts about plastics that define the scope of this project. First, our work focuses on polyethylene terephthalate (PET) rather than plastics such as polyethylene (PE) or polypropylene (PP) because PET contains ester bonds that enzymes can naturally recognize and break. Decades of research have shown that enzymes such as PETases and cutinases can depolymerize PET, making biological recycling a realistic possibility. In contrast, polyolefins like PE and PP are built from highly stable carbon-carbon backbones that are largely inaccessible to known enzymes, and their low chemical reactivity, hydrophobicity, crystallinity, and limited chain flexibility make biodegradation extremely difficult. Second, PET is a semicrystalline material, meaning it contains both amorphous regions, where polymer chains are loose enough for enzymes to access ester bonds, and crystalline regions, where chains are packed too tightly for efficient attack. Near its glass transition temperature of approximately 70°C, the amorphous regions become more mobile, exposing many more bonds and accelerating degradation, which is why most enzymatic PET recycling studies operate at elevated temperatures. By contrast, an enzyme designed to depolymerize PET at room temperature must function on a rigid, largely inaccessible surface, making low-temperature degradation a far greater challenge and a key focus of our mission.
+<SideFigure
+  width="50%"
+  flow
+  src="https://static.igem.wiki/teams/6187/wiki/project/petase-pathway.avif"
+  alt="A PET bottle breaking into fragments, with a zoomed panel showing the PET polymer cut by IsPETase into the BHET monomer, then into TPA and EG, which feed into biomass and recycling."
+  caption="Figure 3. Enzymatic depolymerization of PET. PETase cuts the polymer, releasing BHET, which is cut again to terephthalic acid and ethylene glycol, the two molecules PET was built from. Those products either get recycled into new plastic or are taken up as biomass."
+  expandable
+>
+
+PET, the plastic used in most water bottles, is built from two small molecules, terephthalic acid (TPA) and ethylene glycol (EG), linked together by ester bonds. Because ester bonds are common in nature, many bacteria and fungi already produce enzymes capable of breaking them apart. In 2016, researchers discovered the bacterium *Ideonella sakaiensis* growing on discarded PET near a recycling facility [@yoshidaBacteriumDegradesAssimilates2016]. It uses two enzymes in sequence. PETase cuts the polymer, releasing BHET and MHET, and any BHET it releases is cut again to MHET [@puspitasariClassIHydrophobins2021]. MHETase then converts MHET into TPA and EG. Both enzymes are needed, because PETase alone leaves the intermediate largely uncut [@yoshidaBacteriumDegradesAssimilates2016]. These products are the same monomers used to manufacture new PET, meaning complete enzymatic depolymerization can **enable true circular recycling**. At the molecular level, PETase relies on a catalytic triad of three amino acids, serine, histidine, and aspartate, and many of today's most advanced PET-degrading enzymes, including FAST-PETase, HotPETase, and LCC-ICCG, are engineered descendants of PETase or closely related cutinases.
+
+</SideFigure>
+
+
+
+Two key characteristics of plastics define the scope of this project. First, we focus on polyethylene terephthalate (PET) rather than plastics such as polyethylene (PE) or polypropylene (PP). Unlike PE and PP, PET contains ester bonds that many enzymes can naturally recognize and break down [@mussakhmetov2025esterases]. Decades of research have shown that enzymes such as PETases and cutinases can depolymerize PET, making biological recycling a realistic possibility [@ahituv2025diversity]. In contrast, polyolefins like PE and PP are built from highly stable carbon-carbon backbones that are largely inaccessible to known enzymes, and their low chemical reactivity, hydrophobicity, crystallinity, and limited chain flexibility make biodegradation extremely difficult [@han2024enzymatic].
+
+Second, PET is a semicrystalline material, meaning it contains both amorphous regions, where polymer chains are loose enough for enzymes to access ester bonds, and crystalline regions, where chains are packed too tightly for efficient attack [@graefe2026enzymatic]. Near its glass transition temperature of approximately 70°C, the amorphous regions become more mobile, exposing many more bonds and accelerating degradation, which is why most enzymatic PET recycling studies operate at elevated temperatures [@brott2022engineering]. In contrast, an enzyme designed to depolymerize PET at room temperature must function on a rigid, largely inaccessible surface, making low-temperature degradation a far greater challenge and a key focus of our mission.
 
 ## 2. Why the current enzymes fail
 
-We have enzymes that can break down PET, so why have these not been deployed across the world? The TL;DR is that the enzymes we have were built for conditions that are hard to manufacture and scale in the real world.
+If we already have enzymes that can break down PET, why haven't they been deployed at scale? The short answer is that the best enzymes we have today were designed for conditions that are difficult and expensive to reproduce within real-world infrastructure.
 
-This field has seen groundbreaking research, with scientists designing highly efficient enzymes. Yoshida and colleagues isolated IsPETase in 2016 from *Ideonella sakaiensis*, a bacterium that grows on PET as its sole carbon source [@yoshidaBacteriumDegradesAssimilates2016]. Tournier and colleagues engineered the leaf-branch compost cutinase into LCC-ICCG in 2020, which depolymerizes 90% of pretreated PET in ten hours at 72 °C and remains the industrial benchmark [@tournierEngineeredPETDepolymerase2020]. Lu and colleagues used a structure-based neural network to produce FAST-PETase in 2022 [@luMachineLearningaidedEngineering2022], and Bell and colleagues evolved HotPETase to work at the PET glass transition in the same year [@bellDirectedEvolutionEfficient2022]. The amount of protein engineering work behind each of these discoveries was immense, and these discoveries have pushed the field forward.
+Over the past decade, the field has seen a series of breakthroughs. In 2016, Yoshida and colleagues discovered *Ideonella sakaiensis*, a bacterium capable of using PET as its sole carbon source, and isolated the enzyme IsPETase [@yoshidaBacteriumDegradesAssimilates2016]. Since then, researchers have engineered increasingly powerful variants. Tournier and colleagues developed LCC-ICCG, which depolymerized 90% of pretreated PET in just ten hours at 72 °C and established the industrial benchmark [@tournierEngineeredPETDepolymerase2020]. Lu and colleagues used a structure-based neural network to produce another industrial benchmark, FAST-PETase, in 2022, which almost completely degraded untreated post-consumer PET from 51 different thermoformed products within one week at 50 °C [@luMachineLearningaidedEngineering2022; @qu2026rational], and Bell and colleagues evolved HotPETase to work at the PET glass transition during the same year [@bellDirectedEvolutionEfficient2022]. The amount of protein engineering behind each of these advances was immense, and together they transformed enzymatic plastic recycling from a scientific curiosity into a viable technology.
 
-But each of them fails at deployment—for several reasons. First, temperature: every engineered variant was optimized near the glass transition of PET, around 70 °C. A wastewater plant runs at whatever temperature the water arrives, and heating the entire treatment stream to 50 to 70 °C is a monumental operating cost that no treatment plant would take on. Second, substrate: the benchmark numbers were measured on clean amorphous film or pretreated powder. Plastic in a sewer, a sludge digester or a landfill leachate is partly crystalline and is mixed with other polymers and coated in biofilm. Third, the database: PAZy, the curated database of experimentally validated plastic-active enzymes, holds only 495 enzymes [@buchholzPlasticsDegradationHydrolytic2022], and a decade of engineering has been constrained by this narrow set of enzymes.
+Yet none of these enzymes fully solve the main problem our project aims to target: deployment. First, they were optimized to work near PET's glass transition temperature, around 70 °C, where the polymer becomes more flexible and easier to degrade. Wastewater treatment plants, however, operate at the temperature of the water that arrives, which tracks local ambient conditions and typically sits somewhere between 6 and 27 °C [@revollar2025adapting]. Heating millions of litres per day to 50 to 70 °C is an operating cost no plant would take on. Second, laboratory benchmarks are typically measured on clean PET films or pretreated powders. Real-world plastic pollution is far messier, consisting of partially crystalline particles mixed with other materials and often coated in biofilms, sludge, or organic matter. Finally, the field has been constrained by a surprisingly small search space. PAZy, the primary curated database of experimentally validated plastic-degrading enzymes, contains only 495 enzymes [@buchholzPlasticsDegradationHydrolytic2022]. As a result, a decade of protein engineering has largely focused on refining a narrow set of natural starting points rather than exploring the vast diversity of enzymes that may already exist in nature.
 
-<Callout title="Prof. Rasha (UCalgary Prof, EPCOR Wastewater Treatment Specialist) ">
+<Callout title="Prof. Rasha Maal-Bared (Principal Scientist, CDM Smith R&T Labs; Adjunct Professor, University of Alberta; WEF Board of Trustees) ">
   Waste Water Treatment Plants typically work at mesophilic temperatures
   [20–45°C; optimal ~35°C], and the 70 degree requirement is way too high and is
   unfeasible for industrial use
 </Callout>
 
-Learn more about Prof. Rasha's interview in the [Human Practices Multidisciplinary Global Stakeholder Outreach](https://2026.igem.wiki/toronto/human-practices/#multidisciplinary-global-stakeholder-outreach) section.
+Learn more about Prof. Rasha's interview in the [Human Practices Multidisciplinary Global Stakeholder Outreach](/beyond-the-bench/human-practices/#multidisciplinary-global-stakeholder-outreach) section.
 
 <Callout title="What we chose not to do">
-  - **More directed evolution on FAST-PETase.** This enzyme was not evolved for
-  cold water, and we would just be hill-climbing and optimizing the wrong enzyme
-  - **Rational design on the same scaffold.** The active site of IsPETase is
-  already well mapped and studied, and any gains would be tiny and incremental.
-  - **A thermophilic chassis to supply the heat.** Engineering a way for the
-  organism to create a 70 °C pocket for the PETase enzyme to operate in would be
-  a monumental challenge, near impossible.
+  1. **Further directed evolution of FAST-PETase.** FAST-PETase was not evolved
+  for activity in cold-water environments. Continuing to optimize it would
+  largely amount to incremental improvements on a scaffold that was designed for
+  a different operating context.
+  2. **Rational design of the same PETase scaffold.** The active site of
+  IsPETase has already been extensively characterized and engineered. While
+  additional modifications might yield modest gains, they would likely be
+  incremental rather than actually transformative.
+  3. **Engineering a thermophilic chassis to provide heat.** Creating a
+  biological system capable of maintaining a localized environment near 70 °C
+  for PETase activity would present an immense engineering challenge and is
+  likely impractical with current technologies.
 </Callout>
 
-Each of these potential directions improves the enzyme we have, and these were the initial ideas going through our heads, but we asked a more fundamental question: has nature already evolved a better enzyme that exists out there?
+Each of these approaches focuses on improving the enzymes we already know. In fact, they were among the first strategies we considered. However, they all shared the same underlying assumption: that the best starting point was an existing, well-studied PETase. Instead, we stepped back and asked a more fundamental question:
+
+**What if nature has already evolved a better enzyme that we simply haven't discovered yet?**
 
 ## 3. Key research: Logan and the evidence that better enzymes already exist
 
@@ -109,7 +153,6 @@ Published in 2024, Logan is an assembly of the entire NCBI Sequence Read Archive
 
 This pilot inspired the entire project and gave us the conviction that better enzymes exist out in nature. This is the premise underpinning our work: the question is no longer whether a better enzyme exists, but how to find that needle in this enormous haystack.
 
-## Figure 2. The funnel. SRA (27.3 M datasets) → Logan → PETadex (300 million putative plastic-degrading enzyme ORFs) → ranked library → assay. Footnote on figure only: 307,155,746 ORFs; 18,172,960 clusters at 90% identity, 1,814,296 at 60%, 22,235 at 30%.
 
 ## 4. Hypothesis and Specific Goal
 
@@ -130,32 +173,29 @@ We homed in on one use case this year rather than "any condition" to have a cent
 
 ## 5. Our approach: one loop, three engines, three thrusters
 
-Our approach is radically different from the rest of the field: we start with discovery and then engineer. Currently, everyone in the field picks one scaffold and optimizes it. We instead start by searching a massive database of natural sequences first, then engineer from the best starting point we find. We have one large team workflow, and three engines to drive each turn of it. Figure 1 shows the loop. The PETadex feeds Dry Lab, Dry Lab ranks a library, Wet Lab tests it, Hardware runs those tests under controlled conditions, and the activity labels return to the model for the next round.
+Our approach is fundamentally different from most of the field. Traditionally, researchers start with a single enzyme scaffold and repeatedly engineer it for better performance. We reverse that process. Instead of beginning with optimization, we begin with discovery, searching across hundreds of millions of natural protein sequences to find entirely new starting points before engineering them further. To make this possible, we built an iterative design-build-test-learn pipeline powered by three interconnected systems. PETadex provides the sequence data, Dry Lab uses machine learning to rank the most promising candidates, Wet Lab experimentally tests those candidates, and Hardware enables high-throughput evaluation under controlled conditions. The resulting activity data is then fed back into the model, continuously improving the next round of predictions. Figure 1 illustrates this workflow.
 
-A faster and more robust engine would make the loop run faster, but it does not tell us what direction to point the ship in. That came from the three thrusters beyond the bench, Human Practices, Entrepreneurship and Outreach, and each one has provided immense guidance and changed at least one technical decision for each team.
+A faster model or a more efficient screening platform can accelerate this cycle, but neither determines which problems are worth solving. That direction came from the teams working beyond the bench. Through stakeholder engagement, commercialization research, and public outreach, our Human Practices, Entrepreneurship, and Outreach teams continuously challenged our assumptions and informed key technical decisions.
 
-## Figure 1. The loop and the thrusters. Inner loop: PETadex → Dry Lab ranks → Wet Lab tests → Hardware holds conditions → activity labels return to the model, with each arrow labelled by what flows (ranked library, activity labels, condition-activity data). Outer ring: Human Practices, Entrepreneurship and Outreach, each arrowed into the engine it redirected and labelled with the constraint it delivered. Manifesto style, every subteam on one figure.
 
 ### Dry Lab
 
 The Logan paper published PETadex-Logan, which was their pilot search for plastic-degrading enzymes. Through this iGEM cycle, we performed a complete methodological and quantitative rebuild of our previous dataset and built PETadex v1.1. With this, we have created a published, public resource and trained models on top of it. This corpus holds 307,155,746 putative plastic-degrading enzyme ORFs: 302.4 million from the Logan index, 4.7 million from NCBI nr and 211 from PAZy [@petadexCorpusV112026]. They were recovered with 45 profile HMMs built from 57 PAZy reference enzymes and span eleven domain families, so the catalogue covers PET, polyurethane, polyamide, PHA and PLA chemistries, not PET alone. Hierarchical clustering at 90, 60 and 30% identity gives 18.2 million, 1.81 million and 22,235 families. HMM curation this year added roughly 8 million sequences and new domains to the earlier screen. Each 90% centroid carries SignalP 6 calls, predicted biochemical properties, taxonomy, predicted structures (with AlphaFold and ESMFold2) and an environmental profile propagated from BioSample metadata. Wastewater or sludge is the dominant environment for 740,110 clusters, giving us a direct link to our use case. Finally, per-sequence catalytic-site verification exists for 6.6 million ORFs.
 
-On top of the corpus we folded 1.79 million 60% centroids with ESMFold2 (852 GPU-hours), assembled 13,092 published activity measurements on 1,219 sequences into a homology-split label set, and ran a first domain adaptation of ESM-C 300M on the 18.2 million centroids with LoRA (PlasticESM). To turn a ranking into DNA, we wrote a synthesis-library algorithm that encodes all 65 natural catalytic cores of the IsPETase 90% cluster in 61 oligos, about 26 kb against roughly 40 kb for a naive order, and assembles them by Golden Gate into a 2,116-variant library. The first order, two oPools covering IsPETase and LCC families at about 60 kb, went to IDT on 2026-09-28. Details, code and the measured model result are on the [Model] and [Dry Lab] pages.
+On top of the corpus we folded 1.79 million 60% centroids with ESMFold2 (852 GPU-hours), assembled 13,092 published activity measurements on 1,219 sequences into a homology-split label set, and ran a first domain adaptation of ESM-C 300M on the 18.2 million centroids with LoRA (PlasticESM). To turn a ranking into DNA, we wrote a synthesis-library algorithm that encodes all 65 natural catalytic cores of the IsPETase 90% cluster in 61 oligos, about 26 kb against roughly 40 kb for a naive order, and assembles them by Golden Gate into a 2,116-variant library. The first order, two oPools covering IsPETase and LCC families at about 60 kb, went to IDT on 2026-09-28. Details, code and the measured model result are on the [Model](/dry-lab/model/) and [Dry Lab](/dry-lab/overview/) pages.
 
-## Figure 3. Dry Lab graphical abstract: corpus build, PlasticESM, library design algorithm.
+
+
 
 ### Wet Lab
 
-We saw the status quo in the field, and made a core decision: our assays are going to prioritize throughput and speed. So, we designed novel high-throughput assays. First, we infuse copper into a PET mesh, such that an active PETase can degrade the polymer and release the copper. E. coli carrying the copper-responsive pCusC promoter responds with two separate readouts. In the biosensor assay, pCusC drives msGFP2 expression and gives a quantitative fluorescent signal. In the selection assay, pCusC drives an antibiotic resistance marker, so only cells expressing an active enzyme grow, and survivors can be sequenced to recover the genotype. Constructs are built in pJUMP backbones by Golden Gate and expressed in E. coli BL21(DE3). Controls are FAST-PETase and IsPETase as positives, a catalytically dead PETase as the negative, and copper-only, water-only and dye-only plates for copper dependence. The BHET halo assay from the Babaian lab serves as the low-throughput positive control that already worked on this enzyme family [@chikhiLoganPlanetaryscaleGenome2024]. This year the biosensor plasmid was confirmed copper-inducible, and the selection plasmid grows at sulfadiazine ≥16 µg/mL where its negative control does not. See [Wet Lab], [Engineering] and [Parts].
+We saw the status quo in the field, and made a core decision: our assays are going to prioritize throughput and speed. So, we designed novel high-throughput assays. First, we infuse copper into a PET mesh, such that an active PETase can degrade the polymer and release the copper. E. coli carrying the copper-responsive pCusC promoter responds with two separate readouts. In the biosensor assay, pCusC drives msGFP2 expression and gives a quantitative fluorescent signal. In the selection assay, pCusC drives an antibiotic resistance marker, so only cells expressing an active enzyme grow, and survivors can be sequenced to recover the genotype. Constructs are built in pJUMP backbones by Golden Gate and expressed in E. coli BL21(DE3). Controls are FAST-PETase and IsPETase as positives, a catalytically dead PETase as the negative, and copper-only, water-only and dye-only plates for copper dependence. The BHET halo assay from the Babaian lab serves as the low-throughput positive control that already worked on this enzyme family [@chikhiLoganPlanetaryscaleGenome2024]. This year the biosensor plasmid was confirmed copper-inducible, and the selection plasmid grows at sulfadiazine ≥16 µg/mL where its negative control does not. See [Wet Lab](/wet-lab/overview/), [Engineering](/project/engineering/) and [Parts](/wet-lab/parts/).
 
-## Overview figure
 
 ### Hardware
 
 Bioreactors are at the heart of deploying our enzymes. However, commercial bioreactors are either too expensive or too big to run as a parallel array to test different temperature and pH points. So, we designed reactors that can run at a chosen temperature and pH and produce a labelled (sequence, temperature, pH, activity) data point, and those points are fed back into the model for it to learn from.
-The bioreactor we built is a low-cost, open-source platform on an Arduino Nano with optical density and temperature control. We took Pioreactor as the reference design, and V1 was integrated on 2026-07-30 and V2 is assembled. In its first biological run it held a 20 mL E. coli culture at 37 °C to ±0.1 °C and grew to an OD of [insert]. Build files, bill of materials and assembly instructions are on the [Hardware] page.
-
-## Overview figure
+The bioreactor we built is a low-cost, open-source platform on an Arduino Nano with optical density and temperature control. We took Pioreactor as the reference design, and V1 was integrated on 2026-07-30 and V2 is assembled. In its first biological run it held a 20 mL E. coli culture at 37 °C to ±0.1 °C and grew to an OD of [insert]. Build files, bill of materials and assembly instructions are on the [Hardware](/hardware/overview/) page.
 
 ### Human Practices
 
@@ -163,7 +203,7 @@ Plastic pollution is a global problem and we believe its solutions should be glo
 
 These frameworks were informed by conversations with approximately 70 stakeholders across four continents, including researchers, regulators, wastewater operators, industry experts, ethicists, and Indigenous knowledge holders. Their feedback directly influenced our technical and deployment decisions, shaping where our technology could be used, what evidence would be required before deployment, and how enzymatic degradation should fit alongside broader prevention, recycling, and policy efforts. Beyond stakeholder engagement, we also expanded access to synthetic biology through conferences, mentorship programs, international collaborations, and campus initiatives that reached more than 800 students and community members.
 
-[Human Practices](https://2026.igem.wiki/toronto/human-practices/).
+[Human Practices](/beyond-the-bench/human-practices/).
 
 ### Entrepreneurship
 
@@ -171,7 +211,7 @@ PetaBite and PetaScale share a single goal: transforming microplastic biodegrada
 
 To identify the most promising market, we conducted 20 feasibility interviews with wastewater operators, engineers, researchers, and plant managers. These conversations established wastewater treatment as our beachhead market and confirmed the need for a scalable microplastic removal solution. They also informed expansion pathways into microfibre filtration, landfill leachate treatment, and textile effluent treatment, all supported by the same enzymatic platform. Early engagement with venture capital firms, startup accelerators, and industry stakeholders further validated the commercial potential of our approach.
 
-[Entrepreneurship](https://2026.igem.wiki/toronto/entrepreneurship/).
+[Entrepreneurship](/beyond-the-bench/entrepreneurship/).
 
 ### Outreach
 
@@ -179,11 +219,13 @@ Our Outreach team aimed to make synthetic biology more accessible, engaging, and
 
 Our efforts included our Project Promotion Video, social media campaigns, the Road to Jamboree Instagram Reel series, and The Waterfront newsletter, which reached more than 300 subscribers. Across the season, our content generated over 105,000 views, attracted 250+ new followers, and led to more than 2,500 profile visits, with 374 people engaging further through project and event links. By combining educational content with behind-the-scenes storytelling, we built an engaged audience and helped make synthetic biology feel more approachable, exciting, and accessible.
 
-[Outreach](https://2026.igem.wiki/toronto/beyond-the-bench/outreach/)
+[Outreach](/beyond-the-bench/outreach/)
 
 ### Closing the loop
 
-placeholder
+We are careful to distinguish between what has already been achieved and what is still in progress. As of the freeze, Dry Lab has ranked candidates and delivered a library for testing, and the corresponding oPools have been synthesized. Wet Lab has validated its biosensor and selection systems and is currently transforming the PETase display construct after replacing an initial non-functional design. Hardware has successfully established controlled growth conditions for screening. The first model-guided screen is now underway, and the resulting activity measurements will provide the labels needed to retrain the model and inform the next round of candidate selection.
+
+Importantly, the direction of this workflow has already been shaped by insights beyond the laboratory. The requirement for room-temperature activity emerged directly from stakeholder and commercialization conversations and now defines both the conditions Dry Lab ranks for and the conditions Hardware is designed to maintain.
 
 ## 6. What we built on and what we built
 
@@ -194,13 +236,13 @@ placeholder
 | PAZy, 495 validated enzymes [@buchholzPlasticsDegradationHydrolytic2022]                                                                                                                                                 | Synthesis-library algorithm and the first 2,116-variant library                                                |
 | IsPETase, FAST-PETase, HotPETase, LCC-ICCG as benchmarks [@yoshidaBacteriumDegradesAssimilates2016; @tournierEngineeredPETDepolymerase2020; @luMachineLearningaidedEngineering2022; @bellDirectedEvolutionEfficient2022] | Copper-release biosensor and selection assays                                                                  |
 | Pioreactor as the hardware reference design                                                                                                                                                                              | Open-source Arduino bioreactor, V1 and V2, two-tier architecture                                               |
-|                                                                                                                                                                                                                          | Three Human Practices reports, the UofT Microplastics Conference, venture validation with wastewater operators |
+|                                                                                                                                                                                                                          | Three Human Practices reports, the UofT Microplastics Conference, venture validation for potential commercial application |
 
-Advisor contributions were material in three places: control plasmids from the Brown lab, the hardware design review from Milica Radisic, and the halo protocol from the Babaian lab. Person-level detail is on the [Attributions](https://2026.igem.wiki/toronto/team/attributions/) page.
+Advisor contributions were critical at several points throughout the project. The Brown Lab provided key control plasmids, Milica Radisic reviewed and informed our hardware design, and the Babaian Lab contributed the halo assay protocol that supported our experimental workflow. These inputs helped shape the reliability and feasibility of our platform, while detailed individual contributions are documented on the [Attributions](/team/attributions/) page.
 
 ## 7. The part collection
 
-Our parts make the copper-release assay reusable by any team that wants a high-throughput, sequenceable readout for polyester degradation. Each is listed only where characterization data exists.
+These parts make our copper-release assay reusable by any team seeking a high-throughput, sequenceable readout of polyester degradation. Components are listed only where characterization data were obtained.
 
 - **Copper-responsive reporter cassette** (pCusC → msGFP2). Characterized: copper-inducible fluorescence in BL21(DE3) [concentration series, Registry link].
 - **Copper-responsive selection cassette** (pCusC → sul1). Characterized: growth at sulfadiazine ≥16 µg/mL relative to negative control [Registry link].
@@ -209,12 +251,18 @@ Our parts make the copper-release assay reusable by any team that wants a high-t
 
 ## 8. Responsible by design
 
-Three technical decisions on this page came from people outside the lab. Wastewater operators told us a 70 °C requirement is a non-starter at plant scale, and that set our room-temperature target. [Operators / stakeholders] were clear that no engineered organism would be released into open water, so we are developing a purified-enzyme product and prefer natural-homology enzymes over heavily engineered variants that operators regard as novel biotech. And because a contained vessel is the form factor a regulator will permit for a pilot under CEPA [@canadaOrderAddingToxic2021], the bioreactor is our deployment unit as well as our instrument. The reasoning and the interview records are on [Human Practices](https://2026.igem.wiki/toronto/human-practices/) and [Entrepreneurship](https://2026.igem.wiki/toronto/entrepreneurship/).
+Three technical decisions came directly from stakeholder input. Wastewater operators made it clear that a 70 °C process would be impractical at plant scale, driving our focus on room-temperature activity. Regulators and operators also favoured a purified enzyme product over the environmental release of engineered organisms, leading us to prioritize natural enzyme scaffolds. Finally, because a contained treatment vessel is the most realistic path for regulatory approval under CEPA [@canadaOrderAddingToxic2021], we designed our deployment strategy around a contained-reactor system from the outset. The reasoning and the interview records are on [Human Practices](/beyond-the-bench/human-practices/) and [Entrepreneurship](/beyond-the-bench/entrepreneurship/).
 
 ## 9. Where we are
 
-At the wiki freeze, Dry Lab has published the PETadex v1.1 corpus and 1.79 million predicted structures, delivered a 60 kb model-ranked library, and holds a first PlasticESM adaptation run whose measured result is on the [Model](https://2026.igem.wiki/toronto/model/) page. Wet Lab has copper-inducible biosensor and antibiotic selection constructs working and is transforming the PETase display plasmid; no PETadex candidate has yet been assayed against FAST-PETase. Hardware has V2 assembled and holding ±0.1 °C in a live culture, with OD600 calibration against a reference spectrophotometer still to complete. Over the next three months we screen the first library, run a bioreactor condition sweep across temperature and pH, and submit the PETadex preprint. Our results and design iterations are on [Engineering](https://2026.igem.wiki/toronto/engineering/).
+At the wiki freeze, Dry Lab has published the PETadex v1.1 corpus and 1.79 million predicted structures, delivered a 60 kb model-ranked library, and holds a first PlasticESM adaptation run whose measured result is on the [Model](/dry-lab/model/)(/dry-lab/model/) page. Wet Lab has copper-inducible biosensor and antibiotic selection constructs working and is transforming the PETase display plasmid; no PETadex candidate has yet been assayed against FAST-PETase. Hardware has V2 assembled and holding ±0.1 °C in a live culture, with OD600 calibration against a reference spectrophotometer still to complete. Over the next three months we screen the first library, run a bioreactor condition sweep across temperature and pH, and submit the PETadex preprint. Our results and design iterations are on [Engineering](/project/engineering/)(/project/engineering/).
 
 ## 10. Navigation
 
-placeholder
+{/*
+  The homepage's ending bottle, reused as this page's closing navigation: the
+  seven pieces each open a subteam page, with the engineering page as the one
+  big button above. Source: src/components/EndingPetamonBottle.js.
+*/}
+
+<EndingBottleNav />
