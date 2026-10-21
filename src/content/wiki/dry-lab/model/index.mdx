@@ -390,8 +390,10 @@ Each layer is computed across the corpus by its own pipeline, and coverage diffe
 
 A plastic-degrading enzyme is only useful if we know where its host organism lives and what conditions it tolerates. We started from 932 validated plastic-degrading organisms and 2,535 organism-polymer records in PlasticDB (Figure 1A) and found that only 527 records (21%) carry an enzyme sequence, from 77% for PET down to 0.9% for LDPE (Figure 1B). We then added laboratory growth tests for 455 BacDive strains: 44% of 421 grow at 25°C or below (Figure 1C), 71% of 75 at pH 9 or above (Figure 1D) and 50% of 155 at 5% NaCl or above (Figure 1E). Environment classes for 646 BioSamples are led by soil and sediment (Figure 1F), yet two sources agree on the class for only 46% of organisms. Together these results set assay conditions of 25°C, pH 8 to 9 and added NaCl, and give a first panel of 27 cold-active strains with a protein and a closed genome.
 
-<Figure src="/figures/dry-lab-model/biosample_annotations.svg" alt="SignalP composite figure" width="100%" />
-Known plastic-degrading organisms and the metadata layers joined to them: (A) data flow from PlasticDB through BacDive to NCBI BioSample, (B) protein-linked records by polymer, (C) growth temperature range, (D) growth pH range, (E) strains that grow at each condition, (F) environment class of BioSamples.
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/biosample-annotations.avif" alt="Biosample Annotations Figure" width="100%" 
+caption={<><strong>Fig. X </strong> Known plastic-degrading organisms and the metadata layers joined to them: (A) data flow from PlasticDB through BacDive to NCBI BioSample, (B) protein-linked records by polymer, (C) growth temperature range, (D) growth pH range, (E) strains that grow at each condition, (F) environment class of BioSamples.
+</>}
+/>
 
 ### [Biosample Metadata Profiles](/dry-lab/model/biosample-profiles/#biosample-profiles-figure)
 
@@ -455,8 +457,8 @@ SignalP 6.0 was run on all PETadex ORFs to identify the secreted enzymes within 
 
 To-Do: Repeat the pipeline on the updated database.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/signalp-composite-v2.avif" alt="SignalP composite figure" width="100%"
-  caption={<><strong>Figure caption.</strong> (A) The biological significance of the secretion pathways and signal peptide classes. (B) ORFs per signal peptide class (log scale). (C) Percentage of ORFs in each catalytic fold family with a predicted signal peptide; dashed line = database-wide rate (13.85%). (D) Agreement within clusters at 90, 60 and 30% sequence identity (singletons removed): % of secreted members matching their cluster’s majority signal type and % of all members matching their cluster’s majority signal peptide presence/absence call.</>}
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/signalp-v9-cropped.avif" alt="SignalP composite figure" width="100%"
+  caption={<><strong>Fig. X</strong> (A) The biological significance of the secretion pathways and signal peptide classes. (B) ORFs per signal peptide class (log scale). (C) Percentage of ORFs in each catalytic fold family with a predicted signal peptide; dashed line = database-wide rate (13.85%). (D) Agreement within clusters at 90, 60 and 30% sequence identity (singletons removed): % of secreted members matching their cluster’s majority signal type and % of all members matching their cluster’s majority signal peptide presence/absence call.</>}
 />
 
 
@@ -511,7 +513,7 @@ We searched these databases to search for predicted structures for 7.8M PETadex 
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain-distribution.svg"
   alt="Two panels: (A) the number of AlphaFold DB structures downloaded for each PETadex domain; (B) the number of PETadex structures searched compared with the number found on AlphaFold DB"
   width="100%"
-  caption={<><strong>Fig X.</strong> A: Number of downloaded AFDB structures per PETadex domain B: Count of searched PETadex structures vs ones found on AFDB</>}
+  caption={<><strong>Fig. X</strong> A: Number of downloaded AFDB structures per PETadex domain B: Count of searched PETadex structures vs ones found on AFDB</>}
 />
 ### Biochemical Properties and Ancestral Reconstruction
 
@@ -519,7 +521,7 @@ Six sequence-derived properties were calculated using Biopython ProtParam for al
 
 To-Do: Repeat the pipeline on the updated database.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/biochemical-properties-composite.avif" alt="Biochemical properties composite figure" width="100%"
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/biochem-v12-cropped.avif" alt="Biochemical properties composite figure" width="100%"
   caption={<><strong>Figure X.</strong> (A) Box-and-whisker distributions of the biochemical properties by catalytic fold family; dashed line = database median. (B) GRAVY vs instability index for 90% identity cluster representatives (top, all ORFs) and for secreted 90% Cluster representatives specifically (bottom, mature sequences). (C) Property Distributions of PETadex and NCBI; medians written as PETadex | NCBI.</>}
 />
 
@@ -549,28 +551,28 @@ To populate the PETra database and overcome manual curation bottlenecks an autom
 />
 
 <Figure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/plastic-enzyme-literature-over-time.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/plastic-enzyme-literature-over-time-cropped.avif"
   alt="The Spread of Plastic Degrading Enzyme Literature Over Time"
-  caption="How papers on plastic degrading enzymes have been split up throughout the years"
+  caption={<><strong>Figure X.</strong> How papers on plastic degrading enzymes have been split up throughout the years </>}
   width="100%"
 />
 
 <Figure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/adi-figure-stuff/plasticome-country-density-flat-styled.avif"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/plasticome-country-density-flat-styled.avif"
   alt="Global Distribution of Plastic-Degrading Enzyme Research map"
-  caption="Global Distribution of Plastic-Degrading Enzyme Research."
+  caption={<><strong>Figure X.</strong> "Global Distribution of Plastic-Degrading Enzyme Research." </>}
   width="100%"
 />
+
 #### Automated LLM Based Literature Extraction Pipeline Development
 
 
 To isolate experimentally validated enzymes, wet lab assays and plastic degradation activity metrics from the existing literature, an automated large language model extraction pipeline was developed. A 0% false positive rate and a 99.3% true positive capture rate were achieved during optimization against synthetic controls. In cross model benchmarking the strongest performance was delivered by Claude Sonnet (95.0% precision, 87.1% recall) outperforming Opus and Haiku. When evaluated against 32 double scraped papers zero hallucinated enzymes were reported. Key degradation activity metrics were successfully matched with human curators alongside assay conditions like temperature (90%) and plasmid construction (95%). Applied across roughly 4,000 papers a database was produced containing 51,455 cleaned measurement entries across 31,441 enzymes. Diverse plastics are covered including PET, PCL, PLA, PHA, PBS, PUR and PS. Moving forward the data will be integrated into PETadex for free public use while the pipeline is optimized to ingest supplementary files and benchmarked on a larger dataset.
 
 <Figure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/adi-figure-stuff/automated-llm-pipeline-summary-figure-1.avif"
-  alt="Pipeline Validation and Extracted Activity Data Analysis"
-  caption="Pipeline Validation showing extraction accuracy metrics evolution across prompt upgrades and consensus performance benchmarks against the core truth pool. Extracted Activity Data Analysis displaying top enzymes by polymer family, pH vs. temperature condition clusters, and enzyme activity outcomes."
-  width="100%"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/automated-llm-pipeline-summary-figure-cropped.avif"
+  alt="Pipeline Validation and Extracted Activity Data Analysis" width="100%" caption={<><strong>Figure X.</strong> (A) Pipeline Validation showing extraction accuracy metrics evolution across prompt upgrades (B) consensus performance benchmarks against the core truth pool. Extracted Activity Data Analysis displaying top enzymes by (C) polymer family, (D) pH vs. temperature condition clusters, and (E) enzyme activity outcomes.</>}
+  
 />
 
 
@@ -584,7 +586,7 @@ Every paper was also independently extracted by two or more scrapers, with 78% o
 
 To-Do: Manually reconcile discrepancies between scrapers to create a finalized ground truth for each double-scraped paper.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/human-scraping-composite-v2.avif" alt="Human scraping composite figure" width="100%"
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/human-scraping-v8.avif" alt="Human scraping composite figure" width="150%"
   caption={<><strong>Figure X.</strong> (A) Project workflow. (B) Most common substrates amongst the 61 scraped papers. (C) Most common independent variables and (D) Most common quantities measured in experiments (372 experiments tallied). (E) Melting temperature distribution of wild-type and engineered enzymes. (F) Optimum temperature distribution (G) Optimum pH distribution, split by PET-related vs other substrates; dashed line = median. (H) Agreement between scrapers (pre-reconciliation) on comparable experiment data entries.</>}
 />
 
@@ -651,16 +653,13 @@ The two datasets meet in a loop. Rather than testing only the candidates the mod
 
 Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for the 30%pid PETadex centroids. These 640 dimensional embeddings were then UMAPed to 2 dimensions using the umap-learn (https://umap-learn.readthedocs.io/en/latest/) Python library.
 
-<ImageGrid>
-  <Figure
-    src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/cluster-plot.avif"
-    alt="Family atlas UMAP of PETadex centroids, coloured by CATH domain"
-  />
-  <Figure
-    src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain640.avif"
-    alt="Silhouette scores per domain cluster for the 640-dimensional embeddings"
-  />
-</ImageGrid>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/cluster-plot.avif"
+  alt="Family atlas UMAP of PETadex centroids, coloured by CATH domain"
+  caption={<><strong>Figure X.</strong> (A) Family atlas UMAP of PETadex centroids, colouredby CATH domain (B) Per-Domain Silhouette Scores</>}
+/>
+
 
 Finally, we ran controls on this UMAP to verify that this clustering does not appear by chance. Our objectives are the following: 
 Generate negative controls (random and shuffled sequences) from the 64,730 family representatives, designed to disentangle amino-acid composition from sequence order.

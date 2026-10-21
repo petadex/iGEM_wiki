@@ -65,22 +65,50 @@ We built four pieces of software while searching for plastic-degrading enzymes. 
   VERIFY the ">50% nucleotide savings" figure before publishing it.
 */}
 
+<SideFigure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/overview-diagram.avif"
+  alt="Overview of the LOBSTER algorithm: full-length PETase cores are split into fragment positions, and fragments with degenerate codons are designed at each position for combinatorial Golden Gate assembly into a full-length library"
+  caption={<><strong>Figure X.</strong> Overview of LOBSTER. Each PETase core is split into fragment positions, and fragments designed at each position, with degenerate codons, assemble combinatorially by Golden Gate into a full-length library that covers as many natural cores as possible.</>}
+  width="55%"
+  flow
+>
 
 To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER splits the full-length sequence into sections called fragment positions. LOBSTER then designs fragments at these positions to be combinatorially assembled using Golden Gate assembly and degenerate codons. Overall, LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage, under library size and nucleotide constraints. By running LOBSTER on 90pid clusters, we can experimentally validate them for a fraction of the nucleotide cost (~45%), greatly expanding our full validation space.
 
-FIGURE: overview.png to the side of this paragraph
+</SideFigure>
 
 LOBSTER operates by isolating the PETase cores, identifying and selecting Golden Gate cut sites, then greedily adding cores to the solution using additional fragments and degenerate codons. Using this approach, the LOBSTER output designs reduce the purchased nucleotides by 55% to cover the LCC and IsPETase 90pid clusters. This expands our PETase activity validation search space across more clusters. Additional details on LOBSTER's implementation can be found on its own page.
 
-Output:
+### Output:
 As literature controls, we ran LOBSTER on two 90pid clusters, one containing IsPETase and the other containing LCC. Below is an interactive example of LOBSTER's output designs for the IsPETase and LCC clusters. Hovering over the different fragment positions shows the nucleotide sequences of each oligo at that position. Additionally, Golden Gate information including the overhangs between fragment positions and adapter sequences are displayed.
 
-HTML LOBSTER Fragment Map: lobster_fragment_map.html
+<FrameFigure
+  src="/figures/dry-lab-software/lobster_fragment_map.html"
+  title="LOBSTER Fragment Map"
+  aspect="16 / 9"
+  caption="LOBSTER's output designs for the IsPETase and LCC 90pid clusters. Hover over a fragment position to see the nucleotide sequence of each oligo at that position, along with the Golden Gate overhangs between positions and the adapter sequences."
+/>
 
-Savings:
+### Savings:
 The following figures show the nucleotide savings of LOBSTER's output designs for the IsPETase and LCC clusters.
 
-Figure: ispetase_nt_coverage.png Figure: lcc_nt_coverage.png
+<ImageGrid>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/ispetase-nt-coverage.avif"
+  alt="Nucleotide savings of the LOBSTER design for the IsPETase 90pid cluster compared with purchasing each full-length sequence"
+  caption={<><strong>Figure X.</strong> Nucleotide savings of the LOBSTER design for the IsPETase 90pid cluster.</>}
+  width="100%"
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/lcc-nt-coverage.avif"
+  alt="Nucleotide savings of the LOBSTER design for the LCC 90pid cluster compared with purchasing each full-length sequence"
+  caption={<><strong>Figure X.</strong> Nucleotide savings of the LOBSTER design for the LCC 90pid cluster.</>}
+  width="100%"
+/>
+
+</ImageGrid>
 
 <MethodsLink href="/dry-lab/software/lobster/">How LOBSTER works in detail</MethodsLink>
 
