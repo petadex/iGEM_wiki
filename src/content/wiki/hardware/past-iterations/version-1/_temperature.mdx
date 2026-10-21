@@ -113,35 +113,9 @@ The control loop uses the Arduino PID library, configured to work for a relay. I
 
 Temperature readings are done through the probe’s 1-Wire communication protocol, using the DS18B20 Arduino library.
 
-Complete software:
-(Will be pasted in once I figure out how to put code here)
+Complete software (July 30): [Temperature PID Arduino Code](https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/Temperature/Temperature_PID.ino?ref_type=heads)
 
 ### Design of Experiments (DoE)
-
-#### Temperature sensor testing
-
-The accuracy of the temperature sensor is critical to the accuracy of the entire
-temperature control system. The thermocouple was tested by comparing its
-readings with known temperatures.
-
-Procedure:
-
-1.  Connect the temperature sensor to a microcontroller and write code to read data. Then, if a reliable thermometer is available (borrow from labs etc), compare temperature sensor readings with the thermometer in different conditions, including:
-
-        - Indoors
-        - Outdoors
-        - In contact with glass of cold or hot water
-        - In the cold room or fridge
-        - Near or in contact with the stove or hot food
-
-    If such thermometers are not available, use environments with known temperatures, including:
-
-        - Indoors with climate controls that have temperature readings
-        - In fridges that have temperature readings
-        - Near ice or boiling water
-        - In the cold room
-
-    In each case, calibrate the sensor if applicable.
 
 <br />
 #### Heater testing
@@ -178,7 +152,7 @@ Numerical proof of how the subsystem meets the required goals, any further data 
 
 #### Heater Testing
 
-The experiment was performed with 10mL, 20mL, and 30mL water. The raw data was plotted against time and fitted to an exponential heating model (T = a\*exp(-bt) + c). Key parameters are tabulated below, with raw data available at [link].
+The experiment was performed with 10mL, 20mL, and 30mL water. The raw data was plotted against time and fitted to an exponential heating model (T = a\*exp(-bt) + c). Key parameters are tabulated below, with raw data available at [link](https://www.desmos.com/calculator/7rg4wno9yz).
 
 <DataTable caption="Heater testing results and exponential heating model parameters">
   <table>
@@ -250,62 +224,7 @@ attainable at infinite time.
 
 The experiment was performed with 15mL and 30mL water. Since temperature is sampled up to 3Hz in this experiment, raw data and plots were not preserved. Instead, a script was used to automatically log the highest and lowest temperature after achieving the target temperature.
 
-<DataTable caption="Control accuracy after achieving 35°C">
-  <table>
-    <thead>
-      <tr>
-        <th rowSpan={2} scope="col">
-          Water volume (mL)
-        </th>
-        <th colSpan={2} scope="colgroup">
-          After achieving 35°C
-        </th>
-        <th rowSpan={2} scope="col">
-          Control accuracy (°C)
-        </th>
-        <th rowSpan={2} scope="col">
-          Probe accuracy (°C)
-        </th>
-        <th rowSpan={2} scope="col">
-          Total accuracy (°C)
-        </th>
-      </tr>
-      <tr>
-        <th scope="col">Lowest temperature (°C)</th>
-        <th scope="col">Highest temperature (°C)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>10</td>
-        <td></td>
-        <td></td>
-        <td>-0.06065</td>
-        <td
-          rowSpan={3}
-          style={{ verticalAlign: "middle", textAlign: "center" }}
-        >
-          ±0.5
-        </td>
-        <td></td>
-      </tr>
-      <tr>
-        <td>20</td>
-        <td></td>
-        <td></td>
-        <td>-0.04799</td>
-        <td></td>
-      </tr>
-      <tr>
-        <td>30</td>
-        <td></td>
-        <td></td>
-        <td>-0.03806</td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-</DataTable>
+The experiment was not continued after the first trial, as it became clear that the standard PID loop will not achieve the desired control stability. Deviations of up to ±2°C were observed in the first trial.
 
 ### Next Steps
 

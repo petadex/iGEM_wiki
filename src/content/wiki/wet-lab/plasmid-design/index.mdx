@@ -31,12 +31,10 @@ The display system uses the N- and C-termini of INP to localize the PETases to t
 
 A 22-residue flexible GS linker (GGSGGGGSGGGGSGGSGGG) was designed using the principles in Chen et al. 2013[@chen2013linkers], and fused to the C-terminal end of the INP display system, followed by a pair of outwards-facing BsmBI restriction sites and a spacer from the pGGASelect vector. The BsmBI sites were arranged so that the vector overhang corresponded to the last four nucleotides of the GS linker, so that the GGA “scar” would not impact the reading frame of any PETases cloned in. Downstream of the BsmBI sites, there is a second shorter GS linker and FLAG tag to allow for verification of PETase surface display. A stop codon was added inside the pGGASelect spacer to prevent the expression of the C-terminal FLAG tag in constructs that don’t contain a PETase, allowing for detection of PETase surface display.
 
-### INSERT LINEAR DNA MAP HERE
-
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/plasmid2.avif"
   alt="plasmid2"
-  caption="Figure 2. A linear view of the PETse display system."
+  caption="Figure 2. A linear view of the PETase display system."
 />
 
 ## Assay Specific (AS) Plasmid Design
@@ -53,7 +51,7 @@ pJUMP26-1A was chosen as the basis for the AS backbone due to it being one of th
 
 ### Promoter Selection
 
-Copper was selected as our inducer to allow for future integration into molten PET, as common inducers such as IPTG decompose below the melting point of PET [@sigma2025iptg; @sigma2025pet]. Copper is also an established inducer for S. cerevisiae[@zhou2021copper], allowing for future translation of our assays into yeast.
+Copper was selected as our inducer to allow for future integration into molten PET, as common inducers such as IPTG decompose below the melting point of PET [@sigma2025iptg; @sigma2025pet]. Copper is also an established inducer for S. cerevisiae [@zhou2021copper], allowing for future translation of our assays into yeast.
 
 Two promoters were considered when designing the reporter plasmid. copA and CusC were the two most common promoters in copper systems used in previous literature [@fu2024copper; @yamamoto2005copper]. copA is part of the CueR system, which is a copper efflux regulator. CueR activates transcription through copA in the presence of copper. CusC is part of a similar system with CusCFBA copper efflux, which also activates transcription through CusC in the presence of copper. CusRS is also included in this system, which allows for increased gene expression under high copper conditions.
 
