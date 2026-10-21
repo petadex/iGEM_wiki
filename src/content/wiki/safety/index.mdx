@@ -109,3 +109,58 @@ To promote safety in our project, the following section features anticipated fut
 | Accidental transmission and contamination | Exposure, injury and possible infection and ailment of iGEM members and surrounding individuals             | iGEM members, Biozone lab users, General public | To prevent accidental transmission and contamination, all members must mention any risks, problems or issues that arose during the lab that may cause accidental exposure within the lab notebook. Members are also trained in proper disposal technique. All level 1 biologicals must be autoclaved before disposal down the sink. Chemical waste also must be properly labelled with a container with the type, and must be stored properly until 2/3 full then sent to the department of Chemical Engineering's waste treatment facility to be further processed. |
 | Misplacement of experimental materials    | Exposure, injury, and possible infection and ailment of iGEM members and surrounding individuals            | iGEM members, Biozone lab users                 | iGEM maintained that members must take photos of where all experimental materials have been stored at the end of a shift and updated on the lab notebook for the next shift. A Google Sheet of the team’s inventory was also regularly updated to prevent any items from being misplaced or lost. Training was mandated for all iGEM wet lab members to educate on proper storage methods for materials.                                                                                                                                                             |
 | Injury or incidents in the lab            | Injury, breakage, accidents, possible infection and ailment of iGEM members and surrounding individuals     | iGEM members, Biozone lab users                 | Lab members are educated on proper methods of handling items and apparatus in the lab to prevent injury. All fire extinguishers and emergency exits were noted. They are also informed on the procedure to report an accident including filling out the incident report and informing the lab manager. The respective emergency numbers were also informed to the team in case immediate contact is needed.                                                                                                                                                          |
+
+## Dry Lab Safety
+
+Dry Lab handled no biological material, so its risks are not exposure risks. They are risks of what the work tells other people to build. A sequence the model ranks highly becomes DNA that Wet Lab orders, and a dataset we publish becomes a starting point for labs we will never meet. The controls below are about keeping those outputs honest.
+
+### Scope of the search
+
+PETadex is a homology search, not an open-ended one. The database is seeded on 609 experimentally validated plastic-degrading enzymes curated from PAZy, clustered to 411 centroids at 90% identity, and grows by sequence alignment of those centroids against the *Logan* assembly of the Sequence Read Archive and NCBI nr. Every candidate it returns is a relative of an enzyme already reported to act on plastic polymers.
+
+We did no de novo or generative protein design. The model ranks sequences that already exist in public data; it does not invent new ones. That bounds the project to a single, well-studied enzyme family whose characterized members act on PET and related polyesters.
+
+### Putative sequences stay labelled putative
+
+The main way a database like this can cause harm is by presenting a prediction as a measurement. Most of PETadex is putative: homologs recovered from metagenomic assemblies that nobody has ever expressed or assayed. Treating those as known plastic-degrading enzymes would put unverified claims into the literature at a scale no one could easily correct.
+
+The released datasets keep the evidence behind every value attached to it. The human-curated and LLM-extracted label sets are published separately rather than merged, so a reader can always tell which measurements nineteen curators read out of papers by hand and which an extraction pipeline produced. The LLM-scraped set carries the evidence sentence behind every value, so any row can be traced back to the sentence it came from. A reference-membership column marks which ORFs are curated PETadex-PAZy enzymes, separating the characterized core from the putative expansion around it. The dataset cards document each table's columns and its known caveats, including where a label set is weak: the LLM set, for instance, recorded no pH, temperature or time, and contains no negatives.
+
+### What we released
+
+The input data were already public, and the output is a curated view of sequences anyone could have downloaded themselves. We created no new biological risk by publishing it. All five datasets are released under CC BY 4.0; the measurements are facts and not ours to license, so what the licence covers is our compilation, curation, sequence recovery, clustering and splits. Source code for LOBSTER and the sharded DIAMOND search is released under the MIT License.
+
+### Where Dry Lab outputs became physical
+
+One Dry Lab output crossed into the lab: the LOBSTER library of 1,744 sequences, which was synthesized for Wet Lab to screen. Every sequence in it is a homolog of a White List enzyme family, and that work ran under the wet lab controls described above. No material required iGEM check-in.
+
+## Hardware Safety
+
+The bioreactor is designed to run unattended for days next to someone else's bench, which sets its two real hazards: electronics sitting beside liquid media, and a heater in a 3D-printed enclosure. Dr. Artem Babaian, as the primary stakeholder, set the wattage and heating constraints the design had to meet.
+
+### Electrical safety
+
+The bioreactor runs entirely on low-voltage DC. A USB-C power delivery system supplies a regulated 5 V at 20 W, drawing about 12 W steady and never exceeding 16 W in testing, with up to seven bioreactors sharing one 200 W charging block. Nothing in the device carries mains voltage.
+
+Fault protection is handled by the commercial power supply, which shuts off in the event of a short circuit. This was a deliberate choice: a certified supply does this more reliably than anything we would build, and it keeps the failure mode outside the 3D-printed assembly.
+
+Exposed conductors were treated as a design requirement rather than an afterthought. The CAD specification caps exposed electronic surface at under 75%, with the housing enclosing the perfboard and pumps. Some exposure is unavoidable at the wiring and the connection to the computer. The components are safe to touch at these voltages, but become a hazard if shorted by liquid, so the housing is also arranged to keep spilled media away from them.
+
+### Thermal safety
+
+The heater reaches a peak of about 60 °C and holds a target to within ±1 °C, keeping 37 °C within ±0.3 °C in testing. The 60 °C ceiling sits below the roughly 70 °C point at which the surrounding printed components would begin to soften, so the worst case of a heater left on does not deform the enclosure.
+
+Temperature is held by a PID control loop through a closed hardware path: temperature probe to microcontroller to relay to heater. The relay means the microcontroller never switches heater current directly, and the probe gives the loop a reading to act on rather than running the heater open-loop on a timer.
+
+### Sterility and handling
+
+The pump tubing is reachable through a snap-fit lid so it can be removed and autoclaved, which was a specific revision after the earlier prototype's tubing proved hard to detach for cleaning. Pipette tips and tubing were autoclaved before use. The peristaltic pumps keep flow into and out of the vessel closed, which protects the culture from contamination and keeps media inside the fluid path.
+
+### Anticipating and mitigating future hardware risk
+
+| Risk | Hazard | Stakeholder | Safety Measures Implemented |
+| --- | --- | --- | --- |
+| Media spilled onto the electronics | Short circuit, damage to the device, loss of a running experiment | iGEM members, shared lab users | The 3D-printed housing encloses the perfboard and pumps, keeping exposed electronic surface under the 75% design cap, and is positioned so that spillage from the vial does not reach the board. The commercial USB-C supply shuts off on a short circuit. |
+| Heater left running or control loop failure | Overheating, denatured protein, softening of printed components | iGEM members, shared lab users | The heater's peak of about 60 °C sits below the ~70 °C softening point of surrounding parts. A PID loop reading a dedicated temperature probe switches the heater through a relay rather than running it continuously. |
+| Unattended multi-day operation on a shared bench | Fire or equipment damage outside working hours, disruption to other lab users | iGEM members, Biozone and BME lab users | The device runs on low-voltage 5 V DC with no mains wiring, drawing under 16 W, with fault protection in a certified supply. Power constraints were set with our PI for a device intended to operate for days at a time. |
+| Contamination of the culture or the surrounding bench | Loss of experimental data, biological material outside the intended vessel | iGEM members, shared lab users | Tubing is removable through a snap-fit lid for autoclaving, and the peristaltic pump path stays closed during operation. Devices were used inside the lab spaces covered by the training and PPE requirements above. |
