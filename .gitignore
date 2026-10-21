@@ -95,3 +95,7 @@ dennis-scratch/
 # only copy). The card now draws the landscape figure live; see the note in
 # dry-lab/overview/index.mdx.
 static/figures/dry-lab-overview/landscape-spin.mp4
+
+# Built from contributionCalendar/timeline.md by `npm run build:calendar`, which
+# runs before develop and every build (~1 MB, rewritten on each timeline edit).
+src/data/contributionCalendar/contributionWeeks.generated.js

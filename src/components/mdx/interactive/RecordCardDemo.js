@@ -1,4 +1,3 @@
-import { withPrefix } from "gatsby"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled, { css, keyframes } from "styled-components"
 import DEMO from "../../../data/recordCardDemo.json"
@@ -22,8 +21,8 @@ import {
  * script's header lists the calls). The page calls nothing off this site.
  *
  * The structure layer is petadex.net's own Mol* viewer, in
- * StructureViewer.js, reading a structure file the same script writes to
- * static/figures/record-card/. The origin layer draws
+ * StructureViewer.js, reading a structure file the same script stages for
+ * static.igem.wiki (drylab-page/interactives/). The origin layer draws
  * src/data/worldOutline.json, a coarse land outline in equirectangular
  * degrees, so a point is placed by its own longitude and latitude.
  *
@@ -235,7 +234,7 @@ const StructureLayer = ({ record }) => {
         aria-label={`Predicted structure of ${record.name}: a cartoon of its ${structure.n} residues with its catalytic triad drawn as ball-and-stick`}
       >
         <StructureViewer
-          src={withPrefix(`/figures/record-card/${record.key}.pdb`)}
+          src={`https://static.igem.wiki/teams/6187/wiki/drylab-page/interactives/record-card-${record.key}.pdb`}
           triad={triad}
           mode={plain ? "plain" : mode}
           spin={spin}
