@@ -22,6 +22,11 @@ export function onCreateWebpackConfig({ stage, getConfig, actions }) {
   // Production source maps are removed from the Pages artifact anyway. Avoid
   // generating them during both webpack compilations on the limited runner.
   if (stage === "build-javascript" || stage === "build-html") config.devtool = false
+  // Opt-in, local only: webpack's persistent cache for develop grows past 20 GB
+  // here and is read back into one process on start and on every rebuild,
+  // which can exhaust a laptop's memory. WIKI_DEV_NO_WEBPACK_CACHE=1 turns it
+  // off, at the cost of a slower first start.
+  if (process.env.WIKI_DEV_NO_WEBPACK_CACHE && stage.startsWith("develop")) config.cache = false
   if (stage === "build-javascript") {
     // Keep CSS optimization; replace only JavaScript minification with esbuild.
     config.optimization.minimizer = config.optimization.minimizer.map(plugin =>
