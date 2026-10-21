@@ -1,31 +1,121 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**C1.1 — Requirements before parts.** Because iGEM Toronto is the only iGEM team in eastern
+North America with a dedicated Hardware subteam, we had no internal precedent to build on.
+So we bought and assembled two commercial **Pioreactors** as reference builds first — one in
+sprint 1 (9–22 March) with its components documented, and two connected together by the end
+of sprint 3 (6–30 April).
 
-Hardware · Version 1: Describe the problem, requirements, and design choices for this iteration.
+**Requirements came from five interviews, not from our own assumptions:** the Pioreactor
+CEO, an Eppendorf bioreactor sales representative, Dr. Mackay on microcontroller
+architecture, and our own Wet Lab and Dry Lab leads as internal users.
+
+The resulting document is **quantified**, which is the point of it:
+
+| Category | Requirement |
+| --- | --- |
+| Heating | Ambient to 50 °C without melting plastic components, with accurate readings |
+| Mixing | 100 to 1,000 RPM, and the stir bar must not affect OD readings |
+| Pumping | At least two pumps in and out, no leaks, 1–2 mL dosage range |
+| OD | Accurate across the useful range, not disrupted by the stirring vortex |
+| Power | Run the array from a single laboratory circuit, IP-rated against wet-lab splashes |
+| Ergonomics | 80% of routine tasks single-handed, autoclave-compatible materials, tool-less teardown under 2 minutes |
+| Assembly | Every contact-surface component autoclavable or single-use |
+| Network | The full array within lab bandwidth |
+
+<BioreactorRequirements />
+
+**Power was the constraint that shaped the architecture.** The requirement reads: total
+current draw for 96 reactors must stay under the safe load limit for a 120 V circuit in the
+Donnelly Centre — **a 15 A breaker derated to 12 A, giving a 1,440 W ceiling** for the whole
+array. (Our own requirement note writes the breaker rating as "15A(?)", so the derated 12 A
+figure is the one the budget was actually built against.)
+
+That single number drove three decisions, recorded as sub-objectives against it:
+**scheduling** heating and mixing rather than running them simultaneously to keep overall
+wattage down; **separating** the heating and mixing power lines from the microcontrollers to
+protect them from voltage spikes; and **centralising** power in a high-capacity shared DC
+supply to avoid 96 individual wall adapters.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/overview1.avif"
+  alt="Sticky notes with team thoughts on Pioreactor design beside a fully assembled Pioreactor"
+  caption="The reference build: team notes on Pioreactor design and stakeholder input (left), and the assembled Pioreactor (right)."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+We divided development into four subsystems, each with a designated owner and an independent
+design-of-experiments framework: **optical density sensing, auxiliary sensors, actuators,
+and filament production**. Each team validated its subsystem against predefined performance
+metrics before any attempt at integration.
 
-Hardware · Version 1: Describe what the team built or changed, including methods and materials.
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/overview2.avif"
+  alt="First subsystem diagram with arrows showing control signal connections between electronic components"
+  caption="The first subsystem diagram. Arrows show control-signal connections between electronic components."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+Two architectural decisions came directly out of the reference builds and the interviews.
 
-Hardware · Version 1: Add the tests, controls, measurements, and results for this iteration.
+**First, we replaced the Raspberry Pi with an ESP32.** Cameron Davidson-Pilon named his own
+regrets in designing the Pioreactor — exposed wiring, choosing the Raspberry Pi over a more
+user-friendly microcontroller, and the **1:1 ratio between microcontroller and reactor**.
+Dr. Mackay made the same point independently: a Raspberry Pi provides excessive computing
+power for one bioreactor. The ESP32 offered a simpler bill of materials, more modular
+hardware and easier power distribution while still supporting everything required —
+stirring through 12 PWM channels, heater control through 2 low-frequency PWM outputs, and
+temperature and optical-density monitoring through ADC and I²C.
+
+**Second, on 2026-05-28 we finalised a single-vessel workflow.** Each reactor would grow
+cells, induce expression, apply selection and run degradation experiments in the same
+vessel, eliminating the need for a separate culture-production system or chemostat.
+
+That second decision defined the core engineering challenge. The workflow requires **three
+temperature regimes** — growth at 37 °C, induction at 25 °C, degradation at 50–70 °C — with
+in-vessel sterilisation at 70 °C, while the project's target enzymes ideally remain stable
+above 80 °C.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/5.avif"
+  alt="Pioreactor 40 mL option"
+  caption="One of three commercial reference designs evaluated against our requirements, alongside the Open Source Bioreactor and Chi.Bio. The recurring criticism across all three was the one-Raspberry-Pi-per-unit ratio and electronics positioned below the vial, exposed to spills."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+**The thermal requirements and the power budget could not both be met at the original scale.**
+On **2026-06-29** we resolved the conflict by splitting the heating load: **individual
+reactors would heat only to 40 °C, while a centralised heating system would provide the
+60–70 °C degradation environment.**
 
-Hardware · Version 1: Explain what the evidence showed and how it informed the next iteration.
+As part of the same decision, we **cut the design from 96 reactors to 8**. This was the
+largest scope reduction in the hardware track and the change that made the platform feasible
+to build, power and validate within the project's constraints. It is also the decision we
+would defend most strongly: the alternative was 96 units that could not be powered or
+thermally driven to spec.
+
+**What changed going into C1.2:** the architecture shifted from 96 reactors to 8, from
+networked units to USB serial communication, and from a hardware-first design to one that
+treated the live software dashboard as a core subsystem from the outset.
+
+<Callout tone="warning" title="Source the power ceiling before publishing">
+
+The figures circulating in our planning notes — a 15 A / 120 V Donnelly laboratory circuit
+giving a **1,440 W** cap across **96 units** — do not appear anywhere in the repo or the
+requirements document. That ceiling is cited as the driver of three architecture decisions
+*and* of the 96 → 8 reduction, so it is load-bearing for this entire cycle. Either source it
+or rewrite around the measured figures from C1.4: **~12 W per unit, 7 reactors per 200 W
+charger.**
+
+</Callout>
 
 </EngineeringStage>

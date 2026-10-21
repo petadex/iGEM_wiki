@@ -1,31 +1,105 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**B1.2 — Metadata enrichment.** Sequence alone cannot tell you the conditions under which an
+enzyme functions, and the project's whole premise is finding enzymes adapted to ambient
+conditions. So the corpus needed environmental context, pursued along two tracks:
 
-Dry Lab · Version 2: Describe the problem, requirements, and design choices for this iteration.
+- **Environmental and taxonomic metadata** propagated from SRA BioSamples.
+- **Activity data** extracted from the published literature.
+
+<ProfileSteps />
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+**Environmental track.** The first plan was to profile every library taxonomically with
+Kraken2. We abandoned it on **2026-05-07** after estimating that processing 8.2 million
+libraries sequentially would take on the order of a century — a runtime estimate made
+*before* committing compute, which is the cheapest kind of failure. We switched to existing
+SRA-STAT classifications, using Kraken2 only to fill gaps, and later adopted **BacDive**
+growth records as the source of temperature and pH optima.
 
-Dry Lab · Version 2: Describe what the team built or changed, including methods and materials.
+**Literature track.** We collected roughly 6,000 papers on plastic-degrading enzymes and
+used a language model to extract activity data. An initial evaluation of Haiku on
+**2026-08-25** was unsatisfactory, so we switched to Sonnet on **2026-09-01** at a total run
+cost of about **$1,200**.
+
+In parallel, roughly **25 volunteers** manually curated papers against a structured
+extraction schema to build a human ground-truth benchmark. **We prohibited AI-assisted
+curation for this effort** — using AI to build the benchmark would have destroyed its
+purpose as an independent evaluation set.
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+Three measurements, two of which found limitations.
 
-Dry Lab · Version 2: Add the tests, controls, measurements, and results for this iteration.
+**Extraction quality improved sharply** after a prompt revision and the addition of a
+verification step. Measured 2026-08-25: decoy rejection rose from **65% to 100%**,
+assay-variable extraction from **20% to 98.8%**, and activity-metric extraction from **18%
+to 98%**. These compare two internal pipeline versions rather than performance against the
+human benchmark, and no held-out test set was defined.
+
+**The literature run was only partly usable.** More than 6,000 papers were processed by
+2026-10-05, but **only about 30% of the output was immediately usable** because many
+supplementary files were missing from the scrape.
+
+**The human benchmark failed its own quality control.** On **2026-10-02**, independent
+curators assigned to the same paper often disagreed by roughly 30%, or extracted
+substantially different amounts of information. Until curator pairs reconciled those
+differences, much of the benchmark could not support formal evaluation.
+
+**Environmental coverage proved equally limiting.** Physical environmental measurements were
+available for **157,613 of 6,796,722 BioSamples — 2.319%**. Temperature values covered
+0.67% of samples, pH values 0.15%, and both were present in only 0.07%. Where temperature
+existed, the median was 24 °C and the 99th percentile 60 °C.
+
+<Figure
+  id="biosample-profiles-figure"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/biosample-metadata-profiles.svg"
+  alt="Left: for 21 metadata profiles, share of BioSamples versus share of sequence clusters on a log scale; human profiles shrink and natural environments grow. Right: median environmental temperature per profile; gut profiles near 37 °C, soil and freshwater near 31 °C."
+  caption="Share of profiled BioSamples against share of 90% clusters for each of 21 profiles (log scale), beside BacDive-propagated environmental temperature per profile with medians and IQR."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+**Numeric environmental metadata are too sparse to drive large-scale candidate
+prioritisation — but categorical information scales.**
 
-Dry Lab · Version 2: Explain what the evidence showed and how it informed the next iteration.
+Aggregated at the cluster level, a dominant environmental profile could be assigned to
+**14,455,359 of 18,172,960 clusters (79.5%)**. The resulting distribution differs markedly
+from the clinically dominated view of the raw SRA data, becoming predominantly
+environmental: soil 25.8%, marine 6.7%, freshwater 6.6%, sediment 5.4%, and **wastewater
+sludge 740,110 clusters (4.07%)**.
+
+That wastewater figure is the most directly actionable result for our intended application:
+it expands a source set of **67,316 wastewater BioSamples into more than 740,000 candidate
+sequence clusters**, a substantially larger search space for wastewater-adapted enzymes.
+
+<ProfileStack />
+
+**The temperature track hit a harder limit.** On **2026-09-01** we found that roughly 2,500
+species in our metadata store could be queried against BacDive, but only about **1,200**
+contained temperature information — against approximately **240,000 taxa** in the underlying
+BioSamples. In practice the temperature feature extrapolates from roughly **1% of the
+available taxonomic space** and remains blocked on a future BacDive recomputation.
+
+**What changed going into B2.1:** we stopped treating temperature as a primary ranking
+signal and shifted toward environmental categories and experimentally derived activity data.
+Categorical environmental context scales across the corpus; direct temperature inference
+does not.
+
+<Callout tone="note" title="Two coverage numbers that are not the same thing">
+
+The 2.319% figure is **directly measured** environmental metadata on BioSamples. The
+BacDive-propagated estimates cover a much larger fraction of samples but are **inferred from
+taxonomy**, not measured per sample. They answer different questions and should not be
+quoted interchangeably.
+
+</Callout>
 
 </EngineeringStage>

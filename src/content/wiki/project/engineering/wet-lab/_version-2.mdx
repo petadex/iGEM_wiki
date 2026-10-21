@@ -1,31 +1,72 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**A1.2 — Rebuilding PD.** After the surface-display route was deprecated in July, PD no
+longer needed inducible expression from its pTac promoter. Rather than redesign the plasmid,
+we left the construct unchanged and added **IPTG to all assay media**. At that point in the
+season, changing the media cost less time, money and risk than starting another cloning
+cycle. We made that call on **2026-07-20**.
 
-Wet Lab · Version 2: Describe the problem, requirements, and design choices for this iteration.
+On **2026-10-02** PD's original designer confirmed the rationale and two inherited features
+we had deliberately left alone: a stop codon downstream of the linker, and an ATG codon
+between the RBS and the INP anchor.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/plasmid2.avif"
+  alt="Linear view of the PETase display system"
+  caption="The PD display module: INP anchor, a 20-amino-acid GS linker, outward-facing BsmBI sites, GGGGS and a FLAG tag. This is the region the October sequencing found missing."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+On **2026-10-01** miniprep results showed strong DNA concentration and purity, and Golden
+Gate assembly completed successfully, producing the full set of control PD plasmids.
 
-Wet Lab · Version 2: Describe what the team built or changed, including methods and materials.
+Sequencing came back **2026-10-02** with a critical defect: **KLD editing had deleted
+approximately half of the plasmid, including the entire display module.**
+
+We ordered a replacement from GenScript together with pre-built control plasmids — we had
+already identified GenScript on **2026-07-17** as having a stronger backbone catalogue than
+IDT or Twist. It arrived more slowly than hoped: on **2026-10-08** GenScript estimated one
+to two weeks, and the constructs reached the Donnelly Centre on **2026-10-13**.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/journal/workflow-oct6.avif"
+  alt="Handwritten workflow note"
+  caption="The week's plan as written on the bench (2026-10-06): Golden Gate the PETases into PD, KLD, then co-transform with AS into BL21."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+Before the replacement arrived we tested what we had, on **2026-10-07**. The result was an
+unusually clean failure mode: cells carrying **AS alone grew as expected**, while
+transformations containing **PD alone** or **PD + AS** produced **no growth** under
+otherwise successful conditions.
 
-Wet Lab · Version 2: Add the tests, controls, measurements, and results for this iteration.
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/journal/transformation-plates-oct7.avif"
+  alt="Transformation plates"
+  caption="Co-transformation plates (2026-10-07). AS alone grows; PD alone and PD + AS do not — the pattern that localised the fault to the PD construct rather than to the protocol."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+The failure did not come from transformation conditions, media composition or antibiotic
+selection — the AS-alone plate rules all three out. Sequencing traced it to the plasmid
+itself: KLD editing had removed the display region PD needs to function.
 
-Wet Lab · Version 2: Explain what the evidence showed and how it informed the next iteration.
+Because repairing and re-verifying the construct would have meant another full cloning cycle
+this late in the season, we abandoned repair and **replaced the plasmid entirely through
+commercial synthesis**. The general lesson we took: once a construct's defect is confirmed
+at the sequence level, buying a verified replacement can be faster than fixing one, and the
+decision should be made on calendar time remaining rather than on sunk effort.
+
+The whole-plasmid verification rule from A1.1 is what made this diagnosis quick — a year
+earlier the same failure would have read as a transformation problem.
 
 </EngineeringStage>

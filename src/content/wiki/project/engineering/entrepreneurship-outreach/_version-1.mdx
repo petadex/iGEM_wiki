@@ -1,31 +1,111 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**D1 — External technical review.** People outside our team changed our technical designs
+repeatedly this season. This cycle records that as an engineering process rather than as
+outreach: we looked for reviewers who would judge the platform **by the standards of their
+own fields, not ours** — a hardware manufacturer, a biomedical engineering professor,
+wastewater engineers, and a journal editor.
 
-Entrepreneurship & Outreach · Version 1: Describe the problem, requirements, and design choices for this iteration.
+We hold this to one standard: **if a conversation did not lead to something we can point to,
+we do not count it as evidence.**
+
+For context, Dr. Artem Babaian is our principal investigator and Jonas Lehar and Kat Roth
+are club advisors and lab staff. All three know the project closely, which makes their
+feedback valuable for engineering decisions but tells us little about how people outside the
+project see the work. They are internal review, and we do not count them among our external
+stakeholders.
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+| Reviewer | Role | When |
+| --- | --- | --- |
+| Cameron Davidson-Pilon | CEO, Pioreactor | Before 2026-04-29 |
+| Dr. Matthew Mackay | Microcontroller architecture | Before 2026-04-29 |
+| Prof. Rasha Maal-Bared | Principal Scientist, CDM Smith R&T Labs; WEF Board of Trustees | 2026-07-07 |
+| Prof. Wolfgang Streit | Universität Hamburg, co-author of PAZy | 2026-08-25 |
+| Prof. Milica Radisic | UofT Institute of Biomedical Engineering | 2026-08-31 and 2026-10-05 |
 
-Entrepreneurship & Outreach · Version 1: Describe what the team built or changed, including methods and materials.
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/8.avif"
+  alt="Interview with Cameron Davidson-Pilon, CEO of Pioreactor"
+  caption="Cameron Davidson-Pilon, CEO of Pioreactor. Meeting minutes for this and the other hardware interviews are published on the Hardware motivation page."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+Each change below traces to a single conversation, in the reviewer's own recorded terms.
 
-Entrepreneurship & Outreach · Version 1: Add the tests, controls, measurements, and results for this iteration.
+**Cameron Davidson-Pilon → the controller and the architecture.** He named his own regrets
+in designing the Pioreactor: exposed wiring, choosing the Raspberry Pi over a more
+user-friendly microcontroller (**ESP32**), and the **1:1 ratio between microcontroller and
+reactor**. That drove our microcontroller testing and our requirements on parallelisability
+and on shielding electronics from water. He also confirmed a Pi Pico could replace the full
+Raspberry Pi and that Pi, STM and Arduino perform comparably for our task, which reduced the
+controller choice to cost and pin count. His warning about custom-PCB lead time moved us to
+off-the-shelf boards and the **StemmaQT** connector standard — which is exactly the
+connector that later fixed the loose-jumper failure in the OD calibration run.
+
+**Dr. Mackay → power architecture.** A Raspberry Pi provides excessive computing power for
+one bioreactor, and **scheduling or a separate power supply** makes mixing, stirring and
+heating less energy-intensive. That is the origin of isolating those circuits from the
+compute lines.
+
+**Prof. Rasha Maal-Bared → where the system is deployed.** **60 to 90% of PET microplastics
+end up in WWTP sludge rather than the water stream.** Digesters run at mesophilic
+temperatures. She recommended **sidestream deployment** for optimal contact between PETase
+and microplastics. She also made an operability point we designed to: **plant operators, not
+engineers, manage day-to-day processes, so design for operators.**
+
+**Prof. Milica Radisic → the reactor scale.** She judged the 40 mL vessel an order of
+magnitude too large for the intermediate screen and pushed us toward a lower-volume
+screening format, splitting one instrument into two tiers. She also agreed to monthly design
+reviews and began sourcing a thesis student for the screening tier — the one review that
+became a standing relationship rather than a single conversation.
+
+Two further advisors produced changes outside the reactor itself. **Sophia Young** observed
+that small particles pass physical filters, so the system belongs in the **biological
+treatment stage**, and argued the strongest IP path is to patent the **ML process** — the
+algorithm and optimisation — rather than individual enzymes. **Mary Mohamad** established
+that student IP rights are not automatic and university ownership must be settled before
+commercialisation.
+
+<Placeholder label="One attribution to resolve">
+
+The enzyme-immobilisation requirement and the landfill-leachate validation are attributed to
+Prof. Grant Allen (2026-07-09). He is real — our attributions record the team interviewing
+him alongside Prof. Ramin Farnood and Prof. Hubert Cabana on wastewater integration,
+feasibility, barriers and regulation — but his advice is not written up on the Human
+Practices page. Add it there or cite the interview record directly.
+
+</Placeholder>
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+**Across every one of these reviews, outside experts corrected our engineering and
+deployment assumptions and never our biology.** None of them questioned whether PETases
+work. Every change was to how the system is built, where it runs, or how big it is.
 
-Entrepreneurship & Outreach · Version 1: Explain what the evidence showed and how it informed the next iteration.
+That is exactly the category of mistake a team that spends most of its time at the bench is
+least able to catch on its own, and it is the argument for seeking out reviewers who do not
+share your assumptions. The controller choice, the power architecture, the deployment point
+within a treatment plant, and the vessel scale were all things we believed we had settled
+internally.
+
+<Callout tone="warning" title="Quote standard before publishing">
+
+No verbatim stakeholder quote exists in our vault — everything above is paraphrase from
+interview records. iGEM 2026 rules require quotes to be verbatim, so either pull them from
+the original interview documents or keep the page in paraphrase with the source named.
+Separately: **do not claim operators raised the GMO objection.** Our records confirm
+wastewater is the primary target and the model is a purified enzyme, but they do **not**
+confirm that operators themselves raised that objection.
+
+</Callout>
 
 </EngineeringStage>

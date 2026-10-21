@@ -1,0 +1,110 @@
+<EngineeringStage id="design">
+
+**B2.2 — The stage 2 head, and a split that cannot evaluate.** The design couples sequence
+embeddings to supervised prediction: PlasticESM embeddings feed a **regression head** that
+predicts activity and a **binary classifier** that estimates prediction confidence.
+
+The validation plan was specific, and set before any training:
+
+- Measure **enrichment on a held-out set relative to random selection** — the only metric
+  that answers whether the model beats picking candidates at random.
+- **Split by graph component rather than by sequence**, so close homologs cannot appear on
+  both sides of the train/test boundary and inflate the result through leakage.
+- Compute **bootstrap confidence intervals over clusters rather than individual sequences**,
+  so uncertainty reflects diversity rather than redundancy.
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+We assembled the **PETai label set** and published it on **2026-10-15**: **13,092 labels
+across 1,219 sequences from 696 references**, including 4,492 PET-substrate measurements on
+449 sequences.
+
+By provenance:
+
+| Source | Labels |
+| --- | --- |
+| Direct activity measurements | 6,655 |
+| Language-model-extracted annotations | 4,694 |
+| Kinetic measurements | 1,342 |
+| Halo-assay observations | 197 |
+
+<ModelDatasets />
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+**We audited the split before training on it, and found it cannot support a meaningful
+evaluation.** This is the result of the cycle.
+
+**Negatives have collapsed.** They account for only **200 of 12,888 labels (1.55%)**, and
+the test fold contains **7 negative labels across 5 of 170 sequences**. The halo screen
+contributes 168 of the 200 negatives, yet the split places **178 halo labels in training,
+12 in validation, and none in the test set**.
+
+**Provenance is inverted between folds.** Language-model-extracted labels make up **19.6% of
+the training fold but 62.9% of the test fold** — and the language-model-extracted portion
+contains **no negative labels at all**.
+
+**The targets are not internally consistent.** Activity measurements combine percent
+activity, percent relative activity and raw percent overlap in a single field. Thermal
+measurements mix melting temperatures in °C and K with folded-fraction curve points. Across
+the dataset the value column spans **−372.91 to 1.21×10⁹**, which is the signature of
+multiple incompatible tasks merged into one prediction target.
+
+**One further measurement changed the design.** Joining the label set to the PETadex corpus
+by exact-sequence MD5 across all 131 shards found **401 of 1,219 labelled sequences (32.9%)**
+present in the corpus — and of those, only **21 originated from Logan**.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/homology-leakage.svg"
+  alt="For each target, arrows from the grouped-split score to the random-split score; stock ESM-C jumps by 0.49 to 1.01 while sequence length barely moves"
+  width="100%"
+  caption="Homology leakage, the deeper problem behind the split. The same ridge probe scored under component-grouped splits (hollow) and random five-fold splits (filled). ESM-C embeddings gain 0.49 to 1.01 from a random split, because 90–92% of labelled sequences have a homologous relative in the set. A single length column gains at most 0.18."
+/>
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+Three conclusions follow, and they are design changes rather than observations.
+
+**First, the split requires re-stratification before any enrichment metric can be trusted.**
+Negatives and label provenance must be represented across all folds. Otherwise test
+performance measures differences in data composition rather than model quality — a model
+could score well by exploiting the fact that the test fold is 62.9% language-model-extracted
+and contains almost no negatives.
+
+**Second, the targets must be separated by task.** A single value column cannot
+simultaneously represent activity percentages, kinetic measurements, melting temperatures
+and curve-derived values. Future versions should define one prediction target per task
+rather than one column per dataset.
+
+**Third, the model currently learns primarily from sequence rather than from PETadex
+metadata**, because roughly two thirds of labelled sequences are absent from the corpus.
+That reframes what the stage 2 head is actually doing.
+
+**We also identified a recovery path for existing data.** Mapping labels back to parent
+sequences showed that **3,101 of 3,137 labels** stranded on discarded sequence fragments can
+be recovered without changing the split structure — making re-stratification far cheaper
+than rebuilding the label set.
+
+**The split was then repaired, which is why this cycle matters.** The current release
+carries **124 / 39 / 33 negatives** across train, validation and test, and machine-extracted
+labels now run **39.5% of train against 39.9% of test** where they previously ran 19.6%
+against 62.9%. The release notes describe the first split plainly: homology-clean but
+unusable for evaluation.
+
+One defect survives the repair and is worth stating: **a single 30%-identity cluster holds
+113 of the validation fold's 171 sequences and 104 of the test fold's**, so effective
+diversity is roughly **27 families, not 171**. Post-repair, the held-out test fold carries
+**89 evaluated labels on 16 sequences**.
+
+The honest summary: this cycle produced no enrichment number, because the audit showed any
+enrichment number computed on the original split would have been meaningless. Finding that
+*before* training rather than after is the result — and the repaired split is what makes the
+evaluation in B2.3 possible at all.
+
+</EngineeringStage>

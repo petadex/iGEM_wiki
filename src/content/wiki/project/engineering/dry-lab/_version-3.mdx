@@ -1,0 +1,119 @@
+<EngineeringStage id="design">
+
+**B2.1 — PlasticESM.** The March plan was ESM2 with supervised fine-tuning plus LoRA on
+roughly 300 curated labelled proteins. We changed it twice, and can state why for both.
+
+The base model became **ESM-C 300M** — roughly half the parameters of the smallest variant
+in the original plan. The objective became **masked-language-model domain adaptation on the
+unlabeled corpus at 15% masking**, rather than supervised fine-tuning, because 300 labelled
+proteins is far too small a set to carry the original approach. The labelled data moved to a
+second stage, which becomes B2.2.
+
+The adapter saw the **18,172,960 clusters at 90% identity**, not all 307 million ORFs.
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+LoRA at **rank 32, alpha 16, dropout 0.01**, targeting `out_proj`, plus hand-rolled adapters
+on the fused QKV and FFN modules.
+
+The fused modules needed hand-rolling for a specific reason: PEFT walks the module tree
+looking for `nn.Linear` subclasses, and ESM-C's QKV and FFN blocks hold raw parameter
+tensors and apply LayerNorm inline, so the walker skips them entirely. SwiGLU needs four
+matrices rather than two, because the first FFN projection emits twice the hidden width.
+
+Parameter budget at rank 32:
+
+| Module | Trainable parameters |
+| --- | --- |
+| QKV | 3,686,400 |
+| FFN | 9,216,000 |
+| `out_proj` | 1,843,200 |
+| **Total** | **14,745,600** |
+
+The run went **1.11M steps at batch size 16**, over six days.
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+**The loss curve descended cleanly over the six-day run. It was also the only result, and it
+was misleading.**
+
+On **2026-07-19** we found that **every checkpoint had retained 1,843,200 of 14,745,600
+trained parameters — 12.5%** — discarding every hand-rolled adapter.
+
+The mechanism: PEFT's checkpoint writer keeps keys matching both `lora_` *and* the adapter
+name, and it names its own parameters with a `.default.` segment that our hand-rolled
+adapters lack. **Training itself was unaffected**, because the freezing logic matches on the
+`lora_` prefix alone — so the fused adapters received gradients normally for 1.11M steps and
+were then silently dropped at every save.
+
+**Two independent measurements found it, neither requiring a model load:**
+
+1. The optimizer state was **118,170,315 bytes**, which at AdamW's two fp32 states per
+   parameter implies about **14.77M trained parameters** — matching the predicted
+   14,745,600 and proving the fused adapters *had* trained.
+2. Opening the adapter file showed **60 tensors, all `attn.out_proj`**, totalling
+   **1,843,200 parameters** — proving they had *not* been saved.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/plasticesm-loss.svg"
+  alt="Training loss against optimizer step for the single-seed and dual-seed PlasticESM runs; the dual-seed run continues to a lower loss"
+  width="100%"
+  caption="Training loss for the re-run after the save path was fixed: one random draw per 60%-identity cluster (single seed, 9,423 steps) and two draws (dual seed, 18,873 steps). On a common held-out set, loss falls from 1.696 to 1.684 nats — perplexity 5.39, about 279 times the difference between two identical runs."
+/>
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+**The surviving `out_proj` adapters are not a smaller valid model.** They were optimised
+jointly with deltas that no longer exist, so loading them alone produces a configuration
+that never existed during training. Recovery is closed: the optimizer file holds Adam
+moments, and all three checkpoints carry the identical truncation.
+
+What we changed: a save-and-load path that writes the fused adapters to their own file
+beside PEFT's; a callback that writes it into every checkpoint directory and reloads it at
+train start *after* the resume path has run; checkpoint keys anchored so stage 1 and stage 2
+module paths reduce to the same form; and **guards that fail loudly on a zero match** rather
+than silently training `out_proj` alone.
+
+That last guard matters most. The injection matches on class-name strings that exist only on
+ESM-C's pure-PyTorch fallback path — install a different attention backend, the modules are
+renamed, nothing matches, and the original failure returns silently.
+
+A pre-flight checklist for any re-run: the injection log should report **30 QKV and 30 FFN
+adapters**, the trainable parameter count should read about **14.7M rather than 1.8M**, and
+the fused adapter file should come out near **51.6 MB** beside a 7.4 MB PEFT adapter.
+
+**We also corrected our own estimate of what a re-run costs.** Reasoning from FLOPs rather
+than step count, one epoch over the 18.17M 90% centroids is **5.43 billion tokens and
+6.52e18 FLOPs** — about **20 hours on an L40S** or 14.5 on an A100. At the 60% level it is
+two hours. **Compute was never the constraint**, which we had assumed for months without
+checking.
+
+**The fix shipped, and the model was retrained.** LoRA now sits on **all four projections of
+every transformer block** — attention in and out, and both FFN layers — giving **240 adapter
+tensors and 14,745,600 trainable parameters** with the backbone frozen. Every saved adapter
+was checked against the live model, **with none left untrained**. The adapters are released
+publicly as `petadex/plasticesm-dualseed`.
+
+The re-run also changed the training set, for a reason worth recording: training on the
+18.2 million 90%-identity clusters cost about 57 hours per epoch, so the run moved to the
+**1,814,296 clusters at 60% identity**, drawing one random member each. Drawing *two* members
+per cluster instead of one yields **2,494,836 distinct sequences (1.38×)**, because 48.7% of
+60% clusters are singletons — and that dual-seed run is the lower curve above. Engineering
+changes delivered **2.63× throughput**.
+
+<Callout tone="note" title="What the loss curve does and does not show">
+
+This is a **dual-seed against single-seed** comparison on the repaired pipeline. It is
+evidence that the re-run happened and that more distinct sequences help; it is **not**
+annotated with the original truncation, and no loss curve of the broken run survives. The
+12.5% retention story above stands on the two file-level measurements, not on this figure.
+
+</Callout>
+
+</EngineeringStage>

@@ -1,0 +1,112 @@
+<EngineeringStage id="design">
+
+**C1.4 — V3 and the first biological run.** V3 is the design intended for replication across
+the array, and the version the reproducibility goal is written against: a non-hardware team
+member should be able to build one from the wiki instructions, bill of materials and
+firmware.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/overview/finaldesign/fd3.avif"
+  alt="Final architecture diagram showing control loops, data paths and command actuation"
+  caption="The final architecture: control loops, data paths and command actuation across the subsystems."
+/>
+
+<Placeholder label="Design — one gap">
+
+State what V3 changes relative to V2, and whether it implements the lower-volume screening
+tier from C1.3 or remains the 40 mL tier. Our records say only that scale-up follows V3.
+
+</Placeholder>
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/overview/output.webp"
+  alt="Rotating CAD model of the final bioreactor design"
+  caption="The final CAD model."
+/>
+
+<HardwareMap version="version-3" anchorPrefix="final" />
+
+The build ships with a complete **bill of materials** and an **assembly instruction
+booklet**, which is what the reproduction target depends on — the rubric asks whether the
+hardware is documented well enough for another team to rebuild it, so those documents carry
+as much weight as the device.
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+**The first biological run happened, and the reactor grew bacteria.**
+
+A 20 mL *E. coli* culture ran for 4 hours in the reactor. Measured by spectrophotometry on a
+0.5-diluted aliquot, **OD600 went from 0.153 to 1.25 and 1.166**. Temperature reached
+37 °C ±0.1 °C in under 20 minutes and held to ±0.3 °C.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/overview/finalresult/3.avif"
+  alt="Signals from temperature and OD600 readings over a 1.5 hour experiment"
+  caption="Temperature and OD600 signals across an earlier 1.5-hour run."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/overview/finalresult/8b.avif"
+  alt="OD, fan speed and temperature values over two runs during the second experiment"
+  caption="OD, fan speed and temperature across both runs of the growth experiment. Fan speed held near 1,800 RPM; the excursions above 6,500 RPM were wiring falling out. OD600 readings began at zero and were often erratic. Temperature was stable throughout."
+/>
+
+**Two honest negatives sit beside the growth result.** The reactor's own OD600 readings
+began at zero and were erratic, and a five-point ground-truth comparison against the
+spectrophotometer showed **the linear relationship did not give an adequate OD curve**.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/overview/finalresult/9.avif"
+  alt="Five ground-truth spectrophotometer readings against bioreactor OD readings"
+  caption="Five ground-truth spectrophotometer readings against bioreactor OD. The linear relationship did not produce an adequate curve — the sensor needs fixing and calibrating across at least five concentrations before experimentation begins."
+/>
+
+Mixing also needed a magnet fix: small stir bars above 2,000 RPM failed to produce a vortex,
+and only medium stir bars at slower speeds mixed adequately.
+
+**No PETase-activity measurement was made.** The enzymatic half of the run is untested,
+which is where Wet Lab's non-functional display plasmid (A1.2) bites directly — the run
+needs a PETase-expressing strain, and through early October there wasn't one. The tracks are
+genuinely coupled, and this is where it shows.
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+**Measured against the requirements table from C1.1**, these rows now close:
+
+| Requirement | Result |
+| --- | --- |
+| Cost | **≈$204 CAD per unit**, against the Pioreactor's $441 |
+| Temperature stability | ±0.3 °C, peak ~60 °C (62.3 °C at 10 mL) |
+| OD | Three-point calibration, R² = 0.993 |
+| Stirring | 200–6,500 RPM |
+| Pumping | 6.6–23 mL/min |
+| Power | ~12 W per unit; **7 reactors per 200 W charger** |
+| Biology | OD600 0.153 → ~1.2 in 4 hours |
+
+The cost figure is the Best Hardware argument in one line: **roughly half the price of the
+commercial reference we benchmarked against**, built and documented by a student team.
+
+**The rows that remain open are the thermal gap and OD accuracy in the integrated system.**
+Per-reactor heating peaks near 60 °C against the 60–70 °C a degradation experiment needs,
+and the OD sensor tracks OD600 in calibration but not reliably in a live run. Both are
+specific, measurable, and named in the next-steps section rather than glossed.
+
+<Callout tone="warning" title="Two unsourced claims removed from this cycle">
+
+The **sub-$100 per-unit** and **sub-100-minute build** figures circulating in planning notes
+appear in neither the requirements document nor any status report; the sourced figure is
+**$204 CAD**, which is a strong result on its own. **"Replication to eight units"** is also
+unsupported — no "8 reactors" claim exists in the repo, and the published evidence is 7
+reactors per 200 W charger. State the measured figure or source the target.
+
+</Callout>
+
+</EngineeringStage>
