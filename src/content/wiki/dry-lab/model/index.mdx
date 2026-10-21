@@ -36,10 +36,6 @@ status: "draft"
   writeup and delete the Owner lines before publishing.
 */}
 
-<Callout title="Page in progress">
-This page is being written. Text in dashed boxes is placeholder copy that shows what each section will cover.
-</Callout>
-
 ## Motivation
 
 {/*
@@ -47,13 +43,26 @@ This page is being written. Text in dashed boxes is placeholder copy that shows 
   Why a model is needed at all: the question it has to answer.
 */}
 
-<Placeholder>
+#### Current landscape of plastic-degrading enzymes
+Plastic-degrading enzymes pose a promising solution to bioremediation of plastic waste, but our knowledge of them is 
+quite limited. The *Plastics-Active Enzymes Database* (PAZy) [PAZy citation] contains all the experimentally validated 
+plastic-degrading enzymes from across the world – amounting to a sparse 495 enzymes. Other databases, such as 
+*PlasticDB* [PlasticDB citation], complement the sequences found in PAZy with organism and environmental metadata. This 
+consists of only 875 distinct plastic-degrading organisms, active across a relatively narrow set of environmental conditions. 
 
-Known PET-degrading enzymes are few, and each one took years of bench work to find and characterise. Public sequence databases hold far more candidate enzymes than any lab could ever test, so the limiting step is choosing which ones to make.
+**If we want to efficiently discover and engineer ultra-efficient plastic-degrading enzymes, we need to investigate 
+the sequence and environmental landscape.**
 
-We built a model to make that choice. Given a sequence that has never been expressed, it estimates how likely the enzyme is to break down plastic, so that wet lab effort goes to the candidates most likely to work.
+#### What we are building from
+The advent of artificial intelligence in biology may offer a path to navigating these landscapes, but current datasets 
+lack the scale needed to train such models. In prior work, our supervising lab (RNAlab) assembled the *PETadex*, a dataset 
+of 47.2 million non-redundant plastic-degrading homologs mined from Logan, the assembly of the Sequence Read Archive 
+(38 million experiments) [citation]. Randomly sampling *Is*PETase homologs from PETadex and screening them for activity 
+on BHET (PET monomer) yielded two novel enzymes exceeding the activity of FAST-PETase, the engineered benchmark in the 
+field. 
 
-</Placeholder>
+**This version of the PETadex succeeded in demonstrating the power of *Logan*, but lacked the deep sequence 
+annotations required to efficiently discover novel ultra-efficient plastic-degrading enzymes.**
 
 ## What Our Model Does
 
@@ -65,24 +74,43 @@ We built a model to make that choice. Given a sequence that has never been expre
   Introduce the four components here in the order they are detailed below.
 */}
 
-<Placeholder>
+**Project Goal:** Develop a model to predict the activity of PETases under differing conditions to 
+accellerate the discovery of ultra-efficent plastic-degrading enzymes.
 
-Our model ranks candidate enzymes by predicted plastic-degrading activity. That ranking decided which sequences wet lab ordered and tested, and the assay results feed back in as new training data.
+#### PETadex: The largest plastic-degrading enzyme homolog database
+We developed *PETadex V2*, a complete remake of the PETadex dataset from the ground-up, modernizing the enzymes from
+2024 to 2026, and improving data curation steps. We retrieved 1,740,282,847 non-redundant plastic-degrading enzyme homologs,
+which was curated to a set of 291,922,243 complete proteins using our catalytically-bound PETadex-HMMs. Using the experimental
+metadata retrieved from the Sequence Read Archive for these sequences, we annotated them with the conditions they were
+sequenced from: pH, temperature, salinity, and environmental class. To improve our understanding of the sequences themselves, 
+we computed biochemical properties, predicted signal sequences and mapped their domain architectures. All of this is freely
+accessible at *petadex.net*.
 
-It is built from four components, each described in its own section below:
+#### Scraping all the literature for plastic-degrading activity
+Sequence and condition information is not enough to predict PETase activity, we must learn from experimentally validated
+activities. The issue is, almost all of the validated plastic-degrading enzyme activity data is "trapped" in the unusable
+format of PDFs. To solve this, we developed a literature scraping pipeline that extracts activity data using LLMs. With this,
+we analysed over 4,000 papers, extracted 51,455 activities across hundreds of conditions and on diverse set of plastics. We
+benchmarked these LLM-extracted values by having over 20 iGEM Toronto members read and extract PETase activities
+from 61 papers, taking a culminative 450 hours.
 
-- **Dataset Generation** builds the corpus of candidate sequences the model ranks.
-- **Sequence Annotation** describes each sequence with the features the model can learn from.
-- **Activity Data Extraction** collects measured activity from the literature as training labels.
-- **Machine Learning** learns from the labelled sequences and scores the rest of the corpus.
+#### Predicting Plastic-Degrading Activity
+Now that we have the largest database of plastic-degrading enzyme homologs to date, we can now train a model that can understand
+the plastic-degrading enzyme sequence and condition landscape. [Purav ESMC + model info].
 
-</Placeholder>
+#### Training on Tens of Thousands of In-House Datapoints
+[[Purav active learning]].
+We need tens of thousands, if not hundreds of thousands of sequence activies in order to train a robust model, but it would be
+economically impossible to synthesize that many unique DNA sequences. We address this through the creation of LOBSTER (Library 
+Optimization for Bioprospecting Sequences Through Economical Recombination). LOBSTER utilizes the sequence depth of the PETadex,
+golden gate assembly of fragments, and encoding of degenerate bases to greatly reduce synthesis costs. Using LOBSTER, we ordered
+xxxx sequences from the *Is*PETase and LCC enzyme clusters for the Wet Lab to screen. The data generated by the Wet Lab team will
+then be used to further train the model, improving predictive capacitiy of our model.
 
-<Placeholder label="Placeholder figure">
-
-Pipeline overview: corpus, features and labels feeding the model, and the model's ranking feeding the wet lab library.
-
-</Placeholder>
+**Why PETadex matters:** The PETadex model has not only generated the largest resource for plastic-degrading enzymes to date,
+improving the predictave capability of ML-tools to discover novel plastic-degrading enzymes, but can be applied to other enzymatic
+functional families. The methods of this pipeline is not PETase-specific, but can be used to discover ultra-efficent enzymes for any
+activity, underneath any condition.
 
 ## Dataset Generation
 
@@ -93,25 +121,32 @@ Pipeline overview: corpus, features and labels feeding the model, and the model'
   homology expansion into NCBI nr; Logan query extraction.
   Should cover: seed MSAs and catalytic HMMs; clustering and corpus structure.
 */}
+### Background and Overview
+The creation of the PETadex in prior work [Logan citiation] and the creation of PETadex V2 here, relies on the foundation 
+built by our supervising lab (RNAlab) through the *Logan* project. *Logan* is the assembly of the Sequence Read Archive (SRA), 
+the leading public repositiory for global sequencing experiments (38M experiments). Researchers often require only a little 
+portion of the total sequencing dataset, and thus will not run a genome assembly algorithm over the sample due to its expensive 
+nature. Therefore a large portion of the SRA is unassembled, rendering it difficult to use. *Logan* assembles the SRA, 
+compressing the 87.0 Petabases of raw data into 1.8 Petabases of searchable contigs. 
 
-<Placeholder>
+We searched for plastic-degrading enzyme homologs through a sequence alignment search against the *Logan* assembly, retrieving over
+1.7 billion putative plastic-degrading enzyme homologs. The well studied polyethylene terephthalate (PET)-degrading enzyme, *Is*PETase, 
+was discovered using similar means [IsPETase citation]. The researchers identified a bacterium, *Ideonella sakaiensis*, able to degrade
+PET using an unknown enzyme. They discovered the identity of this enzyme by performing an alignment search of a known plastic-degrading
+enzyme called TfH against the *I. sakaiensis* genome. Our dataset generation pipeline mirrors these methods, but lacks a key feature:
+we do not know which genomes belong to plastic-degrading organisms.
 
-The corpus is the set of sequences the model scores. We start from the enzymes already reported to degrade plastic, curated and reconciled across the public reference databases, and group them into families by sequence similarity.
-
-From each family we search outward, first into the NCBI protein database and then into assembled public sequencing data through Logan, using profile models that require the catalytic residues to be present. The sequences recovered are clustered at several identity thresholds so the corpus can be sampled without redundancy.
-
-</Placeholder>
-
-<DatasetFlowchartFigure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/dataset-flowchart-centred.avif"
-  alt="Flowchart of how the PETadex corpus is built: 609 PETadex-PAZy proteins are clustered at 90% identity into 411 nr query centroids; a DIAMOND blastp search of NCBI nr gives 7,825,535 non-redundant raw hits, which HMMsearch filters to 6,857,582 PETadex-nr proteins; these are clustered into 2,740,458 Logan query centroids, searched against Logan with DIAMOND blastx and filtered with HMMsearch into PETadex-Logan. Bars beside each step sketch catalytic domains, off-target, partial and complete hits."
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/igem-combined.avif" alt="Parallel methods for the discovery of IsPETase and the creation of the PETadex." width="100%"
+  caption={<><strong>Figure 1.</strong> The creation of the PETadex mirrors the discovery of <em>Is</em>PETase. 
+  <strong>A</strong> Schematic overview for the discovery of <em>Is</em>PETase, specifically illustrating the sequencing and alignment methods. 
+  <strong>B.</strong> Schematic overview for the creation of the PETadex by searching for plastic-degrading enzyme homologs through
+  the <em>Logan</em> assembly.</>}
 />
 
 ### Plasticome Reference Curation
 
-*Owner: Dennis*
-
 {/*
+  *Owner: Dennis* 
   WRITER NOTES — not rendered.
 
   Overview tier. The full write-up is /dry-lab/model/plasticome/, reached
@@ -131,9 +166,11 @@ From each family we search outward, first into the NCBI protein database and the
   same 609.
 */}
 
-Existing databases of plastic-degrading enzymes (PDEs) are limited in scope and diversity. The plastics-active enzymes database (PAZy) contains 495 functionally verified plastic-active enzymes, most of them homologs of leaf-branch compost cutinase (LCC) or IsPETase.
+We created the query search of validated plastic-degrading enzymes by combing two versions of the PAZy database [PAZy citation]:
+the one used to generate the original PETadex (pulled August 26th, 2024) and a recently updated version (pulled July 1st, 2026). 
+Manual curation of the union of these two datasets resulted in a total of 609 curated, experimentally validation plastic-degrading
+enzymes, which we call PETadex-PAZy.
 
-To build PETadex, we created a starting search query by combining two versions of the PAZy database: the one used in the original PETadex generation (pazy-240826) and a recently updated, manually curated version (pazy-260701). Together they give a union of 609 curated, experimentally validated PDEs, which we call the plasticome.
 
 <PlasticomeStats />
 
