@@ -37,6 +37,8 @@ import { DiamondSearchDemo } from "./interactive/DiamondSearchDemo.js"
 import { RecordCardDemo } from "./interactive/RecordCardDemo.js"
 import { StructureViewer } from "./interactive/StructureViewer.js"
 import { DatasetLoop, ModelDatasets } from "./interactive/ModelDatasets.js"
+import { StructureCoverage } from "./interactive/StructureCoverage.js"
+import { FoldCostByLength, PlddtByTier } from "./interactive/FoldRunProfile.js"
 import { BiosampleViewer, ProfileShares, ProfileStack, ProfileSteps } from "./interactive/BiosampleProfiles.js"
 import {
   EricksonSequences,
@@ -278,6 +280,9 @@ export const mdxComponents = {
   MethodsLink,
   ModelDatasets,
   DatasetLoop,
+  StructureCoverage,
+  PlddtByTier,
+  FoldCostByLength,
   ProfileSteps,
   ProfileShares,
   ProfileStack,
