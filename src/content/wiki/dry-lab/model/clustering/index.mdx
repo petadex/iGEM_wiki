@@ -1,0 +1,163 @@
+---
+title: "Clustering: Methods"
+section: "Dry Lab"
+path: "/dry-lab/model/clustering/"
+navTitle: "Clustering methods"
+order: 26
+description: "How the 298,687,363 PETadex V2 catalytic cores were clustered at 90%, 60% and 30% identity, why clustering runs within each CATH superfamily, where the centroids come from, and how the result compares with the original PETadex."
+owners: ["Dry Lab"]
+updated: "2026-10-21"
+status: "draft"
+bibliography: "../../dry-lab.bib"
+---
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Methods tier for the Clustering and Corpus Structure subsection of the
+  Model page. The overview is on /dry-lab/model/#clustering-and-corpus-structure.
+  This page is reached only from the Methods link there; it is not in any
+  menu. Owner: Dennis.
+
+  Drafted 2026-10-21 from the "PETadex v2 Clustering" Slack thread
+  (Dennis, Artem). Every count below is from that thread and was
+  re-added: the per-source rows sum to each level's total, and the
+  singleton and non-singleton counts sum to each level's total.
+
+  PROVISIONAL. The 90% and 60% levels are from Run 1 (per component,
+  original settings); only the 30% level was rerun with the v1.1 settings
+  (Run 2, per CATH superfamily). The end-to-end rerun with the v1.1
+  settings will replace all three levels. Update the tables, the overview
+  and this note when it lands.
+
+  VERIFY:
+    - Tool and flags. The thread names --ultra-sensitive, a true --id
+      (not approximate), full extension and no masking, which reads as
+      DIAMOND clustering. Confirm the tool, version and exact command.
+    - Cascade. "Hierarchical" is written below as 90% on cores, 60% on the
+      90% centroids, 30% on the 60% centroids. Confirm, and confirm what
+      decides which member becomes a centroid.
+    - The "Where the centroids come from" bracketed values in the thread
+      are v1.1 at 90% and 60% but Run 1 at 30%; the table below sorts
+      them accordingly. The v1.1 split at 30% was not in the thread.
+    - Trypsin was called "a strange outlier" in the composition figure;
+      say how once the figure is in.
+    - Whether 64,730 family centroids (Atlas, Page Tree §4.4) is a set
+      from this run, from v1.1, or neither.
+    - Benjamin ran the v1.1 clustering. Credit him by name if the team
+      credits people on Methods pages.
+*/}
+
+<Callout title="Methods for clustering">
+This page is the full write-up behind the [Clustering and Corpus Structure](/dry-lab/model/#clustering-and-corpus-structure) subsection of the Model page. It picks up where [Logan Query Extraction](/dry-lab/model/#logan-query-extraction) ends, with every complete catalytic core from PAZy, NCBI nr and Logan. The numbers here are from a run that is still being repeated end to end, and will change.
+</Callout>
+
+## Why cluster?
+
+PETadex V2 is huge and very redundant. The same enzyme turns up again and again across Logan, because closely related organisms get sequenced in thousands of samples. Working on 299 million cores directly would mean embedding, sampling and plotting the same sequence many times over.
+
+Clustering by identity gives us the dataset at three resolutions:
+
+- **90%** collapses near-identical sequences. One centroid stands in for what is effectively one enzyme.
+- **60%** is an intermediate step, roughly a subfamily.
+- **30%** is about where sequences stop aligning reliably, so a 30% cluster is close to a family. This is the level that shows the shape of the dataset.
+
+## Inputs
+
+The input is every complete catalytic core: the part of each sequence that a [catalytic HMM](/dry-lab/model/#seed-msas-and-catalytic-hmms) matched, where the match covered every catalytic residue position. We cluster cores rather than whole proteins so that two enzymes with the same catalytic domain but different accessory domains still land together.
+
+| Source | Cores |
+|---|---|
+| PETadex-PAZy | 503 |
+| PETadex-nr | 6,764,617 |
+| PETadex-Logan | 291,922,243 |
+| **Total** | **298,687,363** |
+
+Before clustering we checked every record: each sequence's length equals its HMM hit range, no ID appears twice, and no sequence is empty.
+
+## Three levels, one after another
+
+The clustering is hierarchical. We cluster all cores at 90%, then cluster the 90% centroids at 60%, then the 60% centroids at 30%. Every core therefore has exactly one cluster at each level, and the levels nest: two cores in the same 90% cluster are always in the same 60% and 30% cluster.
+
+## Clustering within each CATH superfamily
+
+Cores from different folds don't share meaningful identity, so there is no reason to compare them. We split the input into groups and cluster each group on its own. We tried two groupings:
+
+- **Run 1: per component.** One clustering job for each of the 46 [components](/dry-lab/model/#component-assignment).
+- **Run 2: per CATH superfamily.** One job for each of the 15 [CATH superfamilies](/dry-lab/model/#cath-assignment), with the same settings as the clustering of the original PETadex (v1.1).
+
+Run 2 changed two things at once: the grouping, and the search settings (ultra-sensitive mode, true identity rather than an approximation, full extension, and no masking). To separate them, we split Run 2's result back along component lines. That gives about 85,000 clusters at 30%, compared with 167,232 for Run 1 and 77,524 for Run 2. **Most of the difference comes from the settings.** Grouping by superfamily helps as well, so we keep it.
+
+So far only the 30% level has been rerun with the v1.1 settings. The 90% and 60% counts below are still from Run 1.
+
+## Results
+
+| Identity | PETadex V2 | Original PETadex (v1.1) |
+|---|---|---|
+| 90% | 30,453,501 | 18,172,960 |
+| 60% | 2,928,810 | 1,814,296 |
+| 30% | 77,524 (Run 2); 167,232 (Run 1) | 22,235 |
+
+From a similar amount of input, PETadex V2 has 1.6 to 1.7 times as many clusters as v1.1 at 90% and 60%, and 3.5 times as many at 30%.
+
+<Placeholder label="Placeholder figure">
+
+Centroids at each level for PETadex V2 and v1.1, with singletons shaded (singletons_stacked_dark.png in the Slack thread).
+
+</Placeholder>
+
+## Where the centroids come from
+
+Each centroid is a real core, so we can ask which source it came from.
+
+| Source | Cores | 90% centroids | 60% centroids | 30% centroids |
+|---|---|---|---|---|
+| PETadex-PAZy | 503 | 361 | 203 | 79 |
+| PETadex-nr | 6,764,617 | 2,394,647 | 383,233 | 8,496 |
+| PETadex-Logan | 291,922,243 | 28,058,493 | 2,545,374 | 68,949 |
+| **Total** | **298,687,363** | **30,453,501** | **2,928,810** | **77,524** |
+
+Logan supplies 98% of the cores and 87–92% of the centroids at every level. nr punches above its weight: 2% of the cores, but 8–13% of the centroids.
+
+For comparison, v1.1 had 172 PAZy, 1,747,473 nr and 16,425,315 Logan centroids at 90%, and 116, 297,773 and 1,516,407 at 60%. In Run 1, the 30% centroids split 94 / 17,912 / 149,226.
+
+## Singletons
+
+A singleton is a cluster with one member: a core with nothing else in the dataset at that identity. PETadex V2 has more of them than v1.1, and the gap is widest at 30%.
+
+| Identity | Run | Singletons | Share | Clusters without singletons |
+|---|---|---|---|---|
+| 90% | V2, Run 1 | 15,564,260 | 51.1% | 14,889,241 |
+| 90% | v1.1 | 9,169,319 | 50.5% | 9,003,641 |
+| 60% | V2, Run 1 | 1,019,461 | 34.8% | 1,909,349 |
+| 60% | v1.1 | 571,803 | 31.5% | 1,242,493 |
+| 30% | V2, Run 1 | 56,050 | 33.5% | 111,182 |
+| 30% | V2, Run 2 | 18,348 | 23.7% | 59,176 |
+| 30% | v1.1 | 2,940 | 13.2% | 19,295 |
+
+At 90% and 60% the singleton share barely moves between versions. At 30% the v1.1 settings cut the share from a third to a quarter, but that is still nearly twice the v1.1 share. Even without singletons, V2 has three times as many 30% clusters as v1.1.
+
+We don't know yet why. The new Logan search seems to return a more fragmented set of families, which more distant or partial cores would explain, but we haven't tested that.
+
+## Domain composition
+
+α/β-hydrolases are about half of the dataset. Every large superfamily loses share as clusters get coarser, which is what clustering should do: a big, dense family collapses into relatively few clusters, while small, scattered families keep most of theirs.
+
+<Placeholder label="Placeholder figure">
+
+Share of each CATH superfamily among cores and among 90%, 60% and 30% centroids (domain_composition_dark.png in the Slack thread).
+
+</Placeholder>
+
+## Limitations
+
+- **Not final.** Only the 30% level uses the v1.1 settings. All three levels will be rerun end to end.
+- **Unexplained singletons.** The new corpus has far more 30% singletons than v1.1, and we don't know why yet.
+- **Settings matter more than grouping.** The 30% count roughly halved when we changed settings, so these counts describe the dataset under one particular set of settings, not a fixed property of it.
+- **No clustering across superfamilies.** Two cores from different superfamilies never share a cluster, even in the rare case that they would pass the identity cutoff.
+
+## Reproducing
+
+{/* TODO: the clustering command per level, the tool version, the S3 path of the inputs and outputs, and the GitHub link once the repo is public. */}
+
+Placeholder: commands, tool version and output locations.
