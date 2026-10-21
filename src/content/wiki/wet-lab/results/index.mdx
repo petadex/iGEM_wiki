@@ -46,7 +46,7 @@ We conducted a leakage test to ensure that the PET mesh won’t leach out copper
   caption="Figure 2. AS-msGFP2 test plates incubated with copper infused mesh to test for copper leakage under no PETase activity. "
 />
 
-## Copper-induced GFP expression
+## Copper-Induced GFP Expression
 
 To ensure that our AS plasmid expresses msGFP2 in the presence of copper, we conducted a serial dilution experiment to determine which concentrations of copper colonies would fluoresce. To observe the fluorescence, a UV light was shone onto the colonies. In the images below, it can be seen that the reporting plasmid functions within a certain range. Plates were made using 38g/L MHA in MilliQ water. After microwaving, sterile CuSO₄ was added to make 0mM, 0.25mM, 0.5mM, 1mM, 2mM, 4mM, and 8mM plates. Kanamycin was kept at 50ug/mL. BL21(DE3) transformed with AS-msGFP2 was liquid cultured overnight. The cells were washed with saline and spotted onto the plate at different dilutions (dilutions deviate from protocol, see Figure 3).
 
@@ -67,3 +67,33 @@ One negative control is growing BL21(DE3) transformed with AS-msGFP2 on a plate 
 Another negative control is growing BL21(DE3) that is transformed with the empty AS plasmid with no msGFP2 on a plate with CuSO₄ to check if fluorescence can be induced by copper or other factors without the expression of a fluorescent gene. Figure 4b shows the negative control under blue light, verifying that fluorescence is due to expression of msGFP2.
 
 Figure 4c (4mM of CuSO₄) shows that when copper is present to induce expression msGFP2, the cells fluoresce under blue light. **This verifies for the biosensor assay that copper can induce msGFP2 expression.** The next steps are to test whether msGFP2 can be sufficiently expressed with the copper amounts that can be realistically released from the mesh
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/4a.avif"
+  alt="result4a"
+  caption="Figure 5. The growth of BL21(DE3) transformed with sul1 on MHA plates with kanamycin and varying copper concentrations."
+/>
+
+Copper toxicity testing was done with 36ug/mL kan and dilutions of (10¹², 10⁶, 10⁴, 10²) with sul1 showing growth on all plates except on the 8mM copper concentration plate (Figure 5).
+
+## Testing Assay with Known PETase
+
+Lastly, we wanted to conduct a positive control to see if the biosensor would perform as expected with a working PETase. Thus, we transformed our cells with a PD-V2 plasmid containing a known PETase (LCC, Fast-PETase, IsPETase, M4-Q IsPETase, Dead-IsPETase) and the reporting plasmid. Empty PD-V2 was also transformed and tested as a control. We then placed the copper mesh onto our agar and let it grow overnight to see if the colonies would fluoresce. For the Biosensor assay, only the plate containing M4-Q IsPETase grew in our initial test. However, these colonies exhibited fluorescence, providing evidence that the Biosensor assay is functional (Figure 6).
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result4.avif"
+  alt="result4"
+  caption="Figure 6. Transformed BL21(DE3) with AS-msGFP2 and PD-V2 plasmid incubated with copper mesh for 84 hours. The bottom right plate being a M4-Q IsPETase control plated without mesh. The plate to the left of this control is M4-Q IsPETase. Mesh was partially or fully removed from all test plates before this image was taken."
+/>
+
+For the Selection assay, all test plates except for Dead-IsPETase showed growth with colonies morphologically similar to those observed on sul1 copper toxicity test plates in (Figure 7).
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/5.avif"
+  alt="result5"
+  caption="Figure 7. Transformed BL21(DE3) with AS-sul1 and PD-V2 plasmid incubated with copper mesh for 84 hours. The top left plate is Dead-IsPETase, and mesh is still present in all six plate images."
+/>
+
+## Continuing Work
+
+In the coming weeks, PETase display will be verified using fluorescent FLAG antibodies, control tests for both assays will continue to be run to confirm functionality, and Dry Lab PETase sequences will be tested with both the Biosensor and Selection assay.
