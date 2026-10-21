@@ -25,9 +25,26 @@ The jumper wires were changed to the stemma QT connector to provide better wirin
 | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <Figure src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/od1.avif" alt="od1"/><br/>8 jumper wires | <Figure src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/od2.avif" alt="od2"/><br/>2 Stemma QT connectors | Provides better wiring stability and does not require the user to properly wire 8 I2C connections (2 of each GND, VDIO, SDA, SCL). Now, the user just needs to plug the connector in for each sensor.<br /><br />Improves cost, from \_\_ to $0.95. |
 
-### Design Modifications
+### Equipment used:
 
-To further reduce light contamination, the CAD housing for OD sensors were revised here. To improve sensor wiring, jumper wires were switched to Stemma QT connectors. Lastly, to automate the conversion from nOD to OD600, the OD code was expanded.
+1. Arduino nano
+2. Laptop power supply
+
+### Build
+
+To further reduce light contamination, the CAD housing for OD sensors were revised here.
+
+| Version | Notes                                                                                                                                                  | Visual                                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| V2      | Dedicated collecting and reference sensor compartments, with photodiodes of sensors covered completely to avoid light contamination <br/>- Refined CAD | <Figure src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/od-n-1.avif" alt="odn1"/> |
+
+To improve sensor wiring, jumper wires were switched to Stemma QT connectors.
+
+| Stemma QT                                                                                    | Jumper wires                                                                                 |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| <Figure src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/od-n-2.avif" alt="odn2" /> | <Figure src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/od-n-3.avif" alt="odn3" /> |
+
+Lastly, to automate the conversion from nOD to OD600, the OD code was expanded.
 
 ### Code
 
@@ -36,7 +53,7 @@ Added to the pseudocode is
 6. Determine if OD600 is requested by user and if so:
    - Record low, middle, high nOD values and plot it against spectrophotometer readings
    - Utilize the three points to generate a quadratic line of best fit
-7. Unchanged: Convert raw photodiode readings to nOD
+7. **Unchanged:** Convert raw photodiode readings to nOD
 8. Convert nOD to OD600 if requested to do so
 9. Plot nOD to determine the log growth phase of a bacterial culture
 

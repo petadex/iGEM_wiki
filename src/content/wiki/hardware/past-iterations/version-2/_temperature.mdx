@@ -97,7 +97,7 @@ All above solutions were implemented, and the system was tested for performance 
 
 #### New Code
 
-<CodeDropdown file="Custom_PID.ino" description="Custom PID controller" />
+New Code (Oct 5): [Custom Temperature Control — GitLab](https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/Temperature/Custom_temp_control.ino?ref_type=heads)
 
 ### New Design of Experiments (DoE)
 
@@ -121,12 +121,13 @@ Procedure:
 
 The maximum deviation from target and time taken to achieve target were logged with a script. Since 21°C water was not readily available at the time of experiment, 25°C water was used instead. However, without a fitted model, a time offset cannot be computed as with the V1 test, and so the time to achieve the target is not directly comparable with the previous test.
 
-| **Target (°C)** | **Proportional gain (KP)** | **Time to target (min, from 25°C)** | **Control accuracy (°C)** | **Probe accuracy (°C)** | **Total accuracy (°C)** |
-| --------------- | -------------------------- | ----------------------------------- | ------------------------- | ----------------------- | ----------------------- |
-| **30**          | 800                        | 8.58                                | ±0.25                     | ±0.5                    | ±0.75                   |
-| **40**          | 1750                       | 11.72                               | ±0.45                     | ±0.5                    | ±0.95                   |
-| **45**          | 5000                       | 14.67                               | ±0.2                      | ±0.5                    | ±0.7                    |
-| **50**          | 23000                      | 33.35                               | ±0.2                      | ±0.5                    | ±0.7                    |
+| Target (°C) | Proportional gain (KP) | Time to target (min, from 25°C) | Control accuracy (°C) | Probe accuracy (°C) | Total accuracy (°C) |
+| ----------- | ---------------------- | ------------------------------- | --------------------- | ------------------- | ------------------- |
+| 30          | 800                    | 8.58                            | ±0.25                 | ±0.5                | ±0.75               |
+| 37          | 1093                   | 19.7                            | ±0.2                  | ±0.5                | ±0.7                |
+| 40          | 1750                   | 11.72                           | ±0.45                 | ±0.5                | ±0.95               |
+| 45          | 5000                   | 14.67                           | ±0.2                  | ±0.5                | ±0.7                |
+| 50          | 23000                  | 33.35                           | ±0.2                  | ±0.5                | ±0.7                |
 
 ### Next Steps
 
