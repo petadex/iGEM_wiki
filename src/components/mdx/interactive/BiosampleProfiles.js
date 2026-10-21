@@ -326,7 +326,7 @@ export const ProfileShares = ({ example = false }) => {
   return (
     <>
       <Box as="figure" aria-label="Where the samples are vs where the sequences are">
-        <BoxTitle>Where the samples are vs where the sequences are</BoxTitle>
+        <BoxTitle data-chart-heading="true">Where the samples are vs where the sequences are</BoxTitle>
         <HowTo>
           <span>
             <Dot style={{ background: BS }} />

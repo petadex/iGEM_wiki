@@ -104,6 +104,8 @@ export const DRY_LAB_SCENE = {
   headerColor: "#5c3f2e",
   /** Subsection bars and small headings in the text box. */
   accent: "#a0603a",
+  /** Chart titles, in the menu highlight's brown. Table headers are unchanged. */
+  chartHead: "#9c6e56",
   /** Background art, back to front. */
   layers: [
     // Ground layers (whole width).
@@ -386,6 +388,8 @@ export const HP_SCENE = {
   skyBottom: 400,
   headerColor: "#2c4f43",
   accent: "#4c8269",
+  /** Chart titles, in the menu highlight's green. */
+  chartHead: "#689581",
   layers: [
     { name: "bg-w-trees", box: [0, 0, 1110, 4000] },
     // Distant (faint) birds fly behind the scenery: the cloud and trees
@@ -469,6 +473,8 @@ export const HARDWARE_SCENE = {
   headerShadow:
     "0 0 0.4em rgba(135, 123, 199, 0.6), 0 0.08em 0.3em rgba(0, 0, 0, 0.5)",
   accent: "#6b5cb5",
+  /** Chart titles, in the menu highlight's purple. */
+  chartHead: "#877bc8",
   layers: [
     { name: "bg", box: [0, 0, 1110, 4000] },
     // The cave mouth above the boxes was empty. These three share the plate
@@ -555,6 +561,8 @@ export const WET_LAB_SCENE = {
   /** Deep sea blue: reads on the pink and gold of the sunset. */
   headerColor: "#123540",
   accent: "#0b6f80",
+  /** Chart titles, in the menu highlight's yellow. */
+  chartHead: "#f7e36b",
   layers: [
     { name: "1-background", box: [0, 266, 1110, 4000] },
     // Rising from the seafloor to the surface, in the open water either side

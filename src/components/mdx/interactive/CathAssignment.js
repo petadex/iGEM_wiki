@@ -28,6 +28,7 @@ import {
   Arrow,
   Box,
   BoxTitle,
+  ChartHeading,
   ChartScroll,
   FRAME,
   Flow,
@@ -603,7 +604,7 @@ const CountBars = ({ title, sub, rows, max, unit, caption }) => {
   const top = max ?? Math.max(...rows.map((r) => r.n))
   return (
     <Box>
-      <BoxTitle>{title}</BoxTitle>
+      <ChartHeading>{title}</ChartHeading>
       {sub && <Sub>{sub}</Sub>}
       <Bars onPointerLeave={() => setTip(null)}>
         {rows.map((r) => (
@@ -688,7 +689,7 @@ export const TedEvalueHistogram = () => {
 
   return (
     <Box>
-      <BoxTitle>Where the E-value cutoff sits</BoxTitle>
+      <ChartHeading>Where the E-value cutoff sits</ChartHeading>
       <Sub>All TED50 hits with TM-score ≥ 0.5, binned by E-value. Hover a bar for the count.</Sub>
       <ChartScroll onPointerLeave={() => setTip(null)}>
         <Plot
@@ -895,7 +896,7 @@ export const CathFolds = () => {
   return (
     <Box>
       <Head>
-        <BoxTitle>The folds of PETadex-PAZy</BoxTitle>
+        <ChartHeading>The folds of PETadex-PAZy</ChartHeading>
         <Picker>
           <span>Show</span>
           <select

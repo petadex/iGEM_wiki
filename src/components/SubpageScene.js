@@ -3420,6 +3420,9 @@ export function SubpageScene({
               }),
               // `scene.tableHead`: table header rows in the menu's colour.
               "--table-head": scene.tableHead,
+              // `scene.chartHead`: chart title text only. Axes, series and
+              // table headers keep their own colours.
+              "--chart-head": scene.chartHead,
             }}
           >
             {!scene.hideIntro && (
@@ -5530,6 +5533,10 @@ const TextInner = styled.div`
 
   && th {
     background: var(--table-head, color-mix(in srgb, var(--color-accent) 15%, transparent));
+  }
+
+  && [data-chart-heading] {
+    color: var(--chart-head, inherit);
   }
 
   && h4 {

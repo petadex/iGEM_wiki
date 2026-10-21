@@ -83,6 +83,9 @@ export const BoxTitle = styled.div`
   text-transform: uppercase;
 `
 
+/** Title of a chart. Picks up the page colour; bar and axis colours stay put. */
+export const ChartHeading = styled(BoxTitle).attrs({ "data-chart-heading": "true" })``
+
 export const Sub = styled.p`
   && {
     margin: 0;
