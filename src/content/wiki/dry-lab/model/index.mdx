@@ -527,6 +527,47 @@ We searched these databases to search for predicted structures for 7.8M PETadex 
   width="100%"
   caption={<><strong>Figure 6.</strong> <strong>A.</strong> Number of downloaded AFDB structures per PETadex domain <strong>B.</strong> Count of searched PETadex structures vs ones found on AFDB</>}
 />
+
+#### Folding the 60% Centroids with ESMFold2
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Source: igem-toronto/notebooks/260806_issue6_purav_foldrun.ipynb (issue 6),
+  Part II Steps 10-17 and Part III. Every number below is from that notebook;
+  the figure's counts are the Step 17 final set and sum to 1,814,296.
+
+  AI-drafted from the notebook. Rewrite in your own words before publishing,
+  keeping the numbers and their order.
+
+  PDB: the final 60% set has no PDB source. Experimental structures were
+  used only as a benchmark (1,448 ORFs carry a PDB accession, 109 of them
+  90% centroids). If the figure should show how many 60% centroids also have
+  a PDB entry, count is_c60_centroid rows in the gt_scan_pdb_accessions.py
+  output; it is an overlay on the slices, not a slice of its own.
+
+  ESMFold2 is cited as the ESMC paper (Candido et al. 2026), which
+  describes it; entry in references.bib beside this page, checked against
+  bioRxiv 10.64898/2026.06.03.729735.
+
+  <PlddtByTier /> reads src/data/fold60Plddt.json, the output of
+  fold60_plddt_hist.py (igem-toronto fold-run folder) over every fold's
+  progress CSV row on Killarney, 2026-10-21. Rerun it and copy
+  data/fold60pid/qc/plddt_hist.json over that file to refresh.
+  <FoldCostByLength /> is the Step 16 length table, over every fold.
+*/}
+
+AlphaFold DB covers only a small part of PETadex, and almost none of the sequences mined from Logan, so we predicted the missing structures ourselves with ESMFold2 [@candido2026esmfold2]. We folded one representative sequence per 60% identity cluster, 1,814,296 centroids in all. Every 60% centroid is also a 90% centroid, so this set is the first tenth of a full 90% fold, and extending it later repeats no work.
+
+Before launching, we benchmarked the full ESMFold2 model and the lighter ESMFold2-Fast across numbers of diffusion steps and refinement loops. The test sets were 620 centroids stratified by length and origin, 244 experimental PDB structures (204 released after the model's training cutoff) and 110 AlphaFold DB models. On the PDB and AlphaFold DB sets every setting performed the same, with a median TM-score to the experimental structure of 0.989 to 0.990. The difference showed up on short Logan fragments: under 150 aa, Fast lost confidence on 38 of the 65 sequences the reference model was confident about, while above 150 aa it lost none of 441. We therefore used the full model under 150 aa and Fast from 150 aa, both at 32 diffusion steps and 3 refinement loops, the cheapest setting whose results stayed within the run-to-run noise of a 100-step, 20-loop reference.
+
+The run folded 1,793,781 sequences in 16.6 hours on up to 80 GPUs, using 851.6 GPU-hours with no failed folds. Of the 19,430 centroids that already had an AlphaFold DB entry, 27 turned out to point to a related protein rather than the centroid itself, so we folded those too. Centroids longer than 2,500 aa were not folded. In total, 99.94% of the 60% centroids now have a structure. Confidence depends on length. Across all 1.67 million Fast structures the median mean pLDDT is 92.3, and only 0.6% fall below 70. The short tier, 99.8% of which are Logan fragments, splits in two: 52% fall below 70, mostly around 50, while 24% reach 90 or higher. Downstream analyses should therefore filter or weight structures by pLDDT. Every structure can be found from the [PETadex corpus on Hugging Face](https://huggingface.co/datasets/petadex/petadex-corpus-full), whose `structure_path` column gives its location for each 60% centroid.
+
+<StructureCoverage />
+
+<PlddtByTier />
+
+<FoldCostByLength />
 ### Biochemical Properties and Ancestral Reconstruction
 
 Six sequence-derived properties were calculated using Biopython ProtParam for all PETadex ORFs: length, molecular weight, isoelectric point (pI), GRAVY hydrophobicity, instability index, and aromaticity. Median values were 308 aa, 34.2 kDa, pI 6.45, GRAVY −0.165, instability 37.5, and aromaticity 0.0885. Compared with a similarly sized random sample of NCBI nr, certain property medians were generally similar (such as 289 aa, GRAVY −0.19), which strengthens PETadex being a database of real functional protein sequences. Additionally, PETadex was far narrower in GRAVY (standard deviation 0.20 vs 0.43), and had fewer comparably short, very long, or highly unstable sequences. This depletion of hydrophobic and extreme sequences is consistent with soluble catalytic domains rather than membrane proteins, supporting PETadex as a promising database for identifying plastic-degrading enzymes. Mature secreted proteins were also more hydrophilic than non-secreted proteins, and catalytic-family median GRAVY correlated strongly with secretion (Spearman ρ = −0.96). Thus the properties serve as a useful filter for sequence selection as well.
@@ -773,3 +814,7 @@ This section states what the model has not been shown to do. It covers the annot
 This section points to the released model and training set, the analysis notebooks that record each step, and the parts of the pipeline another team could reuse for a different enzyme family.
 
 </Placeholder>
+
+## References
+
+[^ref]
