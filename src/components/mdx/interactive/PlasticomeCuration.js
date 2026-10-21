@@ -563,10 +563,6 @@ export const PlasticomeExplorer = () => {
   return (
     <Box ref={boxRef} id="plasticome-explorer">
       <BoxTitle>Explore PETadex-PAZy</BoxTitle>
-      <Sub>
-        Every one of the {fmt(U.length)} enzymes. Search or filter the list, and pick one to see
-        its details.
-      </Sub>
       <TableToggle open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
         <summary>Open the explorer</summary>
         <Explorer>
@@ -1128,6 +1124,14 @@ const Controls = styled.div`
   input,
   select {
     ${fieldStyle}
+  }
+
+  /* A select sizes itself to its longest option ("C001 · alpha/beta hydrolase
+     (232)"), which pushes it and its arrow past its column; held to the
+     column, a long choice is cut off instead. */
+  select {
+    width: 100%;
+    text-overflow: ellipsis;
   }
 `
 
