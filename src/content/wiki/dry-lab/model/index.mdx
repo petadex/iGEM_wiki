@@ -319,12 +319,13 @@ Here we show all of the 46 components that comprise the PETadex-PAZy dataset. A 
 
 PETadex-PAZy is far too small to train on, so we used it as a starting point rather than as the dataset itself. We
 searched its centroids against the NCBI nr database with DIAMOND [@buchfink2021diamond]. All 411 PETadex-PAZy
-centroids went into the search. The search returned 13,209,543 nr accessions; applying an E-value cutoff of 1 × 10⁻⁵ and removing
-PETadex-PAZy self-hits leaves 7,825,107 non-redundant sequences.
+centroids went into the search. The search returned 42,053,081 hits; keeping the best hit per unique sequence, applying an
+E-value cutoff of 1 × 10⁻⁵ and removing PETadex-PAZy self-hits leaves 7,825,107 non-redundant sequences, spanning
+13,209,543 nr accessions.
 
 Sequence similarity alone does not make a candidate, so we then ran the 53 catalytic HMMs against those 7,825,107
-sequences. This gave 7,561,905 significant hits, spanning 12,689,254 nr accessions, of which 6,764,617 were complete
-hits: the matched HMM range covered every catalytic residue position. Clustering the catalytic domain ranges of the
+sequences. This gave 7,562,397 sequences with a significant hit, of which 6,764,617 carried a complete
+hit: the matched HMM range covered every catalytic residue position. Clustering the catalytic domain ranges of the
 complete hits at 90% amino acid identity left 2,740,458 centroids. These centroids, each a catalytic domain rather than
 a whole protein, are what we take into Logan.
 
@@ -371,7 +372,8 @@ catalytic domains in everything the searches below return.
 
 Searching nr finds the homologs that have been deposited; Logan reaches the sequencing data that was never assembled
 into them. We searched the 2,740,458 catalytic domain centroids against Logan contigs, recovering
-5,780,630,372 significant hits, which collapse to 3,202,954,878 non-redundant sequences.
+5,573,419,026 hits. Calling an open reading frame around each one, and splitting those broken by an internal
+stop codon, writes 5,780,630,372 ORFs, which collapse to 3,202,954,878 non-redundant sequences.
 
 Annotating those sequences with the catalytic HMMs gave 1,740,282,847 significant hits, of which 291,922,243 were
 complete hits carrying every catalytic residue position. Together these searches make up PETadex V2, and we keep the
