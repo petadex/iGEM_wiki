@@ -951,7 +951,7 @@ const SECTION5_FISHES = [
 
 /**
  * Cut-out petamons. Each file is one creature.
- * Bundled with the site so the creatures do not depend on a separate CDN upload.
+ * Hosted on the iGEM CDN; media files must not be bundled in the wiki repository.
  *
  *   outreach-pink-rabbit-right.avif  forest, right branch
  *   outreach-pink-rabbit-left.avif   forest, left edge
@@ -963,7 +963,7 @@ const SECTION5_FISHES = [
  *   section5-yellow-axolotl.avif      reef, lower middle
  *   section5-green-axolotl.avif       reef, lower right
  */
-const BOTTOM_PETAMON_BASE = withPrefix("/homepage-petamons")
+const BOTTOM_PETAMON_BASE = "https://static.igem.wiki/teams/6187/wiki/homepage-components/added-petamon"
 
 /**
  * Outreach rabbits. The source sheet is the 2360×1640 frame of the pinned
