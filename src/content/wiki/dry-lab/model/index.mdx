@@ -139,8 +139,8 @@ we do not know which genomes belong to plastic-degrading organisms.
 
 <Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/igem-combined.avif" alt="Parallel methods for the discovery of IsPETase and the creation of the PETadex." width="100%"
   caption={<><strong>Figure 1.</strong> The creation of the PETadex mirrors the discovery of <em>Is</em>PETase.{" "}
-  <strong> A</strong> Schematic overview for the discovery of <em>Is</em>PETase, specifically illustrating the sequencing and alignment methods.{" "}
-  <strong> B.</strong> Schematic overview for the creation of the PETadex by searching for plastic-degrading enzyme homologs through{" "}
+  <strong>A.</strong> Schematic overview for the discovery of <em>Is</em>PETase, specifically illustrating the sequencing and alignment methods.{" "}
+  <strong>B.</strong> Schematic overview for the creation of the PETadex by searching for plastic-degrading enzyme homologs through{" "}
   the <em>Logan</em> assembly.</>}
 />
 
@@ -272,13 +272,9 @@ enzymes such as *Is*PETase and LCC.
   Compare with the manuscript's component paragraphs before publishing and
   drop the wrapper on any sentence that matches.
 
-  411 or 412 (RESOLVED 2026-10-21: 411, per Dennis). The outline said to write 412 centroids "without hedging",
-  with NCBI-nr Homology Expansion owning the 412 -> 411 drop. The final
-  run has 411 clusters, 411 nodes and 46 components, and CATH Assignment
-  and the forest caption both use 411, so this section says 411. Settle
-  which run fed the nr search; if it was a 412-centroid run, its component
-  count needs checking too, and the note under NCBI-nr Homology Expansion
-  needs updating to match.
+  411 or 412: RESOLVED 2026-10-21, 411 (Dennis). The final run has 411
+  clusters, 411 nodes and 46 components; CATH Assignment, the forest
+  caption and NCBI-nr Homology Expansion all use 411.
 
   <ComponentMap /> is drawn live from logan-plasticome-figure/ssn/out/
   (ssn_nodes_c30_d40_k3.tsv, ssn_edges_c30_d40_k3.tsv): build_ssn.py's
@@ -309,28 +305,16 @@ Here we show all of the 46 components that comprise the PETadex-PAZy dataset. A 
 {/*
   NOTE, not a full outline — this section still needs one from its owner.
 
-  This section owns the 412 -> 411 drop (resolved 2026-10-13). All 412
-  centroids from Component Assignment above were searched against nr; one
-  recovered no sequence that another centroid did not also recover at a
-  higher score, leaving 411 centroids with uniquely attributed hits.
-
-  Two things to get right:
-    - do not write that the dropped centroid "returned no hits". It
-      returned hits; every one of them was claimed by a better-scoring
-      query under best-hit attribution
-    - Component Assignment above says 412 and stays at 412. 411 belongs
-      here, as a property of the search, not of the clustering
-
-  The corpus flowchart labels its node "411 nr query centroids", which
-  reads as though 411 were the queries. 412 were. Fix the label when the
-  figure is next revised.
+  Centroid count: 411 (RESOLVED 2026-10-21, Dennis), the same 411
+  PETadex-PAZy centroids as Component Assignment, and the corpus
+  flowchart's "411 nr query centroids" label agrees. The earlier note here
+  (412 searched, 411 with uniquely attributed hits) is superseded.
 */}
 
-The plasticome is far too small to train on, so we used it as a starting point rather than as the dataset itself. We
-searched its centroids against the NCBI nr database with DIAMOND [citation]. All 412 centroids from Component Assignment
-went into the search, and 411 recovered sequences that no better-scoring centroid also claimed, so 411 are the effective
-queries here. The search returned 13,209,543 nr accessions; applying an E-value cutoff of 1 × 10⁻⁵ and removing
-plasticome self-hits leaves 7,825,107 non-redundant sequences.
+PETadex-PAZy is far too small to train on, so we used it as a starting point rather than as the dataset itself. We
+searched its centroids against the NCBI nr database with DIAMOND [citation]. All 411 PETadex-PAZy
+centroids went into the search. The search returned 13,209,543 nr accessions; applying an E-value cutoff of 1 × 10⁻⁵ and removing
+PETadex-PAZy self-hits leaves 7,825,107 non-redundant sequences.
 
 Sequence similarity alone does not make a candidate, so we then ran the 53 catalytic HMMs against those 7,825,107
 sequences. This gave 7,561,905 significant hits, spanning 12,689,254 nr accessions, of which 6,764,617 were complete
@@ -344,9 +328,9 @@ A homolog is only a candidate plastic-degrading enzyme if it carries the catalyt
 the catalytic domain alone rather than with whole proteins. This required profile HMMs that capture both the boundaries
 of the plastic-degrading domain and the catalytic residues within it.
 
-Each HMM was seeded from an alignment of plasticome sequences and their closest nr homologs, admitting a sequence only
+Each HMM was seeded from an alignment of PETadex-PAZy sequences and their closest nr homologs, admitting a sequence only
 if it carried the residues of the catalytic mechanism, which we annotated from the literature [citation]. A single
-alignable component can hold more than one mechanism, so we segmented the 46 plasticome components by mechanism,
+alignable component can hold more than one mechanism, so we segmented the 46 PETadex-PAZy components by mechanism,
 resolving them into 53 seed alignments. Each seed was then expanded over four iterations of a search analogous to
 jackhmmer [citation], in which the hits of one round build the HMM used by the next: an nr homolog advanced only if it
 retained every canonical catalytic residue. The 53 HMMs that came out of this are what we use to find and delimit
@@ -373,7 +357,7 @@ into them. We searched the 2,740,458 catalytic domain centroids against Logan co
 
 Annotating those sequences with the catalytic HMMs gave 1,740,282,847 significant hits, of which 291,922,243 were
 complete hits carrying every catalytic residue position. Together these searches make up PETadex V2, and we keep the
-three origins named separately: the **plasticome**, the curated set of experimentally validated enzymes we started
+three origins named separately: **PETadex-PAZy**, the curated set of experimentally validated enzymes we started
 from; **PETadex-nr**, the homologs recovered from NCBI nr; and **PETadex-Logan**, those recovered from Logan.
 
 ### Clustering and Corpus Structure
@@ -421,7 +405,7 @@ The environment alone carries information that isn't obvious from the sequence. 
 
 ### Biosample Metadata Annotations
 
-A plastic-degrading enzyme is only useful if we know where its host organism lives and what conditions it tolerates. We started from 932 validated plastic-degrading organisms and 2,535 organism-polymer records in PlasticDB (Figure 1A) and found that only 527 records (21%) carry an enzyme sequence, from 77% for PET down to 0.9% for LDPE (Figure 1B). We then added laboratory growth tests for 455 BacDive strains: 44% of 421 grow at 25°C or below (Figure 1C), 71% of 75 at pH 9 or above (Figure 1D) and 50% of 155 at 5% NaCl or above (Figure 1E). Environment classes for 646 BioSamples are led by soil and sediment (Figure 1F), yet two sources agree on the class for only 46% of organisms. Together these results set assay conditions of 25°C, pH 8 to 9 and added NaCl, and give a first panel of 27 cold-active strains with a protein and a closed genome.
+A plastic-degrading enzyme is only useful if we know where its host organism lives and what conditions it tolerates. We started from 932 validated plastic-degrading organisms and 2,535 organism-polymer records in PlasticDB (Figure 2A) and found that only 527 records (21%) carry an enzyme sequence, from 77% for PET down to 0.9% for LDPE (Figure 2B). We then added laboratory growth tests for 455 BacDive strains: 44% of 421 grow at 25°C or below (Figure 2C), 71% of 75 at pH 9 or above (Figure 2D) and 50% of 155 at 5% NaCl or above (Figure 2E). Environment classes for 646 BioSamples are led by soil and sediment (Figure 2F), yet two sources agree on the class for only 46% of organisms. Together these results set assay conditions of 25°C, pH 8 to 9 and added NaCl, and give a first panel of 27 cold-active strains with a protein and a closed genome.
 
 <Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/biosample-annotations.avif" alt="Biosample Annotations Figure" width="100%" 
 caption={<><strong>Figure 2.</strong> Known plastic-degrading organisms and the metadata layers joined to them: <strong>A.</strong> data flow from PlasticDB through BacDive to NCBI BioSample, <strong>B.</strong> protein-linked records by polymer, <strong>C.</strong> growth temperature range, <strong>D.</strong> growth pH range, <strong>E.</strong> strains that grow at each condition, <strong>F.</strong> environment class of BioSamples.{" "}
@@ -509,12 +493,14 @@ only accessory domains.
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/petadex-workflow-overview.svg"
   alt="Overview of Domain Annotation on PETadex"
+  caption={<><strong>Figure 4.</strong> Overview of domain annotation on PETadex.</>}
 />
 ### Novel Accessory Domains
 
 <SideFigure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/ted-workflow-styled.svg"
   alt="TED novelty-discovery workflow as reconstructed for PETadex"
+  caption={<><strong>Figure 5.</strong> The TED novelty-discovery workflow, as reconstructed for PETadex.</>}
   width="40%"
   plain
 >
@@ -538,7 +524,7 @@ We searched these databases to search for predicted structures for 7.8M PETadex 
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain-distribution.svg"
   alt="Two panels: (A) the number of AlphaFold DB structures downloaded for each PETadex domain; (B) the number of PETadex structures searched compared with the number found on AlphaFold DB"
   width="100%"
-  caption={<><strong>Figure 4.</strong> <strong>A.</strong> Number of downloaded AFDB structures per PETadex domain <strong>B.</strong> Count of searched PETadex structures vs ones found on AFDB</>}
+  caption={<><strong>Figure 6.</strong> <strong>A.</strong> Number of downloaded AFDB structures per PETadex domain <strong>B.</strong> Count of searched PETadex structures vs ones found on AFDB</>}
 />
 ### Biochemical Properties and Ancestral Reconstruction
 
@@ -547,7 +533,7 @@ Six sequence-derived properties were calculated using Biopython ProtParam for al
 To-Do: Repeat the pipeline on the updated database.
 
 <Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/biochem-v12-cropped.avif" alt="Biochemical properties composite figure" width="100%"
-  caption={<><strong>Figure 5.</strong> <strong>A.</strong> Box-and-whisker distributions of the biochemical properties by catalytic fold family; dashed line = database median. <strong>B.</strong> GRAVY vs instability index for 90% identity cluster representatives (top, all ORFs) and for secreted 90% Cluster representatives specifically (bottom, mature sequences). <strong>C.</strong> Property Distributions of PETadex and NCBI; medians written as PETadex | NCBI.</>}
+  caption={<><strong>Figure 7.</strong> <strong>A.</strong> Box-and-whisker distributions of the biochemical properties by catalytic fold family; dashed line = database median. <strong>B.</strong> GRAVY vs instability index for 90% identity cluster representatives (top, all ORFs) and for secreted 90% Cluster representatives specifically (bottom, mature sequences). <strong>C.</strong> Property Distributions of PETadex and NCBI; medians written as PETadex | NCBI.</>}
 />
 
 ## Activity Data Extraction
@@ -572,20 +558,20 @@ To populate the PETra database and overcome manual curation bottlenecks an autom
 <FrameFigure
   src="/figures/dry-lab-model/pipeline-animation.html"
   title="Literature Ingestion Pipeline"
-  caption="Flow chart of the automated literature ingestion pipeline detailing the cyclical expansion and screening process used to isolate a final corpus of roughly 4,600 structured articles containing plastic degrading activity."
+  caption={<><strong>Figure 8.</strong> Flow chart of the automated literature ingestion pipeline detailing the cyclical expansion and screening process used to isolate a final corpus of roughly 4,600 structured articles containing plastic degrading activity.</>}
 />
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/plastic-enzyme-literature-over-time-cropped.avif"
   alt="The Spread of Plastic Degrading Enzyme Literature Over Time"
-  caption={<><strong>Figure 6.</strong> How papers on plastic degrading enzymes have been split up throughout the years </>}
+  caption={<><strong>Figure 9.</strong> How papers on plastic degrading enzymes have been split up throughout the years </>}
   width="100%"
 />
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/plasticome-country-density-flat-styled.avif"
   alt="Global Distribution of Plastic-Degrading Enzyme Research map"
-  caption={<><strong>Figure 7.</strong> "Global Distribution of Plastic-Degrading Enzyme Research." </>}
+  caption={<><strong>Figure 10.</strong> "Global Distribution of Plastic-Degrading Enzyme Research." </>}
   width="100%"
 />
 
@@ -596,7 +582,7 @@ To isolate experimentally validated enzymes, wet lab assays and plastic degradat
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/automated-llm-pipeline-summary-figure-cropped.avif"
-  alt="Pipeline Validation and Extracted Activity Data Analysis" width="100%" caption={<><strong>Figure 8.</strong> <strong>A.</strong> Pipeline Validation showing extraction accuracy metrics evolution across prompt upgrades <strong>B.</strong> consensus performance benchmarks against the core truth pool. Extracted Activity Data Analysis displaying top enzymes by <strong>C.</strong> polymer family, <strong>D.</strong> pH vs. temperature condition clusters, and <strong>E.</strong> enzyme activity outcomes.</>}
+  alt="Pipeline Validation and Extracted Activity Data Analysis" width="100%" caption={<><strong>Figure 11.</strong> <strong>A.</strong> Pipeline Validation showing extraction accuracy metrics evolution across prompt upgrades <strong>B.</strong> consensus performance benchmarks against the core truth pool. Extracted Activity Data Analysis displaying top enzymes by <strong>C.</strong> polymer family, <strong>D.</strong> pH vs. temperature condition clusters, and <strong>E.</strong> enzyme activity outcomes.</>}
   
 />
 
@@ -612,7 +598,7 @@ Every paper was also independently extracted by two or more scrapers, with 78% o
 To-Do: Manually reconcile discrepancies between scrapers to create a finalized ground truth for each double-scraped paper.
 
 <Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/human-scraping-v8.avif" alt="Human scraping composite figure" width="150%"
-  caption={<><strong>Figure 9.</strong> <strong>A.</strong> Project workflow. <strong>B.</strong> Most common substrates amongst the 61 scraped papers. <strong>C.</strong> Most common independent variables and <strong>D.</strong> Most common quantities measured in experiments (372 experiments tallied). <strong>E.</strong> Melting temperature distribution of wild-type and engineered enzymes. <strong>F.</strong> Optimum temperature distribution <strong>G.</strong> Optimum pH distribution, split by PET-related vs other substrates; dashed line = median. <strong>H.</strong> Agreement between scrapers (pre-reconciliation) on comparable experiment data entries.</>}
+  caption={<><strong>Figure 12.</strong> <strong>A.</strong> Project workflow. <strong>B.</strong> Most common substrates amongst the 61 scraped papers. <strong>C.</strong> Most common independent variables and <strong>D.</strong> Most common quantities measured in experiments (372 experiments tallied). <strong>E.</strong> Melting temperature distribution of wild-type and engineered enzymes. <strong>F.</strong> Optimum temperature distribution <strong>G.</strong> Optimum pH distribution, split by PET-related vs other substrates; dashed line = median. <strong>H.</strong> Agreement between scrapers (pre-reconciliation) on comparable experiment data entries.</>}
 />
 
 
@@ -682,7 +668,7 @@ Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for th
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/cluster-plot.avif"
   alt="Family atlas UMAP of PETadex centroids, coloured by CATH domain"
-  caption={<><strong>Figure 10.</strong> <strong>A.</strong> Family atlas UMAP of PETadex centroids, colouredby CATH domain <strong>B.</strong> Per-Domain Silhouette Scores</>}
+  caption={<><strong>Figure 13.</strong> <strong>A.</strong> Family atlas UMAP of PETadex centroids, coloured by CATH domain <strong>B.</strong> Per-Domain Silhouette Scores</>}
 />
 
 
@@ -693,6 +679,7 @@ Generate positive / real-world controls (random UniProt proteins, real-sequence 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/real-vs-controls-stacked.avif"
   alt="Real PETadex embeddings overlaid with shuffled, 90% fragment and random UniProt controls, in three panels"
+  caption={<><strong>Figure 14.</strong> Real PETadex embeddings overlaid with shuffled, 90% fragment and random UniProt controls.</>}
   width="100%"
 />
 
