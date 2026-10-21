@@ -217,7 +217,7 @@ export const StructureViewer = ({
           layoutShowLeftPanel: false,
           viewportShowControls: false,
           viewportShowExpand: false,
-          viewportBackgroundColor: cssColor(PAPER),
+          viewportBackgroundColor: background,
         })
         const plugin = viewer.plugin
         if (!live) {
