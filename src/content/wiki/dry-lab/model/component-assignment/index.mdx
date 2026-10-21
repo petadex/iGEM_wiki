@@ -8,6 +8,7 @@ description: "How the 411 PETadex-PAZy centroids were aligned against each other
 owners: ["Dry Lab"]
 updated: "2026-10-21"
 status: "draft"
+bibliography: "../../dry-lab.bib"
 ---
 
 {/*
@@ -53,7 +54,7 @@ This page is the full write-up behind the [Component Assignment](/dry-lab/model/
 
 ## Why components?
 
-The next steps of PETadex search public sequence databases for relatives of PETadex-PAZy, and both the searches and the profile models that filter their results are built per family. A component is our working definition of a family. We use the same definition as the Logan preprint: a set of PETadex-PAZy enzymes joined to each other by chains of clear sequence similarity.
+The next steps of PETadex search public sequence databases for relatives of PETadex-PAZy, and both the searches and the profile models that filter their results are built per family. A component is our working definition of a family. We use the same definition as the Logan preprint [@chikhi2024logan]: a set of PETadex-PAZy enzymes joined to each other by chains of clear sequence similarity.
 
 We can't treat PETadex-PAZy as one family. It contains several unrelated folds (see [CATH Assignment](/dry-lab/model/#cath-assignment)), and sequences from different folds don't align in any meaningful way. Components split it into groups that can each be aligned and searched on their own.
 
@@ -67,7 +68,7 @@ Each centroid is one node in the graph, identified by the MD5 hash of its sequen
 
 ## All-against-all alignment
 
-We aligned every centroid against every other with USEARCH v11, using local alignment and keeping every hit, however weak:
+We aligned every centroid against every other with USEARCH v11 [@edgar2010usearch], using local alignment and keeping every hit, however weak:
 
 ```bash
 usearch -allpairs_local combined.fasta -acceptall -userout combined_pairs.tsv \
@@ -136,7 +137,7 @@ The ten largest components.
 
 ## USEARCH or DIAMOND
 
-Two steps depend on an alignment engine: clustering at 90% (which sequences become centroids) and this all-against-all alignment (how centroids group into components). To see how much the components depend on that choice, we ran all four combinations of USEARCH and DIAMOND on the same input, with the same linking rule.
+Two steps depend on an alignment engine: clustering at 90% (which sequences become centroids) and this all-against-all alignment (how centroids group into components). To see how much the components depend on that choice, we ran all four combinations of USEARCH and DIAMOND [@buchfink2021diamond] on the same input, with the same linking rule.
 
 | Clustering | Alignment | Centroids | Aligned pairs | Links | Components | Single | Largest |
 |---|---|---|---|---|---|---|---|
