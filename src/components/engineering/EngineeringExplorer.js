@@ -28,6 +28,20 @@ export function EngineeringExplorer({ teams = ENGINEERING_TEAMS, art = ENGINEERI
             <TeamChoice key={item.id} $fullWidth={item.fullWidth}>
               <TeamButton type="button" $color={item.color} $hasImage={Boolean(item.barImage || item.barCrop)} aria-pressed={selected}
                 aria-controls={`${id}-content`} onClick={() => setTeamId(item.id)}>
+                {item.buttonCrop && art.combinedButtonsImage ? (
+                  <CombinedButtonArt style={{ aspectRatio: `${item.buttonCrop[2]} / ${item.buttonCrop[3]}` }}>
+                    <EngineeringArtwork src={art.combinedButtonsImage} crop={item.buttonCrop} />
+                    <CombinedLabel className="team-bar" $dark={item.id === "entrepreneurship-outreach"}
+                      style={{
+                        left: `${(item.barCrop[0] - item.buttonCrop[0]) / item.buttonCrop[2] * 100}%`,
+                        top: `${(item.barCrop[1] - item.buttonCrop[1]) / item.buttonCrop[3] * 100}%`,
+                        width: `${item.barCrop[2] / item.buttonCrop[2] * 100}%`,
+                        height: `${item.barCrop[3] / item.buttonCrop[3] * 100}%`,
+                      }}>
+                      {item.label}
+                    </CombinedLabel>
+                  </CombinedButtonArt>
+                ) : <>
                 {item.petamonCrop && <PetamonArt $fullWidth={item.fullWidth} $offsetX={item.petamonOffsetX} $overlap={item.petamonOverlap}>
                   <EngineeringArtwork src={art.petamonImage} crop={item.petamonCrop} preserveAspectRatio="xMidYMax meet" />
                 </PetamonArt>}
@@ -37,6 +51,7 @@ export function EngineeringExplorer({ teams = ENGINEERING_TEAMS, art = ENGINEERI
                     : item.barImage ? <img src={item.barImage} alt="" /> : null}
                   <span>{item.label}</span>
                 </Bar>
+                </>}
               </TeamButton>
               <Dots aria-label={`${item.label} versions`}>
                 {item.versions.map((iteration, index) => (
@@ -92,6 +107,19 @@ const TeamChoice = styled.div`
   ${({ $fullWidth }) => $fullWidth && `grid-column: 1 / -1; margin-top: 0.5rem;`}
 `
 const TeamButton = styled.button`
+  position: relative;
+  transition: transform 180ms ease;
+  &:focus-visible, &[aria-pressed="true"] {
+    transform: translateY(-5px) scale(1.02);
+  }
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-5px) scale(1.02);
+      }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -112,6 +140,22 @@ const TeamButton = styled.button`
     &[aria-pressed="true"] { background: transparent; box-shadow: none; }
     &[aria-pressed="true"] .team-bar { outline: 2px solid ${$color}; outline-offset: 2px; }
   `}
+`
+const CombinedButtonArt = styled.div`
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+`
+const CombinedLabel = styled.span`
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0.2rem;
+  color: ${({ $dark }) => $dark ? "#ffffff" : "#263b34"};
+  font-size: clamp(0.68rem, 1.4vw, 0.95rem);
+  line-height: 1.2;
 `
 const PetamonArt = styled.div`
   width: 100%;
