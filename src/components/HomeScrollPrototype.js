@@ -309,7 +309,8 @@ const SECTION4_RIDE_DX = {
  * take turns in one spot (its middle with `mid`), each going (`out`, [hold,
  * share of it]) as the next comes. On phones the Dry Lab's take turns in one spot under the window:
  * `phone` is when each comes in and goes, just before the next, and `phoneAt`
- * [top row, left %, width %] moves one from that spot.
+ * [top row, left %, width %] moves one from that spot. `long` lines are set
+ * smaller so they fit a short window.
  */
 const SECTION4_STORY = [
   {
@@ -329,7 +330,7 @@ const SECTION4_STORY = [
     // Up to LAB_NARROW_MAX it takes all the room there is.
     narrow: [65.8, 21],
     phone: { in: [0, 0.32], out: [0, 0.58] },
-    text: "We annotated each with signal peptides, protein domains, the temperature and pH of the environment it came from, and activity data scraped from the literature.",
+    text: "We annotated each with signal peptides, protein domains, the temperature and pH of the environment it originates from, and activity data scraped from existing literature.",
   },
   {
     hold: 0,
@@ -339,7 +340,7 @@ const SECTION4_STORY = [
     at: [668, 69, 17],
     // Gone before the constellation rides down through its spot.
     phone: { in: [0, 0.62], out: [1, 0] },
-    text: "Clusters of related proteins form constellations that show us where to look.",
+    text: "Clusters of related proteins form constellations, each mapping to a different enzyme family.",
   },
   {
     hold: 1,
@@ -364,7 +365,7 @@ const SECTION4_STORY = [
     // Fades as the protein slides to the middle, at the hold's end.
     phone: { in: [1, 0.5], out: [1, 0.9] },
     phoneAt: [SECTION4_PHONE_STORY_ROW, 4, 60],
-    text: "We also designed a novel algorithm to optimize the DNA library in order to capture more constellations of proteins.",
+    text: "We also designed a novel algorithm to optimize the DNA library to capture more protein constellations.",
   },
   // The Wet Lab shelf: on the wall right of it, centred between the top of
   // the dark window behind the axolotl and the bench's bottom edge (`mid`:
@@ -372,37 +373,50 @@ const SECTION4_STORY = [
   {
     hold: 2,
     in: 0.02,
-    out: [2, 0.3],
+    out: [2, 0.24],
     at: [1695, 69.5, 28],
     mid: true,
+    long: true,
     phoneAt: [2040, 4, 92],
     text: (
       <>
-        Current methods are inefficient and expensive, so we developed our own
-        solution…
+        Current methods to validate enzymatic performance are inefficient and
+        expensive, so we developed our own…
         <br />
-        Our <Link to="/wet-lab/overview/">Wet Lab</Link> team has designed and
-        created two novel high-throughput assays!
+        Our <Link to="/wet-lab/overview/">Wet Lab</Link> team designed and
+        created two novel high-throughput assays to test and quantify plastic
+        degradation!
       </>
     ),
   },
   {
     hold: 2,
-    in: 0.32,
-    out: [2, 0.58],
+    in: 0.26,
+    out: [2, 0.48],
     at: [1695, 69.5, 28],
     mid: true,
+    long: true,
     phoneAt: [2040, 4, 92],
-    text: "In both, copper is embedded in PET and when an enzyme degrades the plastic, copper is released and switches on a promoter.",
+    text: "In both assays, copper is embedded into PET. When an enzyme begins to degrade the plastic, copper is released and switches on a promoter fused to a marker gene.",
   },
   {
     hold: 2,
-    in: 0.6,
-    out: [3, 0],
+    in: 0.5,
+    out: [2, 0.72],
     at: [1695, 69.5, 28],
     mid: true,
     phoneAt: [2040, 4, 92],
-    text: "In Assay 1: Biosensor, successful PET breakdown makes cells glow green and in Assay 2: Selection, antibiotic resistance is induced, so only cells effectively breaking down PET will grow into colonies.",
+    text: "In the Biosensor assay, successful breakdown of PET activates the expression of GFP, causing cells to glow green.",
+  },
+  {
+    hold: 2,
+    in: 0.74,
+    out: [3, 0],
+    at: [1695, 69.5, 28],
+    mid: true,
+    long: true,
+    phoneAt: [2040, 4, 92],
+    text: "In the Selection assay, PET degradation induces the expression of sul1, which confers resistance to the sulfadiazine antibiotic, enabling the growth of colonies on plates coated with sulfadiazine.",
   },
   // The Hardware bench: on the wall left of the bioreactor, centred on it
   // (above it on phones).
@@ -413,7 +427,7 @@ const SECTION4_STORY = [
     at: [SECTION4_BENCH_ROWS[1], 3, 33],
     mid: true,
     phoneAt: [2300, 4, 92],
-    text: "The best candidates then need to be tested under real conditions.",
+    text: "The most efficient PETase candidates then need to be tested under real conditions.",
   },
   {
     hold: 3,
@@ -421,18 +435,20 @@ const SECTION4_STORY = [
     out: [3, 0.56],
     at: [SECTION4_BENCH_ROWS[1], 3, 33],
     mid: true,
+    long: true,
     phoneAt: [2300, 4, 92],
     text: (
       <>
-        <Link to="/hardware/">Hardware</Link> built a low-cost, open-source
+        <Link to="/hardware/">Hardware</Link> engineered a low-cost, open-source
         parallel{" "}
         <ExplainTerm
           term="bioreactor"
           explanation="A bioreactor is a controlled vessel where biological reactions run under stable, adjustable conditions."
           plain
         />
-        , based on the Pioreactor, with its own optical density sensor,
-        temperature control, pumps, stirring and a live dashboard.
+        , drawing inspiration from the Pioreactor. This device is equipped with
+        its own optical density sensor, temperature control capabilities,
+        pumps, stir bar, and a live dashboard — all for less than $250.
       </>
     ),
   },
@@ -441,8 +457,17 @@ const SECTION4_STORY = [
     in: 0.58,
     at: [SECTION4_BENCH_ROWS[1], 3, 33],
     mid: true,
+    long: true,
     phoneAt: [2300, 4, 92],
-    text: "The aim is to scale up to 8 units, so one experiment can compare many enzymes across many temperatures and pH values.",
+    text: (
+      <>
+        We aim to scale up to 8 units, so one experiment can compare several
+        enzymes across a range of temperature and pH values.
+        <br />
+        We can identify which enzymes perform the most efficiently under
+        certain parameters, seeing where and when they optimally function.
+      </>
+    ),
   },
 ]
 /** Up to this width (px) the window's lines use their `narrow` [left %, width %]. */
@@ -702,25 +727,13 @@ const HEX_FIELD_SRC =
 /** Plate % where the hex art starts, low enough to cover the bottom of the reef. */
 const HEX_FIELD_TOP_PCT = 70.6
 /**
- * Width-relative height of the hex image that sticks out past section 5.
- * hexH/W − (1 − topPct) × section5H/W
- */
-const HEX_FIELD_BELOW_ASPECT = "1 / 1.417"
-/** Hex art row (share of its height) where it turns fully opaque — below the reef. */
-const HEX_OPAQUE_FROM = 1202 / 3831
-/**
  * Where the same art reads as the blue section. The fade is already the
  * dark field before the fully opaque row, and the chute bottle was painting
  * on that field. Row 1156 of the 3831-tall plate (alpha past ~160).
  */
 const CHUTE_BLUE_EDGE = 1156 / 3831
-/** Scroll (share of vh) the view holds on the ending bottle while petamons burst. */
-const ENDING_HOLD_VH = 1.1
-/**
- * While held, the bottle sits this share of the view below center, so the
- * descriptions that open above the top labels stay on screen.
- */
-const ENDING_HOLD_DROP_VH = 0.05
+/** How far down the view (share of vh) the ending bottle's bottom is when it is whole. */
+const ENDING_ASSEMBLED_AT = 0.9
 
 /**
  * The treatment plant and the sea under it, repainted as one picture on the
@@ -1020,9 +1033,9 @@ const SECTION5_PETAMONS = [
     id: "pink-axolotl",
     src: "https://static.igem.wiki/teams/6187/wiki/homepage-components/separate-petamon/acolotl.avif",
     // Full-plate sprite (filename is acolotl). Crop includes the lower whisker.
-    // Body sits below the turtle (turtle bottom is 60.2%).
+    // Right of the open water, between the right-hand ocean lines.
     crop: { x0: 127, y0: 2214, x1: 377, y1: 2486 },
-    box: { left: 13.42, top: 61.5, width: 26.43, height: 6.8 },
+    box: { left: 62, top: 61.5, width: 26.43, height: 6.8 },
   },
   {
     id: "yellow-axolotl",
@@ -1923,9 +1936,6 @@ export function HomeScrollPrototype() {
   const [turtleOut, setTurtleOut] = useState(false)
   const turtleHqRef = useRef(null)
   const [turtleHqReady, setTurtleHqReady] = useState(false)
-  const endingHoldTrackRef = useRef(null)
-  const endingHoldStickyRef = useRef(null)
-  const endingHoldSpacerRef = useRef(null)
   const hexOverlapRef = useRef(null)
   const endingSlotRef = useRef(null)
   const endingBottleRef = useRef(null)
@@ -1979,7 +1989,6 @@ export function HomeScrollPrototype() {
       walkReleasedRef.current = true
       birdStealPRef.current = played.steal ?? 1
     }
-    if (played.ending) endingReleasedRef.current = true
   }, [])
   const shoreBottlePlayedRef = useRef(false)
   const shoreBottleMountRef = useRef(null)
@@ -2366,7 +2375,6 @@ export function HomeScrollPrototype() {
               map: false,
               walk: walkReleasedRef.current,
               steal: birdStealPRef.current,
-              ending: endingReleasedRef.current,
             })
           }
           if (!mapReleasedRef.current && y > mapPinAt + mapPx) {
@@ -2379,7 +2387,6 @@ export function HomeScrollPrototype() {
                 map: true,
                 walk: walkReleasedRef.current,
                 steal: birdStealPRef.current,
-                ending: endingReleasedRef.current,
               })
               ecosystemMapRef.current?.update(1)
               previousScrollY = y - mapPx
@@ -2405,7 +2412,6 @@ export function HomeScrollPrototype() {
               map: mapReleasedRef.current,
               walk: false,
               steal: 0,
-              ending: endingReleasedRef.current,
             })
           }
           if (walkReleasedRef.current) {
@@ -2458,7 +2464,6 @@ export function HomeScrollPrototype() {
                 map: mapReleasedRef.current,
                 walk: true,
                 steal: stealProgress,
-                ending: endingReleasedRef.current,
               })
               window.scrollTo({
                 top: y - freezePx,
@@ -3387,66 +3392,34 @@ export function HomeScrollPrototype() {
         }
       }
 
-      // Ending bottle: pieces fly in as the hex field scrolls up, then the
-      // sticky track holds the view (bottle centered) while petamons burst out.
-      const holdTrack = endingHoldTrackRef.current
-      const holdSticky = endingHoldStickyRef.current
-      const holdSpacer = endingHoldSpacerRef.current
-      const hexOverlap = hexOverlapRef.current
+      // Ending bottle: assembles in place under the closing line as it
+      // scrolls into view (no hold), then the petamons pop out. Pieces start
+      // flying in as its slot enters the view and land once its bottom is
+      // ENDING_ASSEMBLED_AT down the view. Once whole, it stays whole.
       const endingSlot = endingSlotRef.current
       const endingBottle = endingBottleRef.current
-      if (holdTrack && holdSticky && holdSpacer && hexOverlap && endingSlot) {
+      if (endingSlot && endingBottle) {
         const vh = window.innerHeight
-        const reduce = reduceMotionParallaxRef.current
-        // Like the forest: once the whole beat has played and been scrolled
-        // past, it stays done — no hold, bottle assembled, petamons out.
-        const released = endingReleasedRef.current
-        const holdPx = reduce || released ? 0 : Math.round(vh * ENDING_HOLD_VH)
-        const hexOff = hexOverlap.offsetTop
-        const bottleOff =
-          hexOff + endingSlot.offsetTop + endingSlot.offsetHeight / 2
-        const stickyTop = Math.round(
-          vh * (0.5 + ENDING_HOLD_DROP_VH) - bottleOff,
-        )
-        if (holdSticky.style.top !== `${stickyTop}px`) {
-          holdSticky.style.top = `${stickyTop}px`
-        }
-        if (holdSpacer.style.height !== `${holdPx}px`) {
-          holdSpacer.style.height = `${holdPx}px`
-        }
-        // Track top (un-stuck flow position): assembly runs from the reef
-        // leaving the top of the view (hex art fully opaque there) to the
-        // bottle reaching center.
-        const trackTop = holdTrack.getBoundingClientRect().top
-        const flyFrom = -(hexOff + HEX_OPAQUE_FROM * hexOverlap.offsetHeight)
-        const assemble = reduce
-          ? 1
-          : clamp01((flyFrom - trackTop) / Math.max(1, flyFrom - stickyTop))
-        const burst =
-          reduce || released
+        const slot = endingSlot.getBoundingClientRect()
+        const assemble =
+          reduceMotionParallaxRef.current || endingReleasedRef.current
             ? 1
-            : clamp01((stickyTop - trackTop) / Math.max(1, holdPx))
-        const endingPlayed =
-          !released && !reduce && trackTop < stickyTop - holdPx
-        if (endingPlayed && !settled()) tickWhenSettled()
-        if (endingPlayed && settled()) {
-          // Past the end of the hold: drop its scroll length and pull the
-          // scroll back by the same amount so nothing on screen moves.
-          endingReleasedRef.current = true
-          savePlayedBeats({
-            map: mapReleasedRef.current,
-            walk: walkReleasedRef.current,
-            steal: birdStealPRef.current,
-            ending: true,
-          })
-          holdSpacer.style.height = "0px"
-          window.scrollTo({ top: y - holdPx, left: 0, behavior: "instant" })
-          endingBottle?.update({ assemble: 1, burst: 1 })
-          return
-        }
-        endingBottle?.update({
-          assemble: released ? 1 : assemble,
-          burst,
+            : clamp01(
+                (vh - slot.top) /
+                  Math.max(1, vh * (1 - ENDING_ASSEMBLED_AT) + slot.height),
+              )
+        // Not saved with the played beats: there is no hold to skip on a
+        // reload, so it plays again each time the page loads.
+        if (assemble >= 1) endingReleasedRef.current = true
+        endingBottle.update({
+          assemble,
+          burst: assemble >= 1 ? 1 : 0,
+          // Lands where it is once whole (bottom at ENDING_ASSEMBLED_AT), not
+          // mid-view, so the pieces don't jump when they reach it.
+          arrivalShift:
+            assemble >= 1
+              ? 0
+              : Math.max(0, slot.bottom - vh * ENDING_ASSEMBLED_AT),
         })
       }
     }
@@ -4298,27 +4271,33 @@ export function HomeScrollPrototype() {
                   <ShoreTextLayer $z={4}>
                     <ShorePetaseMount>
                       <ShorePetaseBody>
-                        To combat this, we are engineering plastic-degrading
-                        enzymes such as{" "}
-                        <ExplainTerm
-                          term="PETases"
-                          explanation={PETASE_EXPLANATION}
-                          plain
-                        />
-                        .
+                        To fight the growing accumulation of microplastics
+                        everywhere, we&apos;re revolutionizing the field of
+                        plastic-degrading enzymes.
                       </ShorePetaseBody>
                     </ShorePetaseMount>
                     <ShoreTextMount>
                       <ShoreBody>
-                        However, the current PETases used in industry have a
-                        major limitation.
+                        <ExplainTerm
+                          term="PETases"
+                          explanation={PETASE_EXPLANATION}
+                          plain
+                        />{" "}
+                        are enzymes capable of degrading polyethylene
+                        terephthalate (PET). Current PETases used in the plastic
+                        degradation industry have a major limitation:
                       </ShoreBody>
                     </ShoreTextMount>
                     <ShoreMidTextMount>
-                      <ShoreMidBody>They only work under…</ShoreMidBody>
+                      <ShoreMidBody>
+                        they only function under highly specific conditions…
+                      </ShoreMidBody>
                     </ShoreMidTextMount>
                     <ShoreCardsMount>
-                      <SwipeInBox stationary title="...3 specific conditions">
+                      <SwipeInBox
+                        stationary
+                        title="…their efficacy is dictated by which pH, temperature, and environment they optimally function in."
+                      >
                         <ConditionImageRow
                           ref={conditionRowRef}
                           data-shine={conditionShine ? "1" : undefined}
@@ -4354,14 +4333,18 @@ export function HomeScrollPrototype() {
                     </ShoreCardsMount>
                     <ShoreLoganMount>
                       <ShoreLoganBody>
-                        That&apos;s why our team is using{" "}
+                        To find PETases that work across a wider range of
+                        conditions, our team is using the{" "}
                         <ExplainTerm
                           term="Logan"
                           explanation={LOGAN_EXPLANATION}
                           plain
                         />{" "}
-                        to search the planet to discover novel
-                        plastic-degrading enzymes.
+                        index (developed by our advisory lab, the RNAlab at UofT
+                        and collaborators): a planetary-scale genome search that
+                        can discover novel plastic-degrading enzymes. This
+                        grants us the ability to find PETases from all over the
+                        world.
                       </ShoreLoganBody>
                     </ShoreLoganMount>
                   </ShoreTextLayer>
@@ -4494,14 +4477,16 @@ export function HomeScrollPrototype() {
               >
                 <ForestDatasetMount ref={forestDatasetRef}>
                   <ForestDatasetBody>
-                    Before, the field worked with roughly 495 known
+                    Before, the field consisted of roughly 495 known
                     plastic-degrading enzymes.
                   </ForestDatasetBody>
                 </ForestDatasetMount>
                 <ForestRnalabMount>
                   <ForestDatasetBody>
-                    We found <BigFigure>300 million</BigFigure> candidates. That
-                    is an increase of more than <BigFigure>600,000-fold</BigFigure>.
+                    Using Logan, we found <BigFigure>300 million</BigFigure>{" "}
+                    unique candidate enzymes. That&apos;s a{" "}
+                    <BigFigure>600,000-fold increase</BigFigure> in enzyme
+                    diversity.
                   </ForestDatasetBody>
                 </ForestRnalabMount>
               </ArtBand>
@@ -4548,13 +4533,14 @@ export function HomeScrollPrototype() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Browse the full PETadex
+                        Check out the full PETadex here!
                       </BrowseButton>
                     </Section4ButtonMount>
                     <Section4TextMount>
                       <Section4Body>
-                        We named this database the PETadex. And it is completely
-                        open-source and available to browse.
+                        We created a database of these candidates and named it
+                        the PETadex. It is entirely open-source, and freely
+                        available to browse.
                       </Section4Body>
                     </Section4TextMount>
                     {SECTION4_STORY.map((line, i) => (
@@ -4600,8 +4586,8 @@ export function HomeScrollPrototype() {
                       aria-hidden="true"
                     />
                     <Section4Lead>
-                      The enzyme is now optimized for a condition, and Venture
-                      found the perfect use case for these enzymes…
+                      But finding optimal enzyme candidates without knowing
+                      where to use them doesn&apos;t solve the problem.
                     </Section4Lead>
                   </Section4Root>
                   <Section4HoldSpacer
@@ -4637,8 +4623,8 @@ export function HomeScrollPrototype() {
             />
           </Section4HoldTrack>
 
-          <EndingHoldTrack ref={endingHoldTrackRef}>
-            <EndingHoldSticky ref={endingHoldStickyRef}>
+          <EndingHoldTrack>
+            <EndingHoldSticky>
               <Section5Root ref={section5RootRef}>
                 <Section5Sizer>
                   <RailImg src={`${SECTION5_CDN}/1-bg.avif`} alt="" />
@@ -4659,9 +4645,6 @@ export function HomeScrollPrototype() {
                   $topPct={HEX_FIELD_TOP_PCT}
                 >
                   <HexFieldImg src={HEX_FIELD_SRC} alt="" />
-                  <EndingBottleSlot ref={endingSlotRef}>
-                    <EndingPetamonBottle ref={endingBottleRef} />
-                  </EndingBottleSlot>
                 </HexFieldOverlap>
                 {SECTION5_LAYERS.filter(
                   layer => layer.id >= 4 && layer.id < 7,
@@ -4858,31 +4841,59 @@ export function HomeScrollPrototype() {
                     aria-hidden="true"
                   />
                   <Section5WwtpLine>
-                    Our interviews pointed us towards{" "}
+                    Conversations and interviews with customers and recycling
+                    plant operators pointed us towards the{" "}
                     <Link to="/entrepreneurship/">
-                      wastewater treatment plants
-                    </Link>
-                    , where microplastics concentrate in{" "}
+                      wastewater treatment plant
+                    </Link>{" "}
+                    industry as a highly lucrative use-case, as microplastics
+                    continuously accumulate in treatment plants&apos;{" "}
                     <ExplainTerm
-                      term="biosolids"
+                      term="biosolid"
                       plain
                       explanation={<>Biosolids are nutrient-rich, organic materials derived from treated municipal wastewater solids (sewage sludge). They are also a known reservoir for microplastics. Learn more in <Link to="/entrepreneurship/#wastewater-treatment-plants">section 5.1: Wastewater Treatment Plants (WWTPs)</Link> on our entrepreneurship page.</>}
-                    />.
+                    />{" "}
+                    sludge.
                   </Section5WwtpLine>
                   <Section5RecyclingLine>
-                    Other avenues include trash and recycling streams and
-                    textile and detergent microplastics.
+                    In addition to wastewater treatment plants, additional
+                    verticals can benefit from our enzymes, such as textiles,
+                    filtration, and trash recycling streams.
                   </Section5RecyclingLine>
                   <Section5OceanLine $at={SECTION5_OCEAN_LINES[0]}>
-                    The science only matters if it leaves the lab…
+                    But scientific innovation only matters if it leaves the
+                    lab.
                   </Section5OceanLine>
-                  <Section5OceanLine $at={SECTION5_OCEAN_LINES[1]}>
-                    and so we worked with regulators, researchers and
-                    stakeholders to unite the community…
+                  <Section5OceanLine $long $at={SECTION5_OCEAN_LINES[1]}>
+                    Working with regulators, microplastics researchers, and
+                    stakeholders in the plastic removal industry, our{" "}
+                    <Link to="/human-practices/">project</Link> unites the
+                    broader academic and industrial microplastics community. We
+                    advocate for responsible solutions to the continuously
+                    growing microplastics crisis, and PetaBite provides a viable
+                    enzymatic approach to alleviate their prevalence.
                   </Section5OceanLine>
-                  <Section5OceanLine $at={SECTION5_OCEAN_LINES[2]}>
-                    and to champion the idea of plastic-degrading enzymes for
-                    microplastic cleanup.
+                  <Section5OceanLine $long $at={SECTION5_OCEAN_LINES[2]}>
+                    Just like the data, the academic landscape of microplastics
+                    research was sparse and fragmented. In creating the PETadex —
+                    the largest plastic-degrading enzyme database — we combined
+                    data from several stakeholders, researchers, and industry
+                    professionals, uniting their activity data into a single
+                    resource that is capable of propelling the community
+                    forward.
+                  </Section5OceanLine>
+                  <Section5OceanLine $long $at={SECTION5_OCEAN_LINES[3]}>
+                    Beyond those already involved in plastic research,
+                    PetaBite&apos;s{" "}
+                    <Link to="/beyond-the-bench/outreach/">outreach</Link>{" "}
+                    extends to the general audience, remaining entirely
+                    accessible to those who do not have any previous background
+                    in science.
+                  </Section5OceanLine>
+                  <Section5OceanLine $at={SECTION5_OCEAN_LINES[4]}>
+                    The ultimate enzyme for any use-case is no longer an
+                    unrealistic goal — it&apos;s a future we&apos;re actively
+                    working towards.
                   </Section5OceanLine>
                   <Section5Cta>
                     Discover more about{" "}
@@ -4891,9 +4902,12 @@ export function HomeScrollPrototype() {
                 </Section5TextStack>
               </Section5Root>
 
-              <HexFieldRoot aria-hidden="true" />
+              <HexFieldRoot>
+                <EndingBottleSlot ref={endingSlotRef}>
+                  <EndingPetamonBottle ref={endingBottleRef} />
+                </EndingBottleSlot>
+              </HexFieldRoot>
             </EndingHoldSticky>
-            <EndingHoldSpacer ref={endingHoldSpacerRef} aria-hidden="true" />
           </EndingHoldTrack>
 
           <HomeNavMount ref={homeNavMountRef}>
@@ -4940,7 +4954,7 @@ const WalkTrack = styled.div`
   min-width: 0;
 `
 
-/** Section 5 + hex field, plus the scroll length of the ending-bottle hold. */
+/** Section 5, the hex field and the ending bottle under it. */
 const EndingHoldTrack = styled.div`
   position: relative;
   width: 100%;
@@ -4951,37 +4965,36 @@ const EndingHoldTrack = styled.div`
 `
 
 /**
- * Sticks (top set in the tick) when the ending bottle reaches mid-view, for
- * as long as EndingHoldSpacer lasts. Clips the pieces flying in from the sides.
+ * Above the lab (Section4Root), so the WWTP's fixed bottles roll in over its
+ * sand. Clips the hex art where the ending bottle's strip ends, so the
+ * honeycomb stops just under the bottle.
  */
-/** Above the lab (Section4Root), so the WWTP's fixed bottles roll in over its sand. */
 const EndingHoldSticky = styled.div`
-  position: sticky;
+  position: relative;
   z-index: 2;
   width: 100%;
   min-width: 0;
-  overflow-x: clip;
+  overflow: clip;
 `
 
-const EndingHoldSpacer = styled.div`
-  background: #101133;
-`
-
+/**
+ * Right under "Discover more about PetaBite". The negative margin (a share
+ * of the width, like the plate's height) pulls it up from the bottom of
+ * section 5 to just below that line.
+ */
 const EndingBottleSlot = styled.div`
-  position: absolute;
-  left: 50%;
-  /* Raised off the bottom of the hex art: some room below it before the footer.
-     Above the reef axolotls (z 11) so the bottle covers them where they overlap.
-     Copy stays at z 12 and is painted later, so it stays in front of the bottle. */
-  bottom: 30vh;
-  z-index: 12;
-  /* As big as the view allows while held mid-screen (frame is 1340×1060),
-     leaving room for the hint under it. */
-  width: min(90vw, calc(74vh * 1340 / 1060));
-  width: min(90vw, calc(74svh * 1340 / 1060));
+  position: relative;
+  /* Frame is 1340×1060. */
+  width: 40%;
+  margin: -14% auto 0;
   /* Nudged left: the labels reach further right than left (Entrepreneurship). */
-  transform: translateX(-53%);
+  transform: translateX(-3%);
   pointer-events: none;
+
+  ${phone} {
+    width: 88%;
+    margin-top: -10%;
+  }
 `
 
 const Section5Root = styled.div`
@@ -5013,15 +5026,20 @@ const HexFieldImg = styled(PlateImg)`
   user-select: none;
 `
 
-/** Scroll space for the hex image that extends past the reef plate. */
+/**
+ * The strip under section 5 that holds the ending bottle. See-through, over
+ * the hex art spilling down from section 5, which is clipped where it ends.
+ */
 const HexFieldRoot = styled.div`
   position: relative;
-  z-index: 0;
+  z-index: 2;
   width: 100%;
   min-width: 0;
-  aspect-ratio: ${HEX_FIELD_BELOW_ASPECT};
-  padding-bottom: 22vh;
-  background: #101133;
+  /* Room for the hint that hangs under the bottle. */
+  padding-bottom: 6rem;
+  /* The bottle's margin pulls this up over the bottom of section 5; only
+     the bottle's own pieces and labels take the pointer. */
+  pointer-events: none;
 `
 
 const Section5Sizer = styled.div`
@@ -5605,19 +5623,34 @@ const Section5RecyclingLine = styled.p`
 
 /**
  * The closing words, split down the open water under the foam, either side
- * of the sinking bottle in turn, above the coral (from 81%); each part that
- * runs on into the next ends in "…". [top, left, width] in % of the plant,
+ * of the sinking bottle in turn, above the coral (from 81%). Long ones are
+ * `$long` (smaller). [top, left, width] in % of the plant,
  * then the same on phones.
  */
 const SECTION5_OCEAN_LINES = [
-  { at: [55, 4, 40], phone: [55, 3, 43] },
-  { at: [63, 57, 39], phone: [63, 55, 42] },
-  { at: [71, 4, 40], phone: [71, 3, 43] },
+  { at: [50, 4, 40], phone: [48, 3, 43] },
+  { at: [53, 56, 41], phone: [51, 55, 42] },
+  // Phones: the long lines run ~16% of the plant tall, so each column
+  // starts its next line only once the one above it has ended.
+  { at: [61, 4, 41], phone: [53, 3, 43] },
+  { at: [69, 56, 41], phone: [69, 55, 42] },
+  { at: [76, 4, 44], phone: [72, 3, 43] },
 ]
 
 const Section5OceanLine = styled.p`
   ${section5LineBase}
   ${onWater}
+  ${({ $long }) =>
+    $long &&
+    css`
+      ${artFont(28)}
+      font-weight: 600;
+
+      /* After the base's phone size, so restate it (a little smaller). */
+      ${phone} {
+        font-size: ${phoneSize(0.72)};
+      }
+    `}
   top: ${({ $at }) => $at.at[0]}%;
   left: ${({ $at }) => $at.at[1]}%;
   width: ${({ $at }) => $at.at[2]}%;
@@ -6438,6 +6471,11 @@ const ShoreTextMount = styled.div`
 
 const ShoreBody = styled.p`
   margin: 0;
+
+  /* Its mount lets the pointer through; the PETases popup takes it back. */
+  span[role="button"] {
+    pointer-events: auto;
+  }
   color: #0a0a0a;
   font-family: var(--font-body);
   ${artFont(31.68)}
@@ -6593,6 +6631,11 @@ const discoveryShimmer = keyframes`
 /** Matching emphasis for the candidate count and fold increase. */
 const BigFigure = styled.strong`
   font-size: 1.45em;
+
+  /* Keeps "300 million" on one line; phones are too narrow for that. */
+  @media (min-width: ${PHONE_MAX + 1}px) {
+    white-space: nowrap;
+  }
   font-weight: 800;
   line-height: 1.15;
   color: #553273;
@@ -6631,7 +6674,7 @@ const ForestDatasetBody = styled.p`
 const ForestRnalabMount = styled.div`
   position: absolute;
   top: 63%;
-  right: 16%;
+  right: 6%;
   width: ${artPx(470)};
   box-sizing: border-box;
   text-align: left;
@@ -6645,6 +6688,14 @@ const ForestRnalabMount = styled.div`
   p,
   button {
     pointer-events: none;
+  }
+
+  /* Set smaller than the line before it, so "300 million" stays on one line
+     and the paragraph clears the explorer's backpack. */
+  @media (min-width: ${PHONE_MAX + 1}px) {
+    p {
+      ${artFont(26)}
+    }
   }
 
   [data-walk="arrived"] & {
@@ -7028,6 +7079,13 @@ const Section4StoryLine = styled.p`
   text-shadow:
     0 0 6px rgba(255, 255, 255, 0.95),
     0 0 14px rgba(240, 248, 248, 0.8);
+
+  ${({ $at }) =>
+    $at.long &&
+    css`
+      ${artFont(28)}
+      line-height: 1.35;
+    `}
 
   /* In the night sky: pale, a little smaller to fit its clear patches. */
   ${({ $at }) =>

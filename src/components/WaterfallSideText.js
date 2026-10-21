@@ -134,7 +134,12 @@ export function WaterfallSideText() {
       <TextMount ref={leftRef} $side="left">
         <Body>
           The world produces over 400 million tonnes of plastic each year
-          <span className="wide-copy">. As it degrades, it breaks into </span>
+          <span className="wide-copy">
+            , and only a fraction of that number is disposed of responsibly.
+            The rest ends up in garbage patches and urban litter, left to
+            degrade for the next few decades. As plastics degrade, they
+            fragment into{" "}
+          </span>
           <span className="phone-copy">, which degrade into </span>
           <ExplainTerm
             term="microplastics"
@@ -142,7 +147,8 @@ export function WaterfallSideText() {
             plain
           />
           <span className="wide-copy">
-            , fragments smaller than 5 millimetres.
+            {" "}
+            (pieces of plastic that are smaller than 5 millimetres).
           </span>
           <span className="phone-copy">.</span>
         </Body>
@@ -152,13 +158,15 @@ export function WaterfallSideText() {
       <TextMount ref={rightRef} $side="right">
         <Body $side="right">
           <span className="wide-copy">
-            The discarded water bottle would turn into microplastics that come
-            back to us. Microplastics have been found in human blood, lungs and
-            arteries.
+            Microplastics have been found in ecosystems, vital infrastructure
+            (such as stormwater drains), and in human blood, lung, and arterial
+            tissue. Elevated levels of microplastics in human tissue have been
+            associated with adverse health outcomes, such as an increased risk
+            of cardiovascular disease.
           </span>
           <span className="phone-copy">
-            The water bottle would turn into microplastics that have been found
-            in human blood, lungs, and arteries.
+            Microplastics have been found in stormwater drains and in human
+            blood, lung, and arterial tissue.
           </span>
         </Body>
       </TextMount>
