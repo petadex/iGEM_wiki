@@ -95,6 +95,10 @@ The figure below explains the main functions of each bioreactor component as wel
   caption="final cad model"
 />
 
+The CAD for this project was used to design 3D printed housing for our electronic components like the perfboard and pumps, specific positioning slots for our OD sensors, temperature probe, heater/stirring assembly, and a sleeve for our main vial. Designs were prioritised to maintain safety of the electronic components, minimise material usage, minimise print times, and optimise printing tolerances so the design could easily be pieced together.
+
+[final CAD design and previous CAD iterations](https://drive.google.com/drive/folders/1EWj6QBVfSS2XlWU642xW6pYPTGmymM0D?usp=sharing)
+
 <h3 id="final-temperature">Temperature</h3>
 
 The temperature subsystem maintains the temperature in the bioreactor to ±1oC up to 60oC, supporting the growth of bacteria whose ideal environments are hotter than ambient. This is achieved through custom PID-based logic controlling a hardware feedback loop: temperature probe -> microcontroller -> relay -> heater.
