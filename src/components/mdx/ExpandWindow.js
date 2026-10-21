@@ -49,6 +49,20 @@ export const ExpandWindow = ({
     setOpen(true)
   }
 
+  // A link to a spot on the page (the overview cards) closes the window
+  // first, then jumps, since the page behind can't scroll while it's up.
+  const followPageLink = e => {
+    const link = open && e.target.closest?.('a[href^="#"]')
+    const target = link && document.getElementById(decodeURIComponent(link.hash.slice(1)))
+    if (!target) return
+    e.preventDefault()
+    setOpen(false)
+    requestAnimationFrame(() => {
+      target.scrollIntoView()
+      window.history.pushState(null, "", link.hash)
+    })
+  }
+
   // While the window is up: Escape closes it, the page behind it stops
   // scrolling, and focus goes into the figure and back to the opener after.
   useEffect(() => {
@@ -132,7 +146,12 @@ export const ExpandWindow = ({
             </Opener>
           )}
         </Bar>
-        <Body ref={bodyRef} $open={open} tabIndex={open && !focusRef ? -1 : undefined}>
+        <Body
+          ref={bodyRef}
+          $open={open}
+          tabIndex={open && !focusRef ? -1 : undefined}
+          onClick={followPageLink}
+        >
           <ExpandContext.Provider value={open}>{children(open)}</ExpandContext.Provider>
         </Body>
       </Stage>
@@ -149,8 +168,11 @@ export const ExpandWindow = ({
  *     <DryLabCalendar />
  *     <MethodsLink href="...">...</MethodsLink>
  *   </Expandable>
+ *
+ * `wide` lets the content take the window's full width, for a figure that
+ * fills the window rather than reads in it (the overview's feature cards).
  */
-export const Expandable = ({ title, inlineTitle = false, dark = false, ground, children }) => (
+export const Expandable = ({ title, inlineTitle = false, wide = false, dark = false, ground, children }) => (
   <ExpandableBlock>
     <ExpandWindow
       title={title}
@@ -158,7 +180,11 @@ export const Expandable = ({ title, inlineTitle = false, dark = false, ground, c
       dark={dark}
       ground={ground || (dark ? undefined : "var(--color-bg)")}
     >
-      {open => <ExpandableBody $open={open}>{children}</ExpandableBody>}
+      {open => (
+        <ExpandableBody $open={open} $wide={wide}>
+          {children}
+        </ExpandableBody>
+      )}
     </ExpandWindow>
   </ExpandableBlock>
 )
@@ -173,7 +199,7 @@ const ExpandableBlock = styled.div`
    Its first and last children keep their page margins inline, so they are
    trimmed only here. */
 const ExpandableBody = styled.div`
-  ${({ $open }) =>
+  ${({ $open, $wide }) =>
     $open &&
     css`
       display: flex;
@@ -181,7 +207,7 @@ const ExpandableBody = styled.div`
       flex: 1 1 auto;
       min-height: 0;
       width: 100%;
-      max-width: 80rem;
+      max-width: ${$wide ? "none" : "80rem"};
       margin: 0 auto;
       padding: 1rem 1.5rem 1.25rem;
 
@@ -200,7 +226,7 @@ const ExpandableBody = styled.div`
     `}
 `
 
-const windowIn = keyframes`
+export const windowIn = keyframes`
   from { opacity: 0; transform: translateY(12px) scale(0.98); }
   to { opacity: 1; transform: none; }
 `
@@ -281,7 +307,7 @@ const Opener = styled.button`
   text-underline-offset: 2px;
 `
 
-const Close = styled.button`
+export const Close = styled.button`
   margin-left: auto;
   padding: 0.35rem 0.75rem;
   border: 1px solid ${({ $dark }) => ($dark ? "rgba(255, 255, 255, 0.18)" : "rgba(0, 0, 0, 0.15)")};
@@ -303,7 +329,7 @@ const Close = styled.button`
   }
 `
 
-const Backdrop = styled.div`
+export const Backdrop = styled.div`
   position: fixed;
   z-index: 10000;
   inset: 0;

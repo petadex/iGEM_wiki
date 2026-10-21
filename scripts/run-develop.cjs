@@ -10,7 +10,14 @@ process.chdir(root)
 
 const cli = path.join(root, 'node_modules', 'gatsby', 'cli.js')
 const extraArgs = process.argv.slice(2).filter(a => a.length > 0)
-const child = spawn(process.execPath, [cli, 'develop', ...extraArgs], {
+
+// Node's default heap (~4 GB) is not enough to bundle Mol*, the structure
+// viewer on the Software page: it is several thousand modules, and webpack
+// runs out of memory partway through "Building development bundle". Passed
+// as a node flag rather than through NODE_OPTIONS so it works on Windows
+// shells too.
+const HEAP_MB = process.env.WIKI_DEV_HEAP_MB || '6144'
+const child = spawn(process.execPath, [`--max-old-space-size=${HEAP_MB}`, cli, 'develop', ...extraArgs], {
   cwd: root,
   stdio: 'inherit',
   // The site's own loader covers slow page changes (gatsby-browser.js).

@@ -6,6 +6,7 @@ import WikiLayout from "../components/layout.js"
 import Seo from "../components/seo.js"
 import { mdxComponents } from "../components/mdx/wikiComponents.js"
 import { NewTabLinks } from "../components/mdx/linkTarget.js"
+import { FigureViewers } from "../components/mdx/FigureViewer.js"
 import { scrollToReference } from "../components/referenceNavigation.js"
 import { WideSideTabProvider } from "../components/PageTabs.js"
 import ScrollProgress from "../components/scrollProgress.js"
@@ -71,10 +72,14 @@ const WikiMdxTemplate = ({ data, children }) => {
   const owners = frontmatter.owners || []
   const updated = formatDate(frontmatter.updated)
 
-  // Every link on the Dry Lab pages opens in a new tab.
+  // Every link on the Dry Lab pages opens in a new tab, and every figure
+  // opens into the figure viewer.
+  const dryLab = frontmatter.path?.startsWith("/dry-lab/")
   const content = (
-    <NewTabLinks enabled={frontmatter.path?.startsWith("/dry-lab/")}>
-      <MDXProvider components={mdxComponents}>{children}</MDXProvider>
+    <NewTabLinks enabled={dryLab}>
+      <FigureViewers enabled={dryLab}>
+        <MDXProvider components={mdxComponents}>{children}</MDXProvider>
+      </FigureViewers>
     </NewTabLinks>
   )
 
@@ -97,6 +102,10 @@ const WikiMdxTemplate = ({ data, children }) => {
           // The header names the section, so the box takes the short name.
           title={frontmatter.navTitle || frontmatter.title}
           description={frontmatter.description}
+          // A page with an `opening` line opens on the art, the line on it.
+          opening={frontmatter.opening}
+          // Leave the section's subtitle out of this page's header.
+          hideHeaderSub={frontmatter.hideHeaderSub}
         >
           <Article $wideProse onClickCapture={scrollToReference}>
             {content}
@@ -177,6 +186,8 @@ export const query = graphql`
         hideToc
         wideSideTabs
         wideProse
+        opening
+        hideHeaderSub
       }
     }
   }
@@ -379,6 +390,27 @@ const Article = styled.article`
     text-decoration: none;
   }
 
+  /* A heading written as a link (### [Title](/elsewhere/)) leads off the
+     section, so it carries a chain-link icon. The icon is a mask, so it takes
+     the heading's colour. */
+  :is(h2, h3, h4) a:not(.heading-anchor)::after {
+    content: "";
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    margin-left: 0.3em;
+    background: currentColor;
+    opacity: 0.55;
+    vertical-align: 0.05em;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: opacity 0.15s ease;
+  }
+
+  :is(h2, h3, h4) a:not(.heading-anchor):hover::after {
+    opacity: 1;
+  }
+
   ul,
   ol {
     padding-left: 1.4rem;
@@ -440,6 +472,19 @@ const Article = styled.article`
   }
 
   .priority-comparison-table th:nth-child(1) { width: 30%; }
+  .hardware-requirements-table th:nth-child(1) { width: 14%; }
+  .hardware-requirements-table th:nth-child(2) { width: 23%; }
+  .hardware-requirements-table th:nth-child(3) { width: 23%; }
+  .hardware-requirements-table th:nth-child(4) { width: 12%; }
+  .hardware-requirements-table th:nth-child(5) { width: 28%; }
+
+  .hardware-requirements-table th:nth-child(1),
+  .hardware-requirements-table td:nth-child(1),
+  .hardware-requirements-table th:nth-child(4),
+  .hardware-requirements-table td:nth-child(4) {
+    padding-inline: 0.35rem;
+  }
+
   .priority-comparison-table th:nth-child(2),
   .priority-comparison-table th:nth-child(3) { width: 15%; }
   .priority-comparison-table th:nth-child(4) { width: 40%; }

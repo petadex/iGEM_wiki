@@ -21,6 +21,19 @@ this subsystem include:
 | LED          | Shined through the culture to determine OD                 | $0.09                      | [Amazon](https://www.amazon.ca/Gikfun-Assorted-Arduino-100pcs-EK8437/dp/B01ER728F6/ref=sr_1_7?crid=2PON9OCDB99Q6&dib=eyJ2IjoiMSJ9.vgURJixuUw7UatfMOy99wza6v7locuEEbGR9Hh1CG-fRn2rK1gpXDX6OAxrduYtjIv0kUGhzMhFxd-itanpcMjDKzPHgdaEkKUd6F_QBdCKj-8Aw_yitN-eegxMKYwrZAvbbVyiGpumHf296OfkIYSB6DUqjDgUxDR-VkB3x1TUNLOu-tgn8uyC2TSc9vD5r8VtIitrKVFccq6UgZDIBtYKgwHmq-VlgSjO2fCKMofgOOrz-gj0ynsUKFwYE78deuNJ94D9uJYnYg4ikUATTgHjBAoLeqh4XfE2-MXNeoOI.tcs2c3yBAM9NR99ehucDySMpXDukQ1Uh1fXncD-_URY&dib_tag=se&keywords=led+breadboard&qid=1792438658&sprefix=led+breadborad%2Caps%2C142&sr=8-7)             |
 | Jumper wires | I2C wiring for photodiode sensors                          | ~$0.08per<br/>~$0.67 total | [Amazon](https://www.amazon.ca/Elegoo-120pcs-Multicolored-Breadboard-arduino/dp/B01EV70C78/ref=sr_1_6?crid=1YVH8QDGGRFU8&dib=eyJ2IjoiMSJ9.uCOb5HPboMdDvoE-0hwwkSHZ162tO6_pDczMCIn5t6AihS39Ke3JA0q-y4iRb9wydwbDCBqA8ss2zXSSj2BJMAPtsF_MuI1qHNT-1gtn-HA-g10ntY200v5FJrKwlKMoYGpfqgqvTIoS3Dz2gf8bDAJlHug1i1BrspB9DWROZGLz4qxHR3EKi4HVrPcavHGAPDTeqcMbXrV3uxFU9lstO1vwBSar-FtjFK9q8uG_qYAP2RF54yIaJWS8YprwiJzKVHEI8cIRLF_VVEaGOyfpMNkjanJpnhMr6yaVVa9_Ypc.D8yqwdO2pHcvXzbps7-o-k1y2G04kQpKX03S2mtT-g0&dib_tag=se&keywords=jumper%2Bwires&qid=1792438491&sprefix=jumper%2Bwire%2Caps%2C142&sr=8-6&th=1) |
 
+### Equipment used:
+
+1. Soldering iron
+2. Arduino nano
+3. Laptop power supply
+4. Desmos graphing calculator (online, for experiments)
+
+### Component Selection Justification
+
+| Component                                                                                                                                                    | Justification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <Figure src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/od3.avif" alt="AS7343 Photodiode breakout board" /> <br/> AS7343 Photodiode breakout board | The photodiodes utilized are AS7343s, with a visual of key features portrayed to the left. The green LED provides visual confirmation that the sensor is on, while the wiring connector + header pin location serves as VIN, GND, SCL, and SDA connections. The photodiode in the center filters light into their distinct bandwidths, with 11 channels in the visible light spectrum and 3 additional channels (near-infrared, clear channel, and flicker detection). The one utilized is 600nm wavelength, or the color orange. At 600nm, a calibration sequence can be created to translate OD values of the bioreactor into OD600 numbers from a spectrophotometer. <br/><br/> At just $20 per sensor, with channels for detecting various wavelengths that are suitable for OD600 bacterial density readings as well as red wavelength dye release for a future planned dye assay, we determined that this was a suitable and scalable sensor. |
+
 ### Build, Assembly, Code
 
 #### Bulid
@@ -40,26 +53,12 @@ this subsystem include:
 
 The LED shines red light through the glass vial, and the collecting sensor reports the amount of 600nm light that was not blocked or scattered by the bacterial culture in the vial. For a vial with high bacterial density, little light is able to pass through, leaving a low OD value (with 0 being absolute darkness). While a vial with low bacterial density allows a large amount of light to pass through, leaving a high OD value. To account for drifts in lighting that are not caused by the vial–environmental lighting or LED flickers for example–the reference sensor sits directly above the LED and subtracts this drift. The conceptual layout is shown in the pink photo, while a rough CAD layout is shown below it.
 
-<Figure
-  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/od3.avif"
-  alt="od3"
-/>
-The photodiodes utilized are AS7343s, with a visual of key features portrayed to
-the left. The green LED provides visual confirmation that the sensor is on,
-while the wiring connector + header pin location serves as VIN, GND, SCL, and
-SDA connections. The photodiode in the center filters light into their distinct
-bandwidths, with 11 channels in the visible light spectrum and 3 additional
-channels (near-infrared, clear channel, and flicker detection). The one utilized
-is 600nm wavelength, or the color orange. At 600nm, a calibration sequence can
-be created to translate OD values of the bioreactor into OD600 numbers from a
-spectrophotometer.
-
 #### Code
 
 The pseudocode summary is:
 
 1. Initialize Softwire object, allowing a different I2C address for both OD sensors
-   - Separate class that converts AS7343 commands into Softwire
+   - Separate class that converts AS7343 commands into Softwire, found in [Gitlab](https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/OD/AS7343Soft.ino?ref_type=heads)
 2. Startmeasurement to begin new cycle and read from one channel
 3. Read sensor values for when no vial is present in the bioreactor -> environmental factors
 4. Read sensor values when the vial is blank -> bacterial media factors
@@ -72,6 +71,8 @@ The key variables and formulas to accomplish steps 3-6 is provided below.
 | Variables explained | Formulas explained |
 | --- | --- |
 | **1. `darkValue1` and `darkValue2`** → Sensor 1 (collector) and sensor 2 (reference) values when nothing is present in the bioreactor. This accounts for environmental lighting.<br /><br />**2. `blankOD`** → OD value with a blank culture, such as water. This accounts for variability in the vial, such as different scattering and refraction events.<br /><br />**3. `referenceOD`** → OD value at the beginning of the experiment, serving as the initial population of the bacteria. This allows the OD code to function for any bacterial culture regardless of the initial density or bacterial properties. | **1. Blank measurement**<br /><br />`blankOD = (run_sensor1() - darkValue1) / (run_sensor2() - darkValue2);`<br /><br />Collecting sensor and reference sensor ratio after subtracting environmental lighting. The subtraction removes the fixed offset/ambient light floor from each sensor, and then the ratio cancels out LED/brightness drift.<br /><br />**2. Reference measurement**<br /><br />`referenceOD = ((total_sensor1/10.0) - darkValue1) / ((total_sensor2/10.0) - darkValue2);`<br /><br />The average of the first 10 values of the collecting sensor and reference sensor at the beginning of the experiment, then ratioed with environmental lighting considered.<br /><br />**3. Normalized measurement**<br /><br />`nOD = ((run_sensor1() - darkValue1) / (run_sensor2() - darkValue2) - blankOD) / (referenceOD - blankOD);`<br /><br />Current OD ratioed with reference OD (for a normalized value), with OD error from the vial considered. |
+
+Find in the [Gitlab](https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/OD/V1ODE.ino?ref_type=heads) the full V1 OD code.
 
 #### Assembly
 
@@ -130,6 +131,13 @@ CONCLUSION, first middle last seems to be fairly similar to the calibration curv
 With the calibration curve, nOD values translate very closely to OD600 values, thus confirming the accuracy of the values reported by the bioreactor.
 
 Experiments 2 and 3 were conducted in later iterations, where subsystems became fully integrated.
+
+The gif below shows the OD subsystem operating:
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/v1-od-test.webp"
+  alt="OD experiement gif"
+/>
 
 ### Qualitative observations
 

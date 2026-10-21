@@ -14,7 +14,6 @@ const References = ({ items = [] }) => {
 
   return (
     <section className="references" aria-label="References">
-      <h2>References</h2>
       <ol>
         {references.map((item) => (
           <li id={referenceId(item.number)} key={referenceId(item.number)}>

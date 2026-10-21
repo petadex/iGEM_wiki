@@ -13,6 +13,8 @@ npm run clean     # clear Gatsby cache (fixes most build errors)
 
 No test suite is configured.
 
+**Memory:** bundling Mol* (the structure viewer on the Software page) needs more than Node's default ~4 GB heap, or webpack dies with "JavaScript heap out of memory" during *Building development bundle*. `scripts/run-develop.cjs` raises it to 6 GB — override with `WIKI_DEV_HEAP_MB` — and both build workflows set `NODE_OPTIONS=--max-old-space-size=6144`. A local `npm run build` needs the same: `NODE_OPTIONS=--max-old-space-size=6144 npm run build`.
+
 ## Architecture
 
 **Framework:** Gatsby 5 (React 18, SSR via `gatsby-ssr.js`)  

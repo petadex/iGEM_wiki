@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PETadex</title>
+<title>PETamon</title>
 <style>
 /* Wiki copy: always dark, sized to fill its frame without scrolling. */
 :root {
@@ -12,16 +12,38 @@
   --accent: #2f7d5b; --accent-ink: #ffffff; --border: #ecebe4;
   --screen: #2c3d2f; --screen-ink: #d9efd4;
   --danger: #e0675a; --warn: #e0a43a; --good: #5cc28f;
+  --start-glow: #5a2b35; --title-accent: #e8685a; --title-accent-ink: #1d1d1b;
+  /* The frame leaves almost no margin, so the big panels let the background litter show through. */
+  --panel-glass: rgba(32, 35, 38, .62);
 }
+/* Glow themes from the corner picker: background glow + the PET in the title.
+   Salmon is the default above. */
+:root[data-glow="mint"]     { --start-glow: #1f3d2c; --title-accent: #5cc48e; }
+:root[data-glow="sky"]      { --start-glow: #1e3350; --title-accent: #6aa8e0; }
+:root[data-glow="lavender"] { --start-glow: #33264f; --title-accent: #a98be0; }
+:root[data-glow="gold"]     { --start-glow: #4a3a14; --title-accent: #f2c94c; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink);
-  font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; padding: 12px 16px;
+/* Same red glow and drifting litter as the title screen, held behind the whole game. */
+/* Bottom padding clears the corner colour picker. */
+body { margin: 0; color: var(--ink);
+  background: radial-gradient(120% 90% at 50% 0%, var(--start-glow) 0%, var(--bg) 70%) fixed var(--bg);
+  font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; padding: 12px 16px 56px;
   height: 100vh; overflow: hidden; }
-main { max-width: 900px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+/* Corner colour picker. Above the title screen, below the closing cutscene. */
+.glow-picker { position: fixed; right: 16px; bottom: 16px; z-index: 35; display: flex; gap: 6px;
+  padding: 6px; background: var(--panel); border: 2px solid var(--border); box-shadow: 3px 3px 0 var(--border); }
+.glow-picker button { width: 24px; height: 24px; padding: 0; border-radius: 50%; box-shadow: none;
+  border: 2px solid var(--border); }
+.glow-picker button[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offset: 2px; }
+main { position: relative; z-index: 1; max-width: 900px; height: 100%; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 620px), (max-height: 480px) {
   body { height: auto; overflow: auto; }
   main { height: auto; }
 }
+.bg-debris { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.bg-debris i { position: absolute; display: block; opacity: .3; animation: drift linear infinite; }
+@media (prefers-reduced-motion: reduce) { .bg-debris i { animation: none; } }
 h1 { font-size: 20px; margin: 0 0 16px; }
 button, select { font: inherit; color: inherit; }
 button { background: var(--panel); border: 2px solid var(--border); padding: 6px 12px;
@@ -33,7 +55,7 @@ button.primary { background: var(--accent); color: var(--accent-ink); }
 canvas.sprite { image-rendering: pixelated; width: 100%; height: 100%; display: block; }
 
 /* PETadex device */
-.device { flex: none; background: #b23a3a; border: 3px solid var(--border); border-radius: 14px 14px 14px 40px;
+.device { flex: none; background: rgba(178, 58, 58, .72); border: 3px solid var(--border); border-radius: 14px 14px 14px 40px;
   padding: 16px; box-shadow: 6px 6px 0 var(--border); }
 .device-inner { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.2fr); gap: 14px; }
 @media (max-width: 620px) { .device-inner { grid-template-columns: 1fr; } }
@@ -97,7 +119,7 @@ canvas.sprite { image-rendering: pixelated; width: 100%; height: 100%; display: 
 /* Start screen */
 .start { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center;
   overflow-x: hidden; overflow-y: auto; text-align: center; padding: 24px 16px;
-  background: radial-gradient(120% 90% at 50% 0%, var(--screen) 0%, var(--bg) 70%); }
+  background: radial-gradient(120% 90% at 50% 0%, var(--start-glow) 0%, var(--bg) 70%); }
 .start[hidden] { display: none; }
 .start-debris { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 .start-debris i { position: absolute; display: block; opacity: .55; cursor: grab;
@@ -107,6 +129,17 @@ canvas.sprite { image-rendering: pixelated; width: 100%; height: 100%; display: 
 .start-debris i.free { left: 0; top: 0 !important; animation: none; will-change: transform; }
 .start-debris i.held { cursor: grabbing; opacity: 1; }
 .start-debris i:hover { animation-play-state: paused; opacity: 1; }
+/* Recycling bin: slides in bottom-left while a piece of litter is held. Drop it in to recycle it. */
+.recycle-bin { position: absolute; left: 16px; bottom: 16px; z-index: 2; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 12px 8px;
+  background: var(--panel); border: 3px solid var(--border); box-shadow: 4px 4px 0 var(--border);
+  font-size: 11px; font-weight: bold; letter-spacing: .12em;
+  opacity: 0; transform: translateY(24px); transition: opacity .15s, transform .15s; }
+.recycle-bin svg { width: 44px; height: 44px; }
+.recycle-bin.open { opacity: 1; transform: none; }
+.recycle-bin.hot { background: var(--title-accent); color: var(--title-accent-ink); transform: scale(1.12); }
+.start-debris i.recycled { transition: transform .25s ease-in, opacity .25s; opacity: 0 !important; }
+@media (prefers-reduced-motion: reduce) { .recycle-bin, .start-debris i.recycled { transition: none; } }
 @keyframes drift {
   from { transform: translate3d(-14vw, 0, 0) rotate(0deg); }
   to   { transform: translate3d(114vw, -70px, 0) rotate(540deg); }
@@ -121,7 +154,7 @@ canvas.sprite { image-rendering: pixelated; width: 100%; height: 100%; display: 
 .start-title { margin: 0; line-height: 1; letter-spacing: .03em;
   font-size: clamp(44px, 13vw, 88px); }
 .start-title span { display: inline-block; animation: bob 2.4s ease-in-out infinite; }
-.start-title .accent { color: var(--accent); }
+.start-title .accent { color: var(--title-accent); }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-11px); } }
 .start-mons { display: flex; justify-content: center; gap: 8px; margin: 18px 0 12px;
   flex-wrap: wrap; }
@@ -141,7 +174,7 @@ canvas.sprite { image-rendering: pixelated; width: 100%; height: 100%; display: 
 .start-actions { display: flex; gap: 12px; justify-content: center;
   align-items: center; flex-wrap: wrap; }
 .start-btn { font-size: 18px; font-weight: bold; padding: 14px 34px;
-  background: var(--accent); color: var(--accent-ink); border: 3px solid var(--border);
+  background: var(--title-accent); color: var(--title-accent-ink); border: 3px solid var(--border);
   box-shadow: 5px 5px 0 var(--border); animation: hover-lift 1.9s ease-in-out infinite; }
 .start-btn:hover { filter: brightness(1.12); }
 @keyframes hover-lift {
@@ -246,14 +279,14 @@ canvas.sprite { image-rendering: pixelated; width: 100%; height: 100%; display: 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Objective banner */
-.objective { border: 2px solid var(--border); background: var(--panel); padding: 8px 12px;
+.objective { border: 2px solid var(--border); background: var(--panel-glass); padding: 8px 12px;
   margin: 0; font-size: 13px; flex: none; }
 .objective b { color: var(--good); }
 .obj-progress { display: block; margin-top: 4px; font-weight: bold; }
 
 /* Field coverage board */
 .coverage { flex: 1 1 auto; min-height: 0; overflow-y: auto; border: 3px solid var(--border);
-  background: var(--panel); padding: 12px 14px; }
+  background: var(--panel-glass); padding: 12px 14px; }
 @media (max-width: 620px), (max-height: 480px) { .coverage { flex: none; overflow: visible; } }
 .coverage h2 { font-size: 15px; margin: 0 0 2px; }
 .coverage .hint { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
@@ -345,9 +378,14 @@ body.coached .dialog { max-height: calc(100vh - 184px); }
 <div class="start" id="startscreen">
   <div class="start-debris" id="start-debris" aria-hidden="true"></div>
   <div class="start-tip" id="start-tip" role="status" hidden></div>
+  <div class="recycle-bin" id="recycle-bin" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15"/><path d="M10 10v8M14 10v8"/>
+    </svg>RECYCLE
+  </div>
   <div class="start-inner">
     <p class="start-kicker">Find the right enzyme for the job</p>
-    <h1 class="start-title" id="start-title" aria-label="PETadex"></h1>
+    <h1 class="start-title" id="start-title" aria-label="PETamon"></h1>
     <div class="start-mons" id="start-mons"></div>
     <p class="start-blurb" id="start-blurb"></p>
     <div class="start-actions">
@@ -358,9 +396,11 @@ body.coached .dialog { max-height: calc(100vh - 184px); }
   </div>
 </div>
 
+<div class="bg-debris" id="bg-debris" aria-hidden="true"></div>
+<div class="glow-picker" id="glow-picker" role="group" aria-label="Background colour"></div>
 <main>
   <div class="topbar">
-    <h1>PETadex</h1>
+    <h1>PETamon</h1>
     <button id="go-home">&lt; Home</button>
   </div>
   <p class="objective"><b>Objective: beat all six sites to beat the game.</b>
@@ -496,6 +536,8 @@ const CLASSES = {
   Lipase:   { pal: ['#6e4708', '#b9770e', '#f0c26a'] },
   Amidase:  { pal: ['#4a1240', '#b02a85', '#5ee6d6'] }
 };
+// Sprite colours: an enzyme's own pal wins over its class pal.
+const palOf = e => e.pal || CLASSES[e.cls].pal;
 
 // Multiplier of enzyme class vs plastic. Tune for balance.
 // Nylon is held together by amide bonds, so only the amidase cuts it.
@@ -515,7 +557,7 @@ const RAW_ENZYMES = [
   { id: 'ispetase',   name: 'IsPETase',    cls: 'PETase',   tm: 48, act: 0.30, len: 290, home: 'beach',    biome: 'beach', starter: true },
   { id: 'pueb',       name: 'PueB',        cls: 'Lipase',   tm: 55, act: 0.35, len: 600, home: 'landfill', biome: 'beach' },
   { id: 'nylc',       name: 'NylC',        cls: 'Amidase',  tm: 58, act: 0.45, len: 355, home: 'nylon',    biome: 'landfill' },
-  { id: 'fastpetase', name: 'FAST-PETase', cls: 'PETase',   tm: 67, act: 0.60, len: 290, home: 'sorting',  biome: 'nylon' },
+  { id: 'fastpetase', name: 'FAST-PETase', cls: 'PETase',   tm: 67, act: 0.60, len: 290, home: 'sorting',  biome: 'nylon', pal: ['#5c1414', '#c0392b', '#f29b8f'] },
   { id: 'lccicc',     name: 'LCC-ICCG',    cls: 'Cutinase', tm: 94, act: 0.85, len: 293, home: 'reactor',  biome: 'sorting' }
 ];
 
@@ -732,7 +774,7 @@ function renderCoverage() {
 function renderDex() {
   const e = ENZYMES[state.idx], have = state.caught.has(e.id);
   $('dex-no').textContent = 'No. ' + String(state.idx + 1).padStart(3, '0');
-  drawSprite($('dex-sprite'), e.id, CLASSES[e.cls].pal, { hidden: !have });
+  drawSprite($('dex-sprite'), e.id, palOf(e), { hidden: !have });
   $('dex-name').textContent = have ? e.name : '???';
   $('dex-cls').textContent = have ? e.cls + ' class' : 'Unsequenced. Win in ' + biomeById(e.biome).name + ' to sequence.';
   const stats = $('dex-stats'); stats.innerHTML = '';
@@ -820,7 +862,7 @@ function buildCast() {
     const c = el.querySelector('canvas');
     if (key === 'bin') drawArt(c, BIN_ART, BIN_PAL);
     else if (p) drawSprite(c, p.id, p.pal, { eyes: !!p.boss });   // same sprites as battle
-    else { const e = ENZYMES.find(x => x.id === key); drawSprite(c, e.id, CLASSES[e.cls].pal); }
+    else { const e = ENZYMES.find(x => x.id === key); drawSprite(c, e.id, palOf(e)); }
   }
 }
 
@@ -972,10 +1014,13 @@ function bindTip(el, heading, sub, body) {
 }
 
 /* ---------------- Throwable debris ---------------- */
-// Pieces you have grabbed. x/y are the top-left in px, v in px/s, rot/vr in deg and deg/s.
+// Every piece of title litter. x/y are the top-left in px, v in px/s, rot/vr in deg and deg/s.
+// dvx/dvr = the speed it settles back to; varied per piece so drifting litter catches up and bumps.
 const bodies = new Map();
-const DRIFT_VX = 28, DRIFT_VR = 14;     // roughly the CSS drift speed, so a settled piece blends in
-let physFrame = 0, physLast = 0;
+const DRIFT_VX = 28, DRIFT_VR = 14;
+const BOUNCE = 0.7;                     // restitution when two pieces collide
+const THROW_GRACE = 2000;               // ms after release a piece ignores hover and keeps flying
+let physFrame = 0, physLast = 0, physNow = 0;
 
 function makeThrowable(el) {
   let held = null, dragged = false;
@@ -986,68 +1031,129 @@ function makeThrowable(el) {
     if (!b) {
       const m = new DOMMatrix(getComputedStyle(el).transform);
       b = { x: el.offsetLeft + m.e, y: el.offsetTop + m.f, vx: 0, vy: 0,
-            rot: Math.atan2(m.b, m.a) * 180 / Math.PI, vr: 0, w: el.offsetWidth };
+            rot: Math.atan2(m.b, m.a) * 180 / Math.PI, vr: 0, w: el.offsetWidth,
+            dvx: DRIFT_VX, dvr: DRIFT_VR };
       bodies.set(el, b);
       el.classList.add('free');
     }
-    held = { b, dx: ev.clientX - b.x, dy: ev.clientY - b.y, t: ev.timeStamp, sx: ev.clientX, sy: ev.clientY };
+    held = { b, dx: ev.clientX - b.x, dy: ev.clientY - b.y, sx: ev.clientX, sy: ev.clientY,
+             trail: [{ t: ev.timeStamp, x: b.x, y: b.y }] };
     b.vx = b.vy = 0;
     b.held = true;
     dragged = false;
     el.classList.add('held');
+    $('recycle-bin').classList.add('open');
     el.setPointerCapture(ev.pointerId);
     placeBody(el, b);
     ev.preventDefault();
   });
   el.addEventListener('pointermove', ev => {
     if (!held) return;
-    const b = held.b, dt = Math.max(1, ev.timeStamp - held.t) / 1000;
-    const nx = ev.clientX - held.dx, ny = ev.clientY - held.dy;
-    // Smoothed so the release speed reflects the flick, not the last jittery event.
-    b.vx = b.vx * 0.6 + ((nx - b.x) / dt) * 0.4;
-    b.vy = b.vy * 0.6 + ((ny - b.y) / dt) * 0.4;
-    b.x = nx; b.y = ny; held.t = ev.timeStamp;
+    const b = held.b;
+    b.x = ev.clientX - held.dx; b.y = ev.clientY - held.dy;
+    // Keep ~150ms of recent positions; the throw speed is read off these at release.
+    const tr = held.trail;
+    tr.push({ t: ev.timeStamp, x: b.x, y: b.y });
+    while (tr.length > 2 && ev.timeStamp - tr[0].t > 150) tr.shift();
     if (Math.hypot(ev.clientX - held.sx, ev.clientY - held.sy) > 5 && !dragged) { dragged = true; hideTip(); }
+    $('recycle-bin').classList.toggle('hot', overBin(ev));
     placeBody(el, b);
   });
   const release = ev => {
     if (!held) return;
     const b = held.b;
-    // A pause before letting go is a drop, not a throw.
-    if (ev.timeStamp - held.t > 80) b.vx = b.vy = 0;
+    const bin = $('recycle-bin');
+    bin.classList.remove('open', 'hot');
+    if (ev.type === 'pointerup' && overBin(ev)) {
+      // Into the bin: shrink toward its mouth, then gone for good (a fresh batch comes with the next title visit).
+      held = null;
+      bodies.delete(el);
+      const r = bin.getBoundingClientRect();
+      el.classList.remove('held');
+      el.classList.add('recycled');
+      el.style.transform = `translate3d(${(r.left + r.width / 2 - b.w / 2).toFixed(1)}px,${(r.top).toFixed(1)}px,0) scale(.2)`;
+      setTimeout(() => el.remove(), 260);
+      return;
+    }
+    // Throw speed = average over the last ~80ms of movement, so one bunched-up or late
+    // pointer event cannot zero or spike it. Holding still for 100ms first is a drop.
+    const tr = held.trail, last = tr[tr.length - 1];
+    const first = tr.find(p => last.t - p.t <= 80) || last;
+    const span = last.t - first.t;
+    if (ev.timeStamp - last.t > 100 || span < 8) b.vx = b.vy = 0;
+    else { b.vx = (last.x - first.x) / span * 1000; b.vy = (last.y - first.y) / span * 1000; }
     const cap = 2600, sp = Math.hypot(b.vx, b.vy);
     if (sp > cap) { b.vx *= cap / sp; b.vy *= cap / sp; }
     b.vr = b.vx * 0.5;
     b.held = false;
+    // Immune to the hover pause for a while: the cursor tends to chase a thrown piece and catch it.
+    b.freeUntil = performance.now() + THROW_GRACE;
     held = null;
     el.classList.remove('held');
     startPhysics();
   };
+  // Hover pause, tracked by events: polling :hover every frame forces a style recalc per piece.
+  el.addEventListener('pointerenter', () => { const b = bodies.get(el); if (b) b.hover = true; });
+  el.addEventListener('pointerleave', () => { const b = bodies.get(el); if (b) b.hover = false; });
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
   el.addEventListener('click', ev => {
     if (dragged) { ev.stopImmediatePropagation(); dragged = false; }
   });
 }
+const paused = b => b.held || (b.hover && !(b.freeUntil > physNow));
+// Pieces are treated as circles. A held or hovered piece is immovable: it shoves, it is not shoved.
+function collide() {
+  const list = [...bodies.values()];
+  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+    const a = list[i], c = list[j], aFixed = paused(a), cFixed = paused(c);
+    if (aFixed && cFixed) continue;
+    const ra = a.w * 0.42, rc = c.w * 0.42;          // a bit inside the square, so corners can graze
+    const nx0 = (c.x + c.w / 2) - (a.x + a.w / 2), ny0 = (c.y + c.w / 2) - (a.y + a.w / 2);
+    const d = Math.hypot(nx0, ny0);
+    if (d === 0 || d >= ra + rc) continue;
+    const nx = nx0 / d, ny = ny0 / d;
+    // Bigger pieces are heavier. Inverse mass 0 = immovable.
+    const ia = aFixed ? 0 : 1 / (a.w * a.w), ic = cFixed ? 0 : 1 / (c.w * c.w);
+    const push = (ra + rc - d) / (ia + ic);
+    a.x -= nx * push * ia; a.y -= ny * push * ia;
+    c.x += nx * push * ic; c.y += ny * push * ic;
+    const vn = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny;
+    if (vn >= 0) continue;                           // already separating
+    const j2 = -(1 + BOUNCE) * vn / (ia + ic);
+    a.vx -= j2 * ia * nx; a.vy -= j2 * ia * ny;
+    c.vx += j2 * ic * nx; c.vy += j2 * ic * ny;
+    // Glancing hits set them spinning.
+    const vt = (c.vx - a.vx) * -ny + (c.vy - a.vy) * nx;
+    if (!aFixed) a.vr -= vt * 0.4;
+    if (!cFixed) c.vr += vt * 0.4;
+  }
+}
+function overBin(ev) {
+  const r = $('recycle-bin').getBoundingClientRect();
+  return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+}
 function placeBody(el, b) {
   el.style.transform = `translate3d(${b.x.toFixed(1)}px,${b.y.toFixed(1)}px,0) rotate(${b.rot.toFixed(1)}deg)`;
 }
 function startPhysics() {
   if (physFrame) return;
-  physLast = performance.now();
   physFrame = requestAnimationFrame(stepPhysics);
 }
 function stepPhysics(now) {
   physFrame = 0;
-  if ($('startscreen').hidden || !bodies.size) return;   // go-home restarts it on the next grab
-  const dt = Math.min(0.05, (now - physLast) / 1000);
+  if ($('startscreen').hidden || !bodies.size) return;   // go-home and reset restart it
+  // dt comes from rAF times only. In an iframe the rAF time can trail performance.now() by
+  // more than a frame, and mixing the two clocks gave a negative dt: ease > 1, speeds to infinity.
+  const dt = physLast ? Math.min(0.05, Math.max(0, (now - physLast) / 1000)) : 0;
   physLast = now;
-  const W = $('start-debris').clientWidth, H = $('start-debris').clientHeight;
+  physNow = performance.now();
+  const W = window.innerWidth, H = window.innerHeight;   // same box as the full-viewport title screen
   const still = reduceMotion();
   const ease = Math.exp(-1.8 * dt);                    // throw speed bleeds off toward the drift
   for (const [el, b] of bodies) {
-    if (b.held) continue;
-    const dvx = still ? 0 : DRIFT_VX, dvr = still ? 0 : DRIFT_VR;
+    if (paused(b)) continue;                          // hovered pieces hold still for their tip
+    const dvx = still ? 0 : b.dvx, dvr = still ? 0 : b.dvr;
     b.vx = dvx + (b.vx - dvx) * ease;
     b.vy *= ease;
     b.vr = dvr + (b.vr - dvr) * ease;
@@ -1062,15 +1168,16 @@ function stepPhysics(now) {
     }
     if (b.y < 0 && b.vy < 0) { b.y = 0; b.vy *= -0.6; }
     if (b.y > H - b.w && b.vy > 0) { b.y = H - b.w; b.vy *= -0.6; }
-    placeBody(el, b);
   }
+  collide();
+  for (const [el, b] of bodies) placeBody(el, b);
   startPhysics();
 }
 
 function buildStart() {
   // One span per letter so they can bob out of phase.
   const t = $('start-title'); t.innerHTML = '';
-  [...'PETadex'].forEach((ch, i) => {
+  [...'PETamon'].forEach((ch, i) => {
     const sp = document.createElement('span');
     sp.textContent = ch;
     if (i < 3) sp.className = 'accent';
@@ -1089,7 +1196,7 @@ function buildStart() {
     c.className = 'sprite';
     btn.appendChild(c);
     mons.appendChild(btn);
-    drawSprite(c, e.id, CLASSES[e.cls].pal);
+    drawSprite(c, e.id, palOf(e));
     bindTip(btn, e.name, `${e.cls}, Tm ${e.tm}C`, ENZYME_DESC[e.id] || '');
   });
 
@@ -1099,28 +1206,82 @@ function buildStart() {
   const kinds = Object.values(PLASTICS);
   for (let i = 0; i < 14; i++) {
     const k = kinds[i % kinds.length], el = document.createElement('i');
-    const w = 26 + Math.random() * 30;           // square, so the pixel grid stays square
-    el.style.cssText =
-      `width:${w.toFixed(0)}px;height:${w.toFixed(0)}px;` +
-      `top:${(Math.random() * 100).toFixed(1)}%;` +
-      `animation-duration:${(18 + Math.random() * 26).toFixed(1)}s;` +
-      `animation-delay:${(-Math.random() * 40).toFixed(1)}s`;
+    const w = Math.round(26 + Math.random() * 30);   // square, so the pixel grid stays square
+    el.style.cssText = `width:${w}px;height:${w}px;`;
     const c = document.createElement('canvas');
     c.className = 'sprite';
     el.appendChild(c);
     deb.appendChild(el);
     drawSprite(c, k.id, k.pal, { eyes: !!k.boss });   // same sprite you fight in battle
+    // Straight into the physics loop (not the CSS drift) so pieces can collide from the start.
+    // The title screen is full-viewport, so size off the window: it may still be hidden here.
+    const W = window.innerWidth, H = window.innerHeight;
+    bodies.set(el, { x: -w + Math.random() * (W + w), y: Math.random() * Math.max(0, H - w),
+      vx: 0, vy: 0, rot: Math.random() * 360, vr: 0, w,
+      dvx: DRIFT_VX * (0.6 + Math.random() * 1.2), dvr: DRIFT_VR * (Math.random() < 0.5 ? -1 : 1) });
+    el.classList.add('free');
+    placeBody(el, bodies.get(el));
     makeThrowable(el);                                // before bindTip, so a drag can swallow its click
     bindTip(el, k.name, `${Math.round(k.cryst * 100)}% crystalline`, PLASTIC_DESC[k.id] || '');
   }
 
   $('start-blurb').textContent =
-    `${ENZYMES.length} enzymes, ${Object.keys(PLASTICS).length} plastics, and one of them ` +
-    'cannot be beaten by any enzyme on earth. Start with a single IsPETase and go find the rest.';
+    `${ENZYMES.length} enzymes. ${Object.keys(PLASTICS).length} plastics. One that nothing can beat. ` +
+    'Start with IsPETase.';
 
   const progressed = state.caught.size > 1 || state.won.size > 0;
   $('start-go').textContent = progressed ? 'CONTINUE' : 'START HERE';
   $('start-new').hidden = !progressed;
+  startPhysics();
+}
+// Look-only copy of the title litter for behind the game: no grabbing, no tips, no clicks.
+function buildBgDebris() {
+  const deb = $('bg-debris'); deb.innerHTML = '';
+  const kinds = Object.values(PLASTICS);
+  for (let i = 0; i < 10; i++) {
+    const k = kinds[i % kinds.length], el = document.createElement('i');
+    const w = 22 + Math.random() * 26;
+    el.style.cssText =
+      `width:${w.toFixed(0)}px;height:${w.toFixed(0)}px;` +
+      `top:${(Math.random() * 100).toFixed(1)}%;` +
+      `animation-duration:${(24 + Math.random() * 30).toFixed(1)}s;` +
+      `animation-delay:${(-Math.random() * 50).toFixed(1)}s`;
+    const c = document.createElement('canvas');
+    c.className = 'sprite';
+    el.appendChild(c);
+    deb.appendChild(el);
+    drawSprite(c, k.id, k.pal, { eyes: !!k.boss });
+  }
+}
+// Corner picker. swatch = what the dot shows, regardless of light/dark mode.
+const GLOWS = [
+  { id: 'salmon',   name: 'Salmon',   swatch: '#f8b0a2' },
+  { id: 'mint',     name: 'Mint',     swatch: '#b9e4c9' },
+  { id: 'sky',      name: 'Sky',      swatch: '#b3d4f2' },
+  { id: 'lavender', name: 'Lavender', swatch: '#d4c2f0' },
+  { id: 'gold',     name: 'Gold',     swatch: '#f5d98a' }
+];
+const GLOW_KEY = 'petadex.glow';
+function setGlow(id) {
+  if (id === 'salmon') delete document.documentElement.dataset.glow;
+  else document.documentElement.dataset.glow = id;
+  for (const btn of $('glow-picker').children) btn.setAttribute('aria-pressed', btn.dataset.id === id);
+  try { localStorage.setItem(GLOW_KEY, id); } catch (err) { /* ignore */ }
+}
+function buildGlowPicker() {
+  const box = $('glow-picker');
+  for (const g of GLOWS) {
+    const btn = document.createElement('button');
+    btn.dataset.id = g.id;
+    btn.style.background = g.swatch;
+    btn.title = g.name;
+    btn.setAttribute('aria-label', g.name);
+    btn.onclick = () => setGlow(g.id);
+    box.appendChild(btn);
+  }
+  let saved = 'salmon';
+  try { saved = localStorage.getItem(GLOW_KEY) || 'salmon'; } catch (err) { /* ignore */ }
+  setGlow(GLOWS.some(g => g.id === saved) ? saved : 'salmon');
 }
 function enterGame() {
   hideTip();
@@ -1139,6 +1300,7 @@ $('go-home').onclick = () => {
   if (!$('overlay').hidden) closeBattle();
   buildStart();                       // refresh CONTINUE label and roster
   $('startscreen').hidden = false;
+  startPhysics();                     // it stopped when the title screen was hidden
   tutShow();                          // coach hides itself behind the title
   $('start-go').focus();
 };
@@ -1160,6 +1322,7 @@ $('dex-reset').onclick = () => {
   renderCoverage();
   buildStart();
   $('startscreen').hidden = false;
+  startPhysics();                     // it stopped when the title screen was hidden
   tutShow();
   $('start-go').focus();
 };
@@ -1167,7 +1330,7 @@ $('dex-reset').onclick = () => {
 /* ---------------- Tutorial walkthrough ---------------- */
 const TUT = [
   { id: 'dex',  on: 'open-battle', target: 'battle-open', text:
-    'Welcome to the PETadex. You hold exactly one enzyme: IsPETase, the mesophilic PETase from Ideonella sakaiensis ' +
+    'Welcome to PETamon. You hold exactly one enzyme: IsPETase, the mesophilic PETase from Ideonella sakaiensis ' +
     'with Tm 48C and modest activity. That is the whole starting toolkit. Press BATTLE to take it into the field.' },
   { id: 'site', on: 'start-battle', target: 'biome-beach', text:
     'The Beach is the only site open: 30C, weathered PET film. Every other site stays locked until you clear the ' +
@@ -1307,7 +1470,7 @@ function showSetup() {
       `<span class="nm">${e.name}</span><span class="st">${e.cls} | Tm ${e.tm}C</span>`);
     btn.onclick = () => { picked = e.id; showSetup(); $('pick-' + e.id).focus(); };
     line.appendChild(btn);
-    drawSprite(c, e.id, CLASSES[e.cls].pal);
+    drawSprite(c, e.id, palOf(e));
   }
   const classes = [...new Set(owned.map(e => e.cls))];
   $('bt-roster').textContent =
@@ -1386,7 +1549,7 @@ function renderFighters(redraw) {
   $('f-enzyme').innerHTML = fighterHTML('e', e.name, `${e.cls} | ATK ${e.atk} SPD ${e.spd}${B.bound ? ' | bound' : ''}`, B.eHp, e.hp);
   $('f-plastic').innerHTML = fighterHTML('p', p.name + (p.boss ? ' (BOSS)' : ''),
     `cryst ${Math.round(p.cryst * 100)}% | ATK ${p.atk} SPD ${p.spd}${B.pretreated ? ' | oxidised' : ''}`, B.pHp, p.hp);
-  drawSprite($('spr-e'), e.id, CLASSES[e.cls].pal);
+  drawSprite($('spr-e'), e.id, palOf(e));
   drawSprite($('spr-p'), p.id, p.pal, { eyes: !!p.boss });
 }
 
@@ -1549,7 +1712,7 @@ async function finish(won) {
         `<div><h4>${got.name}</h4><p>${got.cls} | Tm ${got.tm}C | rel. activity ${got.act} | ` +
         `${got.len} aa</p><p>${ENZYME_DESC[got.id] || ''}</p></div>`);
       row.appendChild(card);
-      drawSprite(c, got.id, CLASSES[got.cls].pal);
+      drawSprite(c, got.id, palOf(got));
       btn.remove();
       renderCoverage();
       tut('sequenced');
@@ -1577,7 +1740,9 @@ async function finish(won) {
 $('res-again').onclick = () => newBattle(B.e.id, B.b.id);
 $('res-setup').onclick = () => { showSetup(); ($('pick-' + picked) || $('bt-start')).focus(); };
 
+buildGlowPicker();
 buildStart();
+buildBgDebris();
 renderDex();
 renderCoverage();
 tutShow();

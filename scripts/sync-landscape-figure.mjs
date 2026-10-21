@@ -22,7 +22,13 @@
  *      panel, which closes the nav, the keyboard and the URL hash at once, and
  *      the panel strip is hidden. Every step, view, hover card, the simulated
  *      volume with its turntable and both of its buttons come across.
- *   4. Two things that only cost bytes go: the structure renders are 700 px and
+ *   4. A #card hash turns the copy into the overview card's picture: the
+ *      Overview step alone, with no chrome and no input, standing closer and
+ *      with heavier marks so it reads at card size. It turns only while the
+ *      card tells it it is on screen. The card loads the same file, so it is
+ *      drawn live and sharp at whatever size the card takes, and the browser
+ *      fetches the file once for both.
+ *   5. Two things that only cost bytes go: the structure renders are 700 px and
  *      are drawn about 100 px wide, so they are resized on the way through, and
  *      KNN_EDGES is emptied. It feeds a "graph" view of the interpretation
  *      layer that no longer exists in VIEWS, so it was parsed and turned into a
@@ -43,13 +49,14 @@ const DEFAULT_SOURCE = path.join(
 const sourceRoot = path.resolve(process.argv[2] ?? DEFAULT_SOURCE)
 const destRoot = path.join(process.cwd(), "static/figures/dry-lab-landscape")
 
-// Quality picked to land on the file sizes the figure shipped with: the
-// structures are line-art-like renders on transparency, the site photos are
-// drawn into a 204x80 box, so they only need enough pixels for a 2x screen.
+// The structures are line-art-like renders on transparency; the site photos are
+// drawn into a 204x80 box. Both ship at about 4x their drawn size, so they stay
+// sharp on 3x screens and when the expanded window draws the figure larger. The
+// site sources top out at 560 px (alps.jpg at 330), so they land at that.
 const STRUCTURE_AVIF = { quality: 50 }
 const SITE_AVIF = { quality: 55 }
-const SITE_WIDTH = 408
-const STRUCTURE_WIDTH = 224   // about 2x the ~100 px the cards draw them at
+const SITE_WIDTH = 816
+const STRUCTURE_WIDTH = 448   // about 4x the ~100 px the cards draw them at
 
 const EMBED_GUARD = `// Embedded in the wiki's overview page: the host page owns the wheel, so the
 // walkthrough is stepped with the buttons, the step list and the arrow keys
@@ -86,7 +93,57 @@ const STORY_PATCHES = [
     "open on the story panel, ignoring any hash",
     `const start = parseInt(location.hash.slice(1), 10);
 goTo(Number.isFinite(start) ? start - 1 : 0, true);`,
-    "goTo(STORY_PANEL, true);",
+    `goTo(STORY_PANEL, true);
+// wiki copy: #card is the overview card's picture, the Overview step alone,
+// with no chrome and no input. It turns while the host says it is on screen
+// ({ card: "play" } / { card: "pause" }), and never for reduced motion.
+if (CARD) {
+  document.body.classList.add("cardmode");
+  goStep(STEPS.length - 1);
+  stackF = stackFT;   // land on it rather than glide there
+  spinOn = false;
+  addEventListener("message", e => {
+    if (e.origin !== location.origin || !e.data?.card) return;
+    spinOn = e.data.card === "play" && !reduceMotion;
+  });
+}`,
+  ],
+  [
+    "card mode: the flag and how far it zooms and thickens",
+    `const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;`,
+    `const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// wiki copy: the #card picture. The stack is fitted as a sphere, which leaves
+// a wide margin round it; a card has no labels to make room for, so it stands
+// closer, and lifted, since the stack hangs below the point the camera looks
+// at. Its marks are scaled for a figure several times the card's size, so at
+// card size the dots and dashes fall under a pixel and read as noise.
+const CARD = location.hash === "#card";
+const CARD_ZOOM = 0.85, CARD_LIFT = 0.08, CARD_MARKS = 1.8;`,
+  ],
+  [
+    "card mode: thicker marks",
+    "  U = Math.min(W / 760, H / 470);  // px per matplotlib point\n",
+    `  U = Math.min(W / 760, H / 470);  // px per matplotlib point
+  if (CARD) U *= CARD_MARKS;   // wiki copy
+`,
+  ],
+  [
+    "card mode: a closer camera",
+    "  const dist = fitR / Math.sin(Math.min(vf, hf) / 2);",
+    "  const dist = fitR * (CARD ? CARD_ZOOM : 1) / Math.sin(Math.min(vf, hf) / 2);   // wiki copy: CARD_ZOOM",
+  ],
+  [
+    "card mode: the stack centred top to bottom",
+    "  camera.setViewOffset(W, H, lerp(lerp(0, 0.06, c), 0.005, cur.stack) * W, lerp(-0.035, -0.02, c) * H, W, H);",
+    "  camera.setViewOffset(W, H, lerp(lerp(0, 0.06, c), 0.005, cur.stack) * W, (lerp(-0.035, -0.02, c) + (CARD ? CARD_LIFT : 0)) * H, W, H);   // wiki copy: CARD_LIFT",
+  ],
+  [
+    "render at 2x or more on every screen, up to 3x",
+    // The figure capped the canvas at 2x. On a 1x screen that meant a 1x render
+    // with jagged dots and edges; supersampling at 2x smooths them, and 4K /
+    // high-DPI screens get their own 3x instead of a stretched 2x.
+    "setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)",
+    "setPixelRatio(Math.min(Math.max(window.devicePixelRatio || 1, 2), 3)",
   ],
   [
     "hide the chrome of the panels that are gone",
@@ -94,6 +151,8 @@ goTo(Number.isFinite(start) ? start - 1 : 0, true);`,
     `  /* wiki copy: only the story panel exists, so its chrome is all that shows */
   #ctl, #stamp, #legend { display: none !important; }
   .title:not([data-t="7"]) { display: none !important; }
+  body.cardmode #stage { pointer-events: none; }
+  body.cardmode #stage > :not(#gl):not(#svg) { display: none !important; }
   .site-cap { position: absolute;`,
   ],
 ]

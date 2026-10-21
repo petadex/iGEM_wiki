@@ -15,6 +15,7 @@ import { HomePlaza, PetamonProvider, usePetamonsMet } from "./HomePlaza.js"
 import EndingPetamonBottle from "./EndingPetamonBottle.js"
 import { LoopTarget, PetamonAct, TreeHide } from "./petamonHovers.js"
 import { HomeAutoplay } from "./HomeAutoplay.js"
+import { HomeEcosystemMap } from "./HomeEcosystemMap.js"
 import { LabConstellation, WindowSky } from "./LabConstellation.js"
 import { LabBench, WET_TIP, wetStage } from "./LabBench.js"
 import {
@@ -363,7 +364,7 @@ const SECTION4_STORY = [
     // Fades as the protein slides to the middle, at the hold's end.
     phone: { in: [1, 0.5], out: [1, 0.9] },
     phoneAt: [SECTION4_PHONE_STORY_ROW, 4, 60],
-    text: "We also designed a novel algorithm to optimize the DNA library to order to capture more constellations of proteins.",
+    text: "We also designed a novel algorithm to optimize the DNA library in order to capture more constellations of proteins.",
   },
   // The Wet Lab shelf: on the wall right of it, centred between the top of
   // the dark window behind the axolotl and the bench's bottom edge (`mid`:
@@ -1119,24 +1120,34 @@ const SHORE_BOTTLE_RIPPLES_IMG =
 /** Waterline on the stage canvas (% down the 1640px height). */
 const SHORE_BOTTLE_WATERLINE_PCT = (830 / 1640) * 100
 
+/**
+ * Where each condition card links. All three go to the BioSample metadata
+ * figure for now; point them at their own sections (temperature, pH,
+ * environment) once those exist.
+ */
+const CONDITION_CARD_HREF = "/dry-lab/model/biosample-profiles/#biosample-profiles-figure"
+
 const CONDITION_CARD_IMAGES = [
   {
     src: "https://static.igem.wiki/teams/6187/wiki/homepage-components/newcards/ph.avif",
     alt: "pH",
+    href: CONDITION_CARD_HREF,
   },
   {
     src: "https://static.igem.wiki/teams/6187/wiki/homepage-components/newcards/temp.avif",
     alt: "Temperature",
+    href: CONDITION_CARD_HREF,
   },
   {
     src: "https://static.igem.wiki/teams/6187/wiki/homepage-components/newcards/surrounding-env.avif",
     alt: "Environment",
+    href: CONDITION_CARD_HREF,
   },
 ]
 
-/** The RNAlab popover's text (as on its artwork). */
-const RNALAB_EXPLANATION =
-  "A joint computational and molecular biology research group focused on understanding the interplay between RNA elements and genetics."
+/** The Logan popover's text. */
+const LOGAN_EXPLANATION =
+  "Logan is an assembly of all 38.1 million public sequencing datasets in NCBI's Sequence Read Archive, turned into searchable DNA. It was built by our advising lab, the RNALab at UofT, and collaborators, and it's where PETadex finds its enzymes."
 
 /** Delay + slide duration; the RNAlab term is not hoverable until this elapses. */
 const RNALAB_REVEAL_MS = 740
@@ -1549,6 +1560,29 @@ const HUMAN = {
   originY: 51.2,
 }
 
+/**
+ * Extra in-flow scroll while the painting is pinned on the world map; maps to
+ * the map's four slides (HomeEcosystemMap), the way WALK_TRACK_VH drives the walk.
+ */
+const MAP_HOLD_VH = 310
+/**
+ * Soft-cap on scrolling through that hold: a wheel or trackpad moves the page
+ * at most this far per second while the map is pinned (so the hold takes at
+ * least ~3.5 s), and scroll past the cap is dropped rather than queued. A
+ * short burst is allowed, so one notch of a mouse wheel still moves at once.
+ */
+const MAP_SCROLL_VH_PER_S = 90
+const MAP_SCROLL_BURST_S = 0.12
+/** Room (px) between the nav bar and the first line of text while the map is pinned. */
+const MAP_PIN_NAV_GAP = 28
+/**
+ * Above the map band, as shares of the art width: the top of the Logan
+ * paragraph, its bottom, and the map's slide title (HomeEcosystemMap).
+ */
+const LOGAN_TOP_ABOVE_MAP = 0.244
+const LOGAN_BOTTOM_ABOVE_MAP = 0.0905
+/** How far the paint (and the Antarctica tag) runs below the band's top, × art width. */
+const MAP_PAINT_BELOW_TOP = 0.385
 /** Extra in-flow scroll while the forest frame is sticky; maps to walk progress. */
 const WALK_TRACK_VH = 120
 /**
@@ -1925,9 +1959,15 @@ export function HomeScrollPrototype() {
   const walkArrivedRef = useRef(false)
   const walkLatchedRef = useRef(false)
   const walkReleasedRef = useRef(false)
+  const ecosystemMapRef = useRef(null)
+  /** The map's slides have played and its hold has been dropped. */
+  const mapReleasedRef = useRef(false)
+  /** The map hold's scroll range while it is armed, for the wheel soft-cap. */
+  const mapHoldRangeRef = useRef(null)
   // Before any scroll effect runs: the beats this visit already played.
   useLayoutEffect(() => {
     const played = readPlayedBeats()
+    if (played.map) mapReleasedRef.current = true
     if (played.walk) {
       walkReleasedRef.current = true
       birdStealPRef.current = played.steal ?? 1
@@ -2266,6 +2306,9 @@ export function HomeScrollPrototype() {
           ? 0
           : window.innerHeight * (WALK_HOLD_VH / 100)
       const freezePx = walkPx + holdPx
+      const mapPx = reduceWalk ? 0 : window.innerHeight * (MAP_HOLD_VH / 100)
+      let mapProgress = 1
+      mapHoldRangeRef.current = null
       let walkProgress = 0
       /** Scroll through the arrival hold (0–1) — drives the bird steal. */
       let stealProgress = 0
@@ -2284,6 +2327,18 @@ export function HomeScrollPrototype() {
           0,
           humanOriginY - window.innerHeight * HUMAN_PIN_VIEW_Y,
         )
+        // Pin with the Logan paragraph whole under the nav when it and the map
+        // both fit; otherwise tuck the paragraph behind the nav, so the slide
+        // title is the first line, a clear gap under the bar. Never a line cut
+        // in half by the nav.
+        const navBottom = homeNavMountRef.current?.offsetHeight ?? 75
+        const withParagraph =
+          navBottom + MAP_PIN_NAV_GAP + LOGAN_TOP_ABOVE_MAP * artW
+        const mapBandTop =
+          withParagraph + MAP_PAINT_BELOW_TOP * artW <= window.innerHeight
+            ? withParagraph
+            : navBottom + LOGAN_BOTTOM_ABOVE_MAP * artW
+        const mapPinY = Math.max(0, WORLD_MAP_TOP * artH - mapBandTop)
         if (reduceWalk || freezePx <= 0) {
           if (track) {
             track.style.height = ""
@@ -2296,14 +2351,55 @@ export function HomeScrollPrototype() {
         } else if (track) {
           track.style.paddingBottom = "0px"
           const trackDocTop = track.getBoundingClientRect().top + y
-          const pinAt = trackDocTop + forestPinY
+          const mapPinAt = trackDocTop + mapPinY
+          // Re-arm above the map, as the walk does above the forest.
+          if (mapReleasedRef.current && scrollingUp && y < mapPinAt - 32) {
+            mapReleasedRef.current = false
+            savePlayedBeats({
+              map: false,
+              walk: walkReleasedRef.current,
+              steal: birdStealPRef.current,
+              ending: endingReleasedRef.current,
+            })
+          }
+          if (!mapReleasedRef.current && y > mapPinAt + mapPx) {
+            if (!settled()) tickWhenSettled()
+            else {
+              // Past the end of the hold: drop its scroll length and pull the
+              // scroll back by the same amount so nothing on screen moves.
+              mapReleasedRef.current = true
+              savePlayedBeats({
+                map: true,
+                walk: walkReleasedRef.current,
+                steal: birdStealPRef.current,
+                ending: endingReleasedRef.current,
+              })
+              ecosystemMapRef.current?.update(1)
+              previousScrollY = y - mapPx
+              window.scrollTo({ top: y - mapPx, left: 0, behavior: "instant" })
+              return tick()
+            }
+          }
+          const mapHoldPx = mapReleasedRef.current ? 0 : mapPx
+          if (!mapReleasedRef.current && mapPx > 0) {
+            mapHoldRangeRef.current = { start: mapPinAt, end: mapPinAt + mapPx }
+          }
+          mapProgress = mapReleasedRef.current
+            ? 1
+            : clamp01((y - mapPinAt) / Math.max(1, mapPx))
+          const pinAt = trackDocTop + forestPinY + mapHoldPx
           // Re-arm above the forest, where adding the hold is below the reader.
           // Do not reset during restoration of a saved position farther down.
           if (walkReleasedRef.current && scrollingUp && y < pinAt - 32) {
             walkReleasedRef.current = false
             walkLatchedRef.current = false
             birdStealPRef.current = 0
-            savePlayedBeats({ walk: false, steal: 0, ending: endingReleasedRef.current })
+            savePlayedBeats({
+              map: mapReleasedRef.current,
+              walk: false,
+              steal: 0,
+              ending: endingReleasedRef.current,
+            })
           }
           if (walkReleasedRef.current) {
             // The whole beat ran to completion before unpin — keep it that way,
@@ -2311,13 +2407,29 @@ export function HomeScrollPrototype() {
             walkProgress = 1
             walkLatchedRef.current = true
             stealProgress = birdStealPRef.current
-            track.style.height = `${artH}px`
-            painting.style.position = "relative"
-            painting.style.top = "0px"
-            painting.style.left = ""
-            painting.style.width = ""
+            track.style.height = `${artH + mapHoldPx}px`
+            if (mapHoldPx > 0) {
+              // Walk played on an earlier pass; the map was re-armed above it.
+              painting.style.left = "0px"
+              painting.style.width = "100%"
+              if (y < mapPinAt) {
+                painting.style.position = "absolute"
+                painting.style.top = "0px"
+              } else if (y <= mapPinAt + mapHoldPx) {
+                painting.style.position = "fixed"
+                painting.style.top = `${-mapPinY}px`
+              } else {
+                painting.style.position = "absolute"
+                painting.style.top = `${mapHoldPx}px`
+              }
+            } else {
+              painting.style.position = "relative"
+              painting.style.top = "0px"
+              painting.style.left = ""
+              painting.style.width = ""
+            }
           } else {
-            track.style.height = `${artH + freezePx}px`
+            track.style.height = `${artH + mapHoldPx + freezePx}px`
             walkProgress = Math.max(
               0,
               Math.min(1, (y - pinAt) / Math.max(1, walkPx)),
@@ -2336,6 +2448,7 @@ export function HomeScrollPrototype() {
             if (walkPlayed && settled()) {
               walkReleasedRef.current = true
               savePlayedBeats({
+                map: mapReleasedRef.current,
                 walk: true,
                 steal: stealProgress,
                 ending: endingReleasedRef.current,
@@ -2345,23 +2458,30 @@ export function HomeScrollPrototype() {
                 left: 0,
                 behavior: "instant",
               })
-              track.style.height = `${artH}px`
+              track.style.height = `${artH + mapHoldPx}px`
               painting.style.position = "relative"
               painting.style.top = "0px"
               painting.style.left = ""
               painting.style.width = ""
-            } else if (y < pinAt) {
+            } else if (y < mapPinAt) {
               painting.style.position = "absolute"
               painting.style.top = "0px"
+            } else if (y <= mapPinAt + mapHoldPx) {
+              painting.style.position = "fixed"
+              painting.style.top = `${-mapPinY}px`
+            } else if (y < pinAt) {
+              painting.style.position = "absolute"
+              painting.style.top = `${mapHoldPx}px`
             } else if (y <= pinAt + freezePx) {
               painting.style.position = "fixed"
               painting.style.top = `${-forestPinY}px`
             } else {
               painting.style.position = "absolute"
-              painting.style.top = `${freezePx}px`
+              painting.style.top = `${mapHoldPx + freezePx}px`
             }
           }
         }
+        ecosystemMapRef.current?.update(mapProgress)
         if (walker) {
           const latched = walkLatchedRef.current
           const p = latched ? 1 : walkProgress
@@ -3287,6 +3407,7 @@ export function HomeScrollPrototype() {
           // scroll back by the same amount so nothing on screen moves.
           endingReleasedRef.current = true
           savePlayedBeats({
+            map: mapReleasedRef.current,
             walk: walkReleasedRef.current,
             steal: birdStealPRef.current,
             ending: true,
@@ -3307,6 +3428,36 @@ export function HomeScrollPrototype() {
       lastScrollAt = performance.now()
       tick()
     }
+    // The map hold's soft-cap. Only the wheel is capped: moving the scroll
+    // under a phone's coast stutters it, as with the releases above.
+    let wheelBudget = 0
+    let wheelBudgetAt = 0
+    const onWheel = event => {
+      const hold = mapHoldRangeRef.current
+      if (!hold || event.ctrlKey || event.deltaY === 0) return
+      const dy =
+        event.deltaY *
+        (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+      const y = window.scrollY
+      const down = dy > 0
+      // Scroll up to the hold's edge is free; only travel inside it is capped.
+      const free = Math.max(0, down ? hold.start - y : y - hold.end)
+      if (down ? y + dy <= hold.start || y >= hold.end : y + dy >= hold.end || y <= hold.start)
+        return
+      event.preventDefault()
+      const now = performance.now()
+      const rate = window.innerHeight * (MAP_SCROLL_VH_PER_S / 100)
+      wheelBudget = Math.min(
+        rate * MAP_SCROLL_BURST_S,
+        wheelBudget + (rate * (now - wheelBudgetAt)) / 1000,
+      )
+      wheelBudgetAt = now
+      const step = Math.min(Math.abs(dy), free + wheelBudget)
+      wheelBudget -= Math.max(0, step - free)
+      if (step > 0) {
+        window.scrollTo({ top: y + (down ? step : -step), left: 0, behavior: "instant" })
+      }
+    }
     const onTouch = event => {
       touching = event.touches.length > 0
       lastScrollAt = performance.now()
@@ -3316,6 +3467,7 @@ export function HomeScrollPrototype() {
     tick()
     window.addEventListener("scroll", onScroll, { passive: true })
     window.addEventListener("resize", tick, { passive: true })
+    window.addEventListener("wheel", onWheel, { passive: false })
     window.addEventListener("touchstart", onTouch, { passive: true })
     window.addEventListener("touchend", onTouch, { passive: true })
     window.addEventListener("touchcancel", onTouch, { passive: true })
@@ -3331,6 +3483,7 @@ export function HomeScrollPrototype() {
       window.clearTimeout(settleTimer)
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", tick)
+      window.removeEventListener("wheel", onWheel)
       window.removeEventListener("touchstart", onTouch)
       window.removeEventListener("touchend", onTouch)
       window.removeEventListener("touchcancel", onTouch)
@@ -4144,7 +4297,16 @@ export function HomeScrollPrototype() {
                           data-shine={conditionShine ? "1" : undefined}
                         >
                           {CONDITION_CARD_IMAGES.map(image => (
-                            <ConditionFigure key={image.alt}>
+                            // The card itself is the link (not wrapped in
+                            // one), so the shine's :nth-child stagger holds.
+                            <ConditionFigure
+                              key={image.alt}
+                              as="a"
+                              href={withPrefix(image.href)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`${image.alt}: BioSample Metadata Profiles`}
+                            >
                               <ConditionImageWrap>
                                 <ConditionImage
                                   src={image.src}
@@ -4155,7 +4317,9 @@ export function HomeScrollPrototype() {
                                   $src={image.src}
                                 />
                               </ConditionImageWrap>
-                              <ConditionCaption>{image.alt}</ConditionCaption>
+                              <ConditionCaption as="span">
+                                {image.alt}
+                              </ConditionCaption>
                             </ConditionFigure>
                           ))}
                         </ConditionImageRow>
@@ -4163,15 +4327,14 @@ export function HomeScrollPrototype() {
                     </ShoreCardsMount>
                     <ShoreLoganMount>
                       <ShoreLoganBody>
-                        That&apos;s why our team is using the Logan index
-                        (developed by our advisory lab, the{" "}
+                        That&apos;s why our team is using{" "}
                         <ExplainTerm
-                          term="RNAlab"
-                          explanation={RNALAB_EXPLANATION}
+                          term="Logan"
+                          explanation={LOGAN_EXPLANATION}
                           plain
                         />{" "}
-                        at UofT, and collaborators): a planetary sequence search
-                        that can discover novel plastic-degrading enzymes.
+                        to search the planet to discover novel
+                        plastic-degrading enzymes.
                       </ShoreLoganBody>
                     </ShoreLoganMount>
                   </ShoreTextLayer>
@@ -4182,7 +4345,9 @@ export function HomeScrollPrototype() {
                 $top={WORLD_MAP_TOP}
                 $height={WORLD_MAP_HEIGHT}
                 $z={10}
-              />
+              >
+                <HomeEcosystemMap ref={ecosystemMapRef} />
+              </ArtBand>
 
               <ArtBand
                 ref={mapBottleBandRef}
@@ -6339,7 +6504,7 @@ const ShoreLoganMount = styled.div`
 const ShoreLoganBody = styled.p`
   margin: 0;
 
-  /* The RNAlab popup takes the pointer; the rest lets it through. */
+  /* The Logan popup takes the pointer; the rest lets it through. */
   span[role="button"] {
     pointer-events: auto;
   }
@@ -7044,6 +7209,36 @@ const ConditionFigure = styled.figure`
   align-items: center;
   gap: ${artPx(8.8)};
   min-width: 0;
+
+  /* Rendered as a link: clickable inside ShoreCardsMount's pointer-events:
+     none, and lifted a little on hover. */
+  &[href] {
+    color: inherit;
+    text-decoration: none;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  &[href]:hover {
+    transform: translateY(-${artPx(4)});
+  }
+
+  &[href]:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: ${artPx(6)};
+    border-radius: ${artPx(8)};
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &[href] {
+      transition: none;
+    }
+
+    &[href]:hover {
+      transform: none;
+    }
+  }
 
   ${phone} {
     gap: ${phoneSize(0.3)};

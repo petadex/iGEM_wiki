@@ -240,6 +240,8 @@
   /* wiki copy: only the story panel exists, so its chrome is all that shows */
   #ctl, #stamp, #legend { display: none !important; }
   .title:not([data-t="7"]) { display: none !important; }
+  body.cardmode #stage { pointer-events: none; }
+  body.cardmode #stage > :not(#gl):not(#svg) { display: none !important; }
   .site-cap { position: absolute; left: 0; top: 0; font-size: 11px; color: var(--muted); font-style: italic;
     pointer-events: none; white-space: nowrap; opacity: 0; }
   .lbl.layer small { line-height: 1.35; }
@@ -519,6 +521,13 @@ const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const sub = (v, a, b) => clip((v - a) / (b - a), 0, 1);
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// wiki copy: the #card picture. The stack is fitted as a sphere, which leaves
+// a wide margin round it; a card has no labels to make room for, so it stands
+// closer, and lifted, since the stack hangs below the point the camera looks
+// at. Its marks are scaled for a figure several times the card's size, so at
+// card size the dots and dashes fall under a pixel and read as noise.
+const CARD = location.hash === "#card";
+const CARD_ZOOM = 0.85, CARD_LIFT = 0.08, CARD_MARKS = 1.8;
 let cur = { ...STATES[0] }, from = null, to = null, tStart = 0, tDur = 1, idx = 0;
 let dirty = true, surfDirty = true;
 
@@ -894,12 +903,12 @@ function updateCamera() {
   const tz = lerp(lerp(-0.05, -1.25, c), sv.tz, cur.stack);
   const fitR = lerp(lerp(3.25, 4.6, c), sv.r, cur.stack);
   const vf = camera.fov * D2R, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
-  const dist = fitR / Math.sin(Math.min(vf, hf) / 2);
+  const dist = fitR * (CARD ? CARD_ZOOM : 1) / Math.sin(Math.min(vf, hf) / 2);   // wiki copy: CARD_ZOOM
   camera.position.set(dist * Math.cos(el) * Math.cos(azm), dist * Math.cos(el) * Math.sin(azm), tz + dist * Math.sin(el));
   camera.lookAt(0, 0, tz);
   // panels 3-5 leave room on the right for the depth scale
   // the stacked panel has labels on both sides, so it sits in the middle
-  camera.setViewOffset(W, H, lerp(lerp(0, 0.06, c), 0.005, cur.stack) * W, lerp(-0.035, -0.02, c) * H, W, H);
+  camera.setViewOffset(W, H, lerp(lerp(0, 0.06, c), 0.005, cur.stack) * W, (lerp(-0.035, -0.02, c) + (CARD ? CARD_LIFT : 0)) * H, W, H);   // wiki copy: CARD_LIFT
   camera.updateProjectionMatrix();
   camera.projectionMatrix.elements[5] *= Y_STRETCH;
   camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
@@ -2430,8 +2439,9 @@ function drawOverlay() {
 function resize() {
   W = stage.clientWidth; H = stage.clientHeight;
   U = Math.min(W / 760, H / 470);  // px per matplotlib point
+  if (CARD) U *= CARD_MARKS;   // wiki copy
   document.documentElement.style.setProperty("--u", U + "px");
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio || 1, 2), 3));
   renderer.setSize(W, H, false);
   camera.aspect = W / H;
   measureLabels();
@@ -2771,6 +2781,19 @@ window.addEventListener("resize", resize);
 resize();
 if (document.fonts) document.fonts.ready.then(() => { measureLabels(); dirty = true; });
 goTo(STORY_PANEL, true);
+// wiki copy: #card is the overview card's picture, the Overview step alone,
+// with no chrome and no input. It turns while the host says it is on screen
+// ({ card: "play" } / { card: "pause" }), and never for reduced motion.
+if (CARD) {
+  document.body.classList.add("cardmode");
+  goStep(STEPS.length - 1);
+  stackF = stackFT;   // land on it rather than glide there
+  spinOn = false;
+  addEventListener("message", e => {
+    if (e.origin !== location.origin || !e.data?.card) return;
+    spinOn = e.data.card === "play" && !reduceMotion;
+  });
+}
 requestAnimationFrame(frame);
 </script>
 </body>

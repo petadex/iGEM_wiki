@@ -91,7 +91,7 @@ tmp/
 # Personal scratch space
 dennis-scratch/
 
-# The 2 MB master of the overview card's loop, kept local (the only copy): at
-# full size it took the iGEM build over its 5 MB upload. The card plays the
-# landscape-spin-card.mp4 re-encode; see the note in dry-lab/overview/index.mdx.
+# The 2 MB master of the overview card's old spinning loop, kept local (the
+# only copy). The card now draws the landscape figure live; see the note in
+# dry-lab/overview/index.mdx.
 static/figures/dry-lab-overview/landscape-spin.mp4

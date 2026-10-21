@@ -2,6 +2,7 @@ import fs from "fs/promises"
 import path from "path"
 import sharp from "sharp"
 import { deflateRawSync } from "node:zlib"
+import { transformSync } from "esbuild"
 
 const root = process.cwd()
 const publicRoot = path.join(root, "public")
@@ -134,6 +135,51 @@ for (const job of imageJobs) {
   }
 }
 
+// Preserve SVG geometry and labels; losslessly recompress embedded PNG pixels.
+await walk(publicRoot, async (filePath) => {
+  if (!filePath.endsWith(".svg")) return
+  const original = await fs.readFile(filePath, "utf8")
+  let optimized = original
+  for (const match of original.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)) {
+    const png = Buffer.from(match[1], "base64")
+    const webp = await sharp(png).webp({ lossless: true, effort: 6 }).toBuffer()
+    const replacement = `data:image/webp;base64,${webp.toString("base64")}`
+    if (replacement.length < match[0].length) {
+      optimized = optimized.replace(match[0], replacement)
+    }
+  }
+  if (optimized !== original) await fs.writeFile(filePath, optimized)
+})
+
+// These standalone figures bypass Gatsby's webpack JavaScript minifier.
+// Keep top-level names intact: separate scripts and HTML handlers may use them.
+for (const relativePath of [
+  "figures/dry-lab-landscape/landscape.html",
+  "figures/petadex-game/petadex-game.html",
+  "figures/dry-lab-model/pipeline-animation.html",
+]) {
+  const filePath = path.join(publicRoot, relativePath)
+  if (!(await exists(filePath))) continue
+  const original = await fs.readFile(filePath, "utf8")
+  const optimized = original.replace(
+    /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi,
+    (whole, opening, code, closing) => {
+      const type = opening.match(/\btype\s*=\s*["']([^"']+)["']/i)?.[1]
+      if (!code.trim() || (type && !["module", "text/javascript", "application/javascript"].includes(type))) return whole
+      const { code: minified } = transformSync(code, {
+        minifyWhitespace: true,
+        minifySyntax: true,
+        target: "es2017",
+        legalComments: "inline",
+      })
+      return opening + minified.replace(/<\/script/gi, "<\\/script") + closing
+    },
+  )
+  if (deflateRawSync(optimized, { level: 9 }).length < deflateRawSync(original, { level: 9 }).length) {
+    await fs.writeFile(filePath, optimized)
+  }
+}
+
 const afterArtifact = await artifactSize()
 const mib = (bytes) => (bytes / 1024 ** 2).toFixed(2)
 console.log(
@@ -150,7 +196,7 @@ await walk(publicRoot, async (filePath) => {
   estimatedZipBytes += deflateRawSync(content, { level: 9 }).length +
     76 + 2 * Buffer.byteLength(name)
 })
-console.log(`Estimated compressed Pages archive: ${mib(estimatedZipBytes)} MiB`)
+console.log(`Estimated compressed Pages archive: ${mib(estimatedZipBytes)} MiB (${estimatedZipBytes.toLocaleString("en-US")} bytes)`)
 
 // iGEM's upload limit is 5 MB. Leave 500 kB for the runner's ZIP metadata,
 // directory entries and differences from Node's compression implementation.
@@ -159,7 +205,7 @@ const safetyMarginBytes = 500_000
 const archiveBudgetBytes = uploadLimitBytes - safetyMarginBytes
 if (estimatedZipBytes > archiveBudgetBytes) {
   console.error(
-    `Pages artifact is too large: estimated ${(estimatedZipBytes / 1_000_000).toFixed(2)} MB ` +
+    `Pages artifact is too large by ${(estimatedZipBytes - archiveBudgetBytes).toLocaleString("en-US")} bytes: estimated ${(estimatedZipBytes / 1_000_000).toFixed(3)} MB ` +
     `exceeds the ${(archiveBudgetBytes / 1_000_000).toFixed(2)} MB safety budget ` +
     `for iGEM's 5 MB upload limit. ` +
     `Move large images, PDFs or datasets to the iGEM CDN and reference their URLs, ` +

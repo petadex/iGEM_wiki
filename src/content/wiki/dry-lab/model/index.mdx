@@ -8,6 +8,7 @@ description: "Modeling approach and assumptions used to analyze PETase candidate
 owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
+hideHeaderSub: true
 ---
 
 {/*
@@ -103,7 +104,7 @@ From each family we search outward, first into the NCBI protein database and the
 </Placeholder>
 
 <DatasetFlowchartFigure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/needleman/g25.avif"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/dataset-flowchart-centred.avif"
   alt="Flowchart of how the PETadex corpus is built: 609 PETadex-PAZy proteins are clustered at 90% identity into 411 nr query centroids; a DIAMOND blastp search of NCBI nr gives 7,825,535 non-redundant raw hits, which HMMsearch filters to 6,857,582 PETadex-nr proteins; these are clustered into 2,740,458 Logan query centroids, searched against Logan with DIAMOND blastx and filtered with HMMsearch into PETadex-Logan. Bars beside each step sketch catalytic domains, off-target, partial and complete hits."
 />
 
@@ -114,32 +115,36 @@ From each family we search outward, first into the NCBI protein database and the
 *Owner: Dennis*
 
 {/*
-  OUTLINE — not rendered. ~120 words of the Dataset Generation budget.
-  Notebooks 76, 70. Page Tree §1.1 [M].
+  WRITER NOTES — not rendered.
 
-  This is the "495 known enzymes" the whole corpus grows from, so it has to
-  establish that the seed set is trustworthy before anything downstream can
-  be. Lead with that, not with the tooling.
+  Overview tier. The full write-up is /dry-lab/model/plasticome/, reached
+  only from the Methods link below. Ported from the draft in
+  plasticome/wiki-reference-curation/ (template.html).
 
-  - Why curate at all: no single database is complete, and PAZy and PlasticDB
-    disagree on both membership and sequence
-  - PAZy pulled through its API; PlasticDB reconciled against it
-  - Identity resolved by MD5 matching cascades, since accessions alone miss
-    the same sequence deposited twice
-  - Union with Plasticome v1.1, every entry tagged with its source
-  - The Erickson hand-curation, and DOI backfill for entries that arrived
-    without a citation
-  - Close on what came out: the reference set, and what "reference" means
-    here (reported activity, not activity we measured)
+  Text: the first paragraph is Introduction ¶3 of petadex-manuscript.tex,
+  verbatim. The second adapts Results ¶4 ("To generate this updated
+  PETadex-260701 dataset...") and the abstract.
 
-  Numbers owed: seed count. Narrative §4 flags the baseline as contested —
-  brain dump says both ~2,000 known and PAZy ~495, and the narrative uses
-  ~500. The flowchart above says 609 PETadex-PAZy proteins, which is a third
-  figure again. RESOLVE before writing: these cannot all be the same
-  quantity, and this section is where a judge will notice.
+  Numbers, all from plasticome.v2.xlsx through src/data/plasticomeCuration.json,
+  and all agreeing with the manuscript: 495 records in the PAZy pull; 473
+  after curation; 212 in pazy-240826; 609 in the union (397 pazy-260701
+  only, 136 pazy-240826 only, 76 both); 411 centroids at 90% identity. The
+  old outline's 495 / ~500 / 609 conflict is resolved: 495 is PAZy, 609 is
+  the plasticome, and the flowchart's "609 PETadex-PAZy proteins" is the
+  same 609.
 */}
 
-Placeholder: PAZy pull, PlasticDB reconciliation, MD5 cascades, DOI backfill.
+Existing databases of plastic-degrading enzymes (PDEs) are limited in scope and diversity. The plastics-active enzymes database (PAZy) contains 495 functionally verified plastic-active enzymes, most of them homologs of leaf-branch compost cutinase (LCC) or IsPETase.
+
+To build PETadex, we created a starting search query by combining two versions of the PAZy database: the one used in the original PETadex generation (pazy-240826) and a recently updated, manually curated version (pazy-260701). Together they give a union of 609 curated, experimentally validated PDEs, which we call the plasticome.
+
+<PlasticomeStats />
+
+<PlasticomeCoverage />
+
+<PlasticomeExplorer />
+
+<MethodsLink href="/dry-lab/model/plasticome/">How the two PAZy snapshots were curated and merged, where every sequence came from, the Erickson enzymes reset to their paper, and what the 609 reduce to after clustering.</MethodsLink>
 
 ### CATH Assignment
 
@@ -277,38 +282,66 @@ Each layer is computed across the corpus by its own pipeline, and coverage diffe
 
 *Owner: Denis / Amar*
 
-Placeholder: temperature, pH, environment, organism, habitat, salinity.
+A plastic-degrading enzyme is only useful if we know where its host organism lives and what conditions it tolerates. We started from 932 validated plastic-degrading organisms and 2,535 organism-polymer records in PlasticDB (Figure 1A) and found that only 527 records (21%) carry an enzyme sequence, from 77% for PET down to 0.9% for LDPE (Figure 1B). We then added laboratory growth tests for 455 BacDive strains: 44% of 421 grow at 25°C or below (Figure 1C), 71% of 75 at pH 9 or above (Figure 1D) and 50% of 155 at 5% NaCl or above (Figure 1E). Environment classes for 646 BioSamples are led by soil and sediment (Figure 1F), yet two sources agree on the class for only 46% of organisms. Together these results set assay conditions of 25°C, pH 8 to 9 and added NaCl, and give a first panel of 27 cold-active strains with a protein and a closed genome.
 
-### Biosample Metadata Profiles
+<Figure src="/figures/dry-lab-model/biosample_annotations.svg" alt="SignalP composite figure" width="100%" />
+Known plastic-degrading organisms and the metadata layers joined to them: (A) data flow from PlasticDB through BacDive to NCBI BioSample, (B) protein-linked records by polymer, (C) growth temperature range, (D) growth pH range, (E) strains that grow at each condition, (F) environment class of BioSamples.
+
+### [Biosample Metadata Profiles](/dry-lab/model/biosample-profiles/#biosample-profiles-figure)
 
 *Owner: Dennis*
 
 {/*
-  OUTLINE — not rendered. ~100 words.
-  Page Tree §2.2 [S]. Sits directly after §2.1 and depends on it.
+  Overview tier: a summary, the whole-stack figure, then the BioSample
+  viewer. The heading links to the full figure on the Methods page (a
+  heading written as a link is not wrapped in a self-link; see
+  gatsby-config.mjs). The per-profile share chart is on the Methods page. The full write-up
+  is the Methods sub-page, src/content/wiki/dry-lab/model/biosample-profiles/,
+  and the sources for every number are in its writer notes. Built from the
+  wiki-handoff/biosample-metadata-profiles bundle (watson, 2026-10-20).
+  Page Tree §2.2 [S]. Ballot Q3 (relevant data used to develop the model).
 
-  The honest point of this section: metadata coverage is not the same thing
-  as metadata signal. A BioSample can carry fields that are only the
-  submission form's template, and counting those as annotation overstates
-  what the model can see. That distinction is the section.
+  The argument: SRA sampling effort is clinical, but PETase-family sequence
+  diversity is environmental. Counting BioSamples would point the model at
+  the wrong biology; profiling at the cluster level corrects that.
 
-  - Profile universe: BioSamples with real signal out of the full set
-    [Page Tree §2.2: 2,744,599 of 6,796,722 — unverified. Note the
-    flowchart above uses 2,740,458 for Logan query centroids, a different
-    quantity with a confusingly similar value. Do not let these collide
-    in the prose]
-  - Form-template-only samples excluded, and how they were identified
-  - What the profiles are then used for: stratifying sampling, so the
-    sequences we look at are not all from one kind of environment
-  - Tie to the model in one line: this is why the metadata feature block in
-    Activity Prediction has the coverage it has
+  The prose in <Placeholder> is an AI-written scaffold. Team rule: rewrite it
+  in your own words, keeping the numbers and their order, then remove the
+  wrapper.
 
-  Cross-reference, do not repeat: §2.1 above owns the BacDive temperature
-  and pH propagation and the unweighted-means caveat. This section owns
-  only the profile universe and the sampling use.
+  Must NOT claim:
+    - that the profiles chose the wet-lab library or stratified sampling.
+      Stratified sampling manifests exist, but the quota (equal vs
+      proportional) was never chosen and they were never used
+    - "59% of clusters are specialists" (a singleton artefact)
+  Do not let 2,744,599 (profile universe) collide with 2,740,458 (Logan query
+  centroids, in the corpus flowchart above): different quantities.
+
+  Cross-reference, do not repeat: §2.1 above owns the BacDive temperature and
+  pH propagation and the unweighted-means caveat.
 */}
 
-Placeholder: 2.74M of 6.80M with real signal, stratified sampling.
+Each of these enzymes that we've mined from Logan comes from a BioSample. This tells us where, when and how the sequencing was done, as well as where and in what conditions the sample was taken from. In our PETadex dataset, we have 6.8M biosamples, of which 2.74M contains real and usable features. To organize these BioSamples into discrete "categories", we've built a classification system to organize each of these samples into one of 21 environment profiles.
+
+{/*
+  VERIFY (propagation): the handoff README and the Methods page describe it
+  differently from the paragraph below. There, each ORF takes the profile of
+  the BioSample it came from (256,236,322 of 307,155,746 ORFs are linked to
+  one), and each 90% identity cluster then takes the profile most of its
+  member ORFs carry (14,455,359 of 18,172,960 clusters get one). No sequence
+  is given a profile from its homologous neighbours. Confirm against
+  propagate_sequences.py on watson and reword if so.
+*/}
+
+Furthermore, we can propagate these profiles to other members in the same family. So if a sequence has two homologous sequences that are >90% similar to it and from the same profile, then we can propagate that profile to it as well.
+
+Interestingly, what we find is that the majority (59.2%) of SRA biosamples comes from human samples, but this only represents 1.4% of clusters, which is how we are measuring sequence diversity. The inverse is true for environmental samples, which comprises 13.2% of biosamples we find from the SRA, but they contain most of the sequence diversity within our dataset. Put simply, we find that environmental samples are heavily enriched for putative plastic-degrading enzymes, as opposed to human samples which are heavily depleted, which makes sense!
+
+<ProfileStack />
+
+<BiosampleViewer />
+
+<MethodsLink href="/dry-lab/model/biosample-profiles/">How a profile is assigned, each profile followed through the pipeline, an independent temperature check, ten real BioSamples opened down to their sequences, and the rule defects we know about.</MethodsLink>
 
 ### Localization and Signal Peptides
 
@@ -316,9 +349,9 @@ SignalP 6.0 was run on all PETadex ORFs to identify the secreted enzymes within 
 
 To-Do: Repeat the pipeline on the updated database.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/signalp-composite-v2.avif" alt="SignalP composite figure" width="100%" />
-
-**Figure caption.** (A) The biological significance of the secretion pathways and signal peptide classes. (B) ORFs per signal peptide class (log scale). (C) Percentage of ORFs in each catalytic fold family with a predicted signal peptide; dashed line = database-wide rate (13.85%). (D) Agreement within clusters at 90, 60 and 30% sequence identity (singletons removed): % of secreted members matching their cluster’s majority signal type and % of all members matching their cluster’s majority signal peptide presence/absence call.
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/signalp-composite-v2.avif" alt="SignalP composite figure" width="100%"
+  caption={<><strong>Figure caption.</strong> (A) The biological significance of the secretion pathways and signal peptide classes. (B) ORFs per signal peptide class (log scale). (C) Percentage of ORFs in each catalytic fold family with a predicted signal peptide; dashed line = database-wide rate (13.85%). (D) Agreement within clusters at 90, 60 and 30% sequence identity (singletons removed): % of secreted members matching their cluster’s majority signal type and % of all members matching their cluster’s majority signal peptide presence/absence call.</>}
+/>
 
 
 ### Domain Annotation
@@ -337,7 +370,7 @@ so they are filtered out. Two resulting datasets are output. One dataset contain
 only accessory domains.
 
 <Figure
-  src="/figures/dry-lab-model/PETadex_workflow_overview.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/petadex-workflow-overview.svg"
   alt="Overview of Domain Annotation on PETadex"
 />
 ### Novel Accessory Domains
@@ -345,7 +378,7 @@ only accessory domains.
 *Owner: Nino*
 
 <SideFigure
-  src="/figures/dry-lab-model/TED_workflow_styled.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/ted-workflow-styled.svg"
   alt="TED novelty-discovery workflow as reconstructed for PETadex"
   width="40%"
 >
@@ -364,17 +397,16 @@ Despite these limitations, the PETadex pilot dataset produced two putative novel
 
 *Owner: Alex*
 
-Existing protein structure prediction databases such as AlphaFold DB (AFDB) [https://console.cloud.google.com/storage/browser/public-datasets-deepmind-alphafold-v4] contain predicted protein structure cif files, alongside quality metrics such as pLDDT, pTM and the PAE matrix. These metrics measure structural quality and position pairwise error, which are useful for identifying domains and components. Specifically, these structures were utilized for HMM evaluation, and can also be used for further structural analysis.
+Existing protein structure prediction databases such as AlphaFold DB (AFDB) [https://console.cloud.google.com/storage/browser/public-datasets-deepmind-alphafold-v4] contain predicted protein structure cif files, alongside quality metrics such as pLDDT, pTM and the PAE matrix. These metrics measure structural quality and position pairwise error which are useful for identifying domains/components. We used our set of downloaded structures to validate the PETadex v2 HMMs' domain coverage, as well as novel domain analysis. With the advent of novel structural bioinformatics methods such as structural clustering, docking, and FoldSeek, these structures can and will be used for further analysis.
 
-We searched these databases to find predicted structures for 7.83M PETadex v2 significant hits. AFDB is indexed by Uniprot accession, so PETadex accessions were converted to Uniprot accessions using the Uniprot idmapping [https://ftp.uniprot.org/pub/databases/uniprot/current_release/]. In total, structures and metrics for 580,146 PETadex v2 proteins were found in the AFDB, emphasizing the uncategorized nature of the PETadex. Below are the distributions of the downloaded structures grouped by component and domain. We found that Component 16 (Cytochrome P450) was the most common component, while Alpha/Beta hydrolase was the most common domain.
-
+We searched these databases to search for predicted structures for 7.8M PETadex v2 significant hits. AFDB is indexed by Uniprot accession, so PETadex accessions were converted to Uniprot accessions using the Uniprot idmapping [https://ftp.uniprot.org/pub/databases/uniprot/current_release/]. In total, structures and metrics for 575,770 PETadex v2 proteins were found in the AFDB, emphasizing the unexplored nature of the PETadex. This number is after accounting for proteins with multiple AFDB structures, as well as those with malformed header rows. Below are the distributions of the downloaded structures grouped by component and domain. We found that Component 16 (Cytochrome P450) was the most common component, while Alpha/Beta hydrolase was the most common domain.
 <Figure
-  src="/figures/dry-lab-model/domain_distribution.avif"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain-distribution.avif"
   alt="Distribution of the AFDB-downloaded PETadex structures grouped by domain, with Alpha/Beta hydrolase the most common"
   width="100%"
 />
 <Figure
-  src="/figures/dry-lab-model/component_distribution.avif"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/component-distribution.avif"
   alt="Distribution of the AFDB-downloaded PETadex structures grouped by component, with Component 16 (Cytochrome P450) the most common"
   width="100%"
 />
@@ -384,9 +416,9 @@ Six sequence-derived properties were calculated using Biopython ProtParam for al
 
 To-Do: Repeat the pipeline on the updated database.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/biochemical-properties-composite.avif" alt="Biochemical properties composite figure" width="100%" />
-
-**Figure X.** (A) Box-and-whisker distributions of the biochemical properties by catalytic fold family; dashed line = database median. (B) GRAVY vs instability index for 90% identity cluster representatives (top, all ORFs) and for secreted 90% Cluster representatives specifically (bottom, mature sequences). (C) Property Distributions of PETadex and NCBI; medians written as PETadex | NCBI.
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/biochemical-properties-composite.avif" alt="Biochemical properties composite figure" width="100%"
+  caption={<><strong>Figure X.</strong> (A) Box-and-whisker distributions of the biochemical properties by catalytic fold family; dashed line = database median. (B) GRAVY vs instability index for 90% identity cluster representatives (top, all ORFs) and for secreted 90% Cluster representatives specifically (bottom, mature sequences). (C) Property Distributions of PETadex and NCBI; medians written as PETadex | NCBI.</>}
+/>
 
 ## Activity Data Extraction
 
@@ -398,23 +430,55 @@ To-Do: Repeat the pipeline on the updated database.
   Should cover: LLM extraction pipeline; kinetics dataset.
 */}
 
-<Placeholder>
-
-Labels tell the model which enzymes are known to work. Measured activity is scattered across the published literature in inconsistent formats, so we designed an extraction schema and a protocol for pulling it out of papers.
-
-Human extractors worked through the papers in replicate without language-model assistance, and a language-model pipeline extracted the same fields independently. We measured how often the two agree, and that agreement is what tells us whether automated extraction can be trusted at a scale people cannot reach.
-
-</Placeholder>
+Most data on plastic-degrading enzyme activity is locked inside individual published papers, in free-form text and figures that machine learning cannot directly use for activity prediction or enzyme engineering. Reading papers one by one also limits the breadth and depth of research and makes synthesis across papers laborious. PETadex's literature scraping project aims to bridge this gap with an automated pipeline: using keywords and graph traversal to sample all interconnected plastic literature, then training LLMs to extract each paper's data on enzymes, experimental conditions, and activity measurements. To assess and improve the accuracy of the pipeline, human data scrapers are enlisted to manually extract data from a subset of plastic literature using a standardized organizational schema, forming a ground truth for benchmarking LLM results.
 
 ### LLM Extraction Pipeline
 
 #### Literature Ingestion Pipeline
 
-To populate the PETra database and overcome manual curation bottlenecks an automated literature ingestion pipeline was engineered. Over 11,000 initial document identifiers were gathered using the PAZy API, PETadex sequence accessions and targeted keyword searches. These were filtered into 900 highly relevant seed papers through an automated primary screen. By mapping forward and backward citations a pool of 50,000 new candidate articles was generated. This expanded pool was filtered down to roughly 4,600 critical papers during a secondary screening. Full texts were then retrieved and converted into structured JSON formats using Docling, Grobid and PyMuPDF. A preliminary extraction was run to identify tested substrates alongside metadata like country of origin and publication date. An analysis of this data spread is presented in the figure below. Moving forward the pipeline will be executed again using 3,700 newly captured papers as seeds and supplementary file scraping will be incorporated for exhaustive coverage. 
 
+To populate the PETra database and overcome manual curation bottlenecks an automated literature ingestion pipeline was engineered. Over 11,000 initial document identifiers were gathered using the PAZy API, PETadex sequence accessions and targeted keyword searches. These were filtered into 900 highly relevant seed papers through an automated primary screen. By mapping forward and backward citations a pool of 50,000 new candidate articles was generated. This expanded pool was filtered down to roughly 4,600 critical papers during a secondary screening. Full texts were then retrieved and converted into structured JSON formats using Docling, Grobid and PyMuPDF. A preliminary extraction was run to identify tested substrates alongside metadata like country of origin and publication date. An analysis of this data spread is presented in the figure below. Moving forward the pipeline will be executed again using 3,700 newly captured papers as seeds and supplementary file scraping will be incorporated for exhaustive coverage.
+
+<iframe
+  src="/figures/dry-lab-model/pipeline-animation.html"
+  title="Sequential Pipeline Crab Animation"
+  width="100%"
+  scrolling="no"
+  style={{
+    aspectRatio: "3/4",
+    border: "none",
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+    backgroundColor: "transparent",
+    display: "block",
+    margin: "var(--space-lg) 0"
+  }}
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/plastic-enzyme-literature-over-time.svg"
+  alt="The Spread of Plastic Degrading Enzyme Literature Over Time"
+  caption="How papers on plastic degrading enzymes have been split up throughout the years"
+  width="100%"
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/adi-figure-stuff/plasticome-country-density-flat-styled.avif"
+  alt="Global Distribution of Plastic-Degrading Enzyme Research map"
+  caption="Global Distribution of Plastic-Degrading Enzyme Research."
+  width="100%"
+/>
 #### Automated LLM Based Literature Extraction Pipeline Development
 
-To isolate experimentally validated enzymes, wet lab assays and plastic degradation activity metrics from the existing literature, an automated large language model extraction pipeline was developed. A 0% false positive rate and a 99.3% true positive capture rate were achieved during optimization against synthetic controls. In cross model benchmarking the strongest performance was delivered by Claude Sonnet (95.0% precision, 87.1% recall) outperforming Opus and Haiku. When evaluated against 32 double scraped papers zero hallucinated enzymes were reported. Key degradation activity metrics were successfully matched with human curators alongside assay conditions like temperature (90%) and plasmid construction (95%). Applied across roughly 4,000 papers a database was produced containing 51,455 cleaned measurement entries across 31,441 enzymes. Diverse plastics are covered including PET, PCL, PLA, PHA, PBS, PUR and PS. Moving forward the data will be integrated into PETadex for free public use while the pipeline is optimized to ingest supplementary files and benchmarked on a larger dataset. 
+
+To isolate experimentally validated enzymes, wet lab assays and plastic degradation activity metrics from the existing literature, an automated large language model extraction pipeline was developed. A 0% false positive rate and a 99.3% true positive capture rate were achieved during optimization against synthetic controls. In cross model benchmarking the strongest performance was delivered by Claude Sonnet (95.0% precision, 87.1% recall) outperforming Opus and Haiku. When evaluated against 32 double scraped papers zero hallucinated enzymes were reported. Key degradation activity metrics were successfully matched with human curators alongside assay conditions like temperature (90%) and plasmid construction (95%). Applied across roughly 4,000 papers a database was produced containing 51,455 cleaned measurement entries across 31,441 enzymes. Diverse plastics are covered including PET, PCL, PLA, PHA, PBS, PUR and PS. Moving forward the data will be integrated into PETadex for free public use while the pipeline is optimized to ingest supplementary files and benchmarked on a larger dataset.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/adi-figure-stuff/automated-llm-pipeline-summary-figure-1.avif"
+  alt="Pipeline Validation and Extracted Activity Data Analysis"
+  caption="Pipeline Validation showing extraction accuracy metrics evolution across prompt upgrades and consensus performance benchmarks against the core truth pool. Extracted Activity Data Analysis displaying top enzymes by polymer family, pH vs. temperature condition clusters, and enzyme activity outcomes."
+  width="100%"
+/>
 
 
 ### Schema Design and Extraction Protocol
@@ -427,9 +491,9 @@ Every paper was also independently extracted by two or more scrapers, with 78% o
 
 To-Do: Manually reconcile discrepancies between scrapers to create a finalized ground truth for each double-scraped paper.
 
-<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/human-scraping-composite-v2.avif" alt="Human scraping composite figure" width="100%" />
-
-**Figure X.** (A) Project workflow. (B) Most common substrates amongst the 61 scraped papers. (C) Most common independent variables and (D) Most common quantities measured in experiments (372 experiments tallied). (E) Melting temperature distribution of wild-type and engineered enzymes. (F) Optimum temperature distribution (G) Optimum pH distribution, split by PET-related vs other substrates; dashed line = median. (H) Agreement between scrapers (pre-reconciliation) on comparable experiment data entries.
+<Figure src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/human-scraping-composite-v2.avif" alt="Human scraping composite figure" width="100%"
+  caption={<><strong>Figure X.</strong> (A) Project workflow. (B) Most common substrates amongst the 61 scraped papers. (C) Most common independent variables and (D) Most common quantities measured in experiments (372 experiments tallied). (E) Melting temperature distribution of wild-type and engineered enzymes. (F) Optimum temperature distribution (G) Optimum pH distribution, split by PET-related vs other substrates; dashed line = median. (H) Agreement between scrapers (pre-reconciliation) on comparable experiment data entries.</>}
+/>
 
 
 ### Human vs LLM Agreement
@@ -522,11 +586,11 @@ Using the ESMC-600M Protein Language Model (PLM), we generated embeddings for th
 
 <ImageGrid>
   <Figure
-    src="/figures/dry-lab-model/cluster_plot.avif"
+    src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/cluster-plot.avif"
     alt="Family atlas UMAP of PETadex centroids, coloured by CATH domain"
   />
   <Figure
-    src="/figures/dry-lab-model/Domain640.avif"
+    src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain640.avif"
     alt="Silhouette scores per domain cluster for the 640-dimensional embeddings"
   />
 </ImageGrid>
@@ -536,7 +600,7 @@ Generate negative controls (random and shuffled sequences) from the 64,730 famil
 Generate positive / real-world controls (random UniProt proteins, real-sequence fragments) for comparison against the real centroids.
 
 <Figure
-  src="/figures/dry-lab-model/real_vs_controls_stacked.avif"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/real-vs-controls-stacked.avif"
   alt="Real PETadex embeddings overlaid with shuffled, 90% fragment and random UniProt controls, in three panels"
   width="100%"
 />
@@ -637,6 +701,13 @@ Model architecture.
   Candidates: BacDive means are unweighted and contested; TED cutoffs are
   provisional; inactives in the labelled pool are thin; wet lab has a
   single round.
+  From BioSample Metadata Profiles (one line each; detail is on
+  /dry-lab/model/biosample-profiles/#known-rule-defects):
+    - four profile-rule defects, unfixed, touch about 1.5% of profiled
+      BioSamples; the samples-to-clusters flip does not depend on them
+    - the temperature check is real but small (ε² = 0.044)
+    - 50.6% of BioSamples carry no environment signal, so profiled data
+      leans toward well-described studies
 */}
 
 <Placeholder>

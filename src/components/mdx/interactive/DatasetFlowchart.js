@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react"
+import { withPrefix } from "gatsby"
 import styled from "styled-components"
 import { readingLine } from "../../SubpageScene.js"
 import { FLOWCHART_SVG } from "./datasetFlowchartSvg.js"
+import { useFigureViewer, ViewerButton } from "../FigureViewer.js"
 
 /**
  * The Dataset Generation subsections in page order. Each is one stage of the
@@ -55,28 +57,36 @@ const jumpToSection = e => {
 
 /**
  * The full pipeline figure with each step clickable: a link over every step's
- * band jumps to the subsection that describes it.
+ * band jumps to the subsection that describes it. The links take the image's
+ * clicks, so the figure viewer opens from its corner chip alone.
  */
-export const DatasetFlowchartFigure = ({ src, alt = "" }) => (
-  <FigureWrap>
-    {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- the steps are links; this only smooths their jump */}
-    <FigureMap onClick={jumpToSection}>
-      <img src={src} alt={alt} width={2363} height={2267} />
-      {FIGURE_STEPS.map(({ label, to, top, height }) => {
-        const section = FLOWCHART_SECTIONS[to]
-        return (
-          <a
-            key={label}
-            href={`#${section.id}`}
-            aria-label={`${label}: go to ${section.title}`}
-            title={section.title}
-            style={{ top: `${top}%`, height: `${height}%` }}
-          />
-        )
-      })}
-    </FigureMap>
-  </FigureWrap>
-)
+export const DatasetFlowchartFigure = ({ src: rawSrc, alt = "", title, caption, expandable }) => {
+  const viewer = useFigureViewer(expandable)
+  // Root-relative srcs point into static/, under the build's path prefix.
+  const src = rawSrc.startsWith("/") ? withPrefix(rawSrc) : rawSrc
+  return (
+    <FigureWrap>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- the steps are links; this only smooths their jump */}
+      <FigureMap onClick={jumpToSection}>
+        <img src={src} alt={alt} width={2363} height={2267} />
+        {FIGURE_STEPS.map(({ label, to, top, height }) => {
+          const section = FLOWCHART_SECTIONS[to]
+          return (
+            <a
+              key={label}
+              href={`#${section.id}`}
+              aria-label={`${label}: go to ${section.title}`}
+              title={section.title}
+              style={{ top: `${top}%`, height: `${height}%` }}
+            />
+          )
+        })}
+        {viewer && <ViewerButton src={src} alt={alt} title={title} caption={caption} />}
+      </FigureMap>
+      {caption && <figcaption>{caption}</figcaption>}
+    </FigureWrap>
+  )
+}
 
 /**
  * The Dataset Generation pipeline as a strip pinned under the header. The
@@ -217,9 +227,17 @@ export const DatasetFlowchart = () => {
   )
 }
 
+/* About as tall as it is wide, so held to the default figure width (as
+   <Figure>) and centred in the column; the viewer shows it full size. */
 const FigureWrap = styled.figure`
-  max-width: var(--wiki-block-max, 54rem);
-  margin: var(--space-lg) 0;
+  width: 100%;
+  max-width: 32rem;
+  margin: var(--space-lg) auto;
+
+  figcaption {
+    margin-top: var(--space-sm);
+    font-size: 0.875rem;
+  }
 `
 
 const FigureMap = styled.div`
@@ -236,7 +254,7 @@ const FigureMap = styled.div`
      the article's link underline and hover tint. */
   &&& a {
     position: absolute;
-    left: 2.5%;
+    left: 18.4%;
     width: 64%;
     border: 0;
     border-radius: 0.5rem;

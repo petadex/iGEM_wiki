@@ -8,6 +8,10 @@ import remarkGfm from "remark-gfm"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+/** Whether a hast node has an <a> anywhere beneath it. */
+const containsLink = node =>
+  (node.children || []).some(child => child.tagName === `a` || containsLink(child))
+
 /**
  * @type {import('gatsby').GatsbyConfig}
  */
@@ -70,6 +74,9 @@ const config = {
               rehypeAutolinkHeadings,
               {
                 behavior: `wrap`,
+                // A heading written as a link (### [Title](/elsewhere/)) keeps
+                // that link instead of being wrapped in a second, nested one.
+                test: heading => !containsLink(heading),
                 properties: {
                   className: [`heading-anchor`],
                   ariaLabel: `Link to this section`,

@@ -705,23 +705,25 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(_, ref) {
               <Hint aria-hidden={!ready}>
                 <HintBang src={HINT_BANG_SRC} alt="" />
                 <span className="hover-copy">
-                  Hover over a piece to meet its petamon, then click to visit
+                  Hover over a piece to meet its PETamon, then click to visit
                   their page.
                 </span>
                 <span className="touch-copy">
-                  Tap a piece to meet its petamon, then tap again to visit
+                  Tap a piece to meet its PETamon, then tap again to visit
                   their page.
                 </span>
               </Hint>
               {/* A quiet nudge, a beat later: there's more to find. */}
               <Whisper aria-hidden={!ready}>
                 <span className="hover-copy">
-                  psst… on each subteam's page, its petamons are up to
-                  something too. Hover over anything there that looks alive.
+                  psst… on each subteam's page, its PETamons are up to
+                  something too. Hover over anything there that looks alive
+                  (the crabs on this page are in on it too).
                 </span>
                 <span className="touch-copy">
-                  psst… on each subteam's page, its petamons are up to
-                  something too. Tap anything there that looks alive.
+                  psst… on each subteam's page, its PETamons are up to
+                  something too. Tap anything there that looks alive (the
+                  crabs on this page are in on it too).
                 </span>
               </Whisper>
             </>

@@ -35,3 +35,7 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Bundling Mol* (the Software page's structure viewer) needs more
+          # than Node's default ~4 GB heap; the runner has 16 GB.
+          NODE_OPTIONS: --max-old-space-size=6144

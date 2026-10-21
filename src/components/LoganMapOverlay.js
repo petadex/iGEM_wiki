@@ -1,79 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
 import snapshot from "../data/logan-map-locations.json"
+import {
+  PIN_CROP,
+  PIN_FRAME,
+  PIN_SRC,
+  lngLatToPct,
+} from "./mapProjection.js"
 
-/**
- * Mercator crop matched to the painted world map (no Antarctica in the art).
- * yScale stretches or shortens pole-to-pole vs the paint; 1 = true Mercator.
- * Tune pads / lat range / yScale while `?mapCalibrate=1` is on.
- */
-export const LOGAN_MAP_CAL = {
-  padLeft: 0.015,
-  padRight: 0.025,
-  padTop: 0.02,
-  padBottom: 0.04,
-  latMax: 75,
-  latMin: -52,
-  yScale: 1,
-  shiftX: -0.03,
-}
-
-const MERCATOR_LIMIT = 85.051129
-/** OSM web-mercator zoom-0 tile, used only when `?mapCalibrate=1`. */
-const WORLD_TILE_SRC = "https://static.igem.wiki/teams/6187/wiki/homepage-components/world-map-reference.avif"
-const PIN_SRC =
-  "https://static.igem.wiki/teams/6187/wiki/homepage-components/pin.avif"
-/**
- * The CDN pin is a large padded frame; only this inner box is the marker.
- * Tip is the bottom-center of that box (anchor for lat/lng).
- */
-const PIN_FRAME = { w: 2238, h: 3132 }
-const PIN_CROP = { x: 968, y: 1260, w: 169, h: 353 }
 const PIN_ASPECT = PIN_CROP.w / PIN_CROP.h
 const CARD_Z = 102
 const CARD_WIDTH = 228
-
-function mercatorY(lat) {
-  const clamped = Math.max(-MERCATOR_LIMIT, Math.min(MERCATOR_LIMIT, lat))
-  const rad = (clamped * Math.PI) / 180
-  return Math.log(Math.tan(Math.PI / 4 + rad / 2))
-}
-
-const MERC_WORLD_MAX = mercatorY(MERCATOR_LIMIT)
-const MERC_WORLD_SPAN = MERC_WORLD_MAX * 2
-
-function lngLatToPct(lng, lat, cal = LOGAN_MAP_CAL) {
-  if (lat < cal.latMin - 8 || lat > cal.latMax + 8) return null
-  const innerW = 1 - cal.padLeft - cal.padRight
-  const innerH = 1 - cal.padTop - cal.padBottom
-  const wrapped = ((((lng + 180) % 360) + 360) % 360) / 360
-  const clampedLat = Math.max(cal.latMin, Math.min(cal.latMax, lat))
-  const yTop = mercatorY(cal.latMax)
-  const yBot = mercatorY(cal.latMin)
-  const rawY = (yTop - mercatorY(clampedLat)) / Math.max(1e-6, yTop - yBot)
-  const y = 0.5 + (rawY - 0.5) * (cal.yScale ?? 1)
-  return {
-    left: (cal.padLeft + wrapped * innerW + (cal.shiftX ?? 0)) * 100,
-    top: (cal.padTop + y * innerH + (cal.shiftY ?? 0)) * 100,
-  }
-}
-
-function worldTileCrop(cal = LOGAN_MAP_CAL) {
-  const topFrac = (MERC_WORLD_MAX - mercatorY(cal.latMax)) / MERC_WORLD_SPAN
-  const heightFrac =
-    (mercatorY(cal.latMax) - mercatorY(cal.latMin)) / MERC_WORLD_SPAN
-  const yScale = cal.yScale ?? 1
-  return {
-    left: `${(cal.padLeft + (cal.shiftX ?? 0)) * 100}%`,
-    top: `${cal.padTop * 100}%`,
-    width: `${(1 - cal.padLeft - cal.padRight) * 100}%`,
-    height: `${(1 - cal.padTop - cal.padBottom) * 100}%`,
-    imgHeight: `${(1 / Math.max(1e-6, heightFrac)) * 100}%`,
-    imgTop: `${(-topFrac / Math.max(1e-6, heightFrac)) * 100}%`,
-    transform: yScale === 1 ? undefined : `scaleY(${yScale})`,
-  }
-}
 
 function rankedUniq(values) {
   const counts = new Map()
@@ -297,25 +235,12 @@ function HoverCard({ hover, onKeep, onClose }) {
 }
 
 export default function LoganMapOverlay() {
-  const [calibrate, setCalibrate] = useState(false)
   const [hover, setHover] = useState(null)
   const [keyboardPinId, setKeyboardPinId] = useState(
     MAPPED_POINTS[0]?.point.id ?? null,
   )
   const hoverTimer = useRef(null)
   const pinRefs = useRef(new Map())
-  const crop = useMemo(() => worldTileCrop(), [])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined
-    const sync = () => {
-      const params = new URLSearchParams(window.location.search)
-      setCalibrate(params.get("mapCalibrate") === "1")
-    }
-    sync()
-    window.addEventListener("popstate", sync)
-    return () => window.removeEventListener("popstate", sync)
-  }, [])
 
   useEffect(() => {
     if (!hover) return undefined
@@ -379,23 +304,6 @@ export default function LoganMapOverlay() {
       role="group"
       aria-label="LOGAN sample locations. Use arrow keys to move between pins."
     >
-      {calibrate ? (
-        <CalibrateFrame
-          style={{
-            left: crop.left,
-            top: crop.top,
-            width: crop.width,
-            height: crop.height,
-            transform: crop.transform,
-          }}
-        >
-          <CalibrateImg
-            src={WORLD_TILE_SRC}
-            alt=""
-            style={{ height: crop.imgHeight, top: crop.imgTop }}
-          />
-        </CalibrateFrame>
-      ) : null}
       {MAPPED_POINTS.map(({ point, pos }, index) => {
         const size = pinSize(point.count)
         const copy = cardCopy(point)
@@ -455,24 +363,6 @@ const MapOverlayRoot = styled.div`
   inset: 0;
   pointer-events: none;
   overflow: visible;
-`
-
-const CalibrateFrame = styled.div`
-  position: absolute;
-  overflow: hidden;
-  opacity: 0.42;
-  mix-blend-mode: multiply;
-  transform-origin: center center;
-`
-
-const CalibrateImg = styled.img`
-  position: absolute;
-  left: 0;
-  width: 100%;
-  max-width: none;
-  display: block;
-  pointer-events: none;
-  user-select: none;
 `
 
 const MapPin = styled.button`

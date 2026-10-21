@@ -36,24 +36,37 @@ This subsystem regulates the transfer of data from the bioreactor to software, a
   <tbody>
     <tr>
       <td>USB Hub</td>
-      <td>Connect multiple Arduinos to a single port on laptop to read and write data from and to them</td>
+      <td>
+        Connect multiple Arduinos to a single port on laptop to read and write
+        data from and to them
+      </td>
       <td>$15.55</td>
-      <td><a href="https://www.amazon.ca/dp/B0C2K52TMQ">Amazon</a></td>
+      <td>
+        <a href="https://www.amazon.ca/dp/B0C2K52TMQ">Amazon</a>
+      </td>
     </tr>
   </tbody>
   <tbody>
-    <tr><th colSpan={4} scope="rowgroup" style={{ textAlign: "center" }}>Test Equipment</th></tr>
+    <tr>
+      <th colSpan={4} scope="rowgroup" style={{ textAlign: "center" }}>
+        Test Equipment
+      </th>
+    </tr>
     <tr>
       <td>Arduino Nano</td>
       <td>Microcontroller to produce PWM signal and run code</td>
       <td>$8</td>
-      <td><a href="https://www.amazon.ca/dp/B08HVPMLKG">Amazon</a></td>
+      <td>
+        <a href="https://www.amazon.ca/dp/B08HVPMLKG">Amazon</a>
+      </td>
     </tr>
     <tr>
       <td>USB-C to USB-C mini cable (for Arduino Nano)</td>
       <td>To connect the Arduino to the laptop</td>
       <td>Included in kit</td>
-      <td><a href="https://www.amazon.ca/dp/B0CQ9M4CMH">Amazon</a></td>
+      <td>
+        <a href="https://www.amazon.ca/dp/B0CQ9M4CMH">Amazon</a>
+      </td>
     </tr>
     <tr>
       <td>Laptop</td>
@@ -65,7 +78,9 @@ This subsystem regulates the transfer of data from the bioreactor to software, a
       <td>Python</td>
       <td>Software development for the dashboard</td>
       <td>Free</td>
-      <td><a href="https://www.python.org/">Python</a></td>
+      <td>
+        <a href="https://www.python.org/">Python</a>
+      </td>
     </tr>
   </tbody>
 </table>
@@ -133,6 +148,12 @@ Upon exploring the development of the user interface using Python and Tkinter, t
 />
 
 While it includes several buttons and a slider and shows a sample layout that includes preliminarily necessary components of the user interface, the software does not look easy to read, there are no colours, and the graphing feature was not yet implemented. Furthermore, the connection between the Arduino and user interface was not yet implemented at this stage.
+
+The code for version 1 of the Data + Controls subsystem can be found [here](https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/Data%20and%20Controls/V1.py).
+
+#### Minimum Viable Product integration code
+
+While the UI and circuitry were still in development, a temporary control system was used to test different components. This is a script that runs in Arduino IDE, accepts commands in Serial, and prints sensor readings to the Serial Monitor. The code can be found [here](<https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/Integration%20(Arduino%20IDE)/Integration.ino?ref_type=heads>).
 
 ### Design of Experiments (DoE)
 

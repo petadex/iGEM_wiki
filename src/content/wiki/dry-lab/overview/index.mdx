@@ -9,6 +9,7 @@ owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
 wideProse: true
+opening: "We introduce the PETadex model. This largest-of-its-kind enzyme discovery pipeline finds new enzymes and selects the right enzyme for every application."
 ---
 
 {/*
@@ -16,27 +17,34 @@ wideProse: true
   The Dry Lab writeup itself lives on the standard iGEM pages, /model and
   /software. The narrative this page used to carry is in Obsidian
   "IGEM Wiki/05 Content/PETadex Narrative.md".
+  The intro line is the frontmatter's `opening`, written in the sand near the
+  bottom of the page's first screen (SubpageScene).
 */}
-
-We introduce our PetaBite model in three ways: explore our model landscape, play our game, and follow our journey.
 
 {/*
-  The landscape card's loop is a card-sized re-encode of the 2 MB master
-  (landscape-spin.mp4, kept local and out of git): at full size the master
-  alone took the iGEM build over its 5 MB upload, and video.igem.org streams
-  HLS only, so it has no file URL a <video> tag can play. Remake it with
-    ffmpeg -i landscape-spin.mp4 -an -vf "scale=640:-2:flags=lanczos,fps=30"
-      -c:v libx264 -preset veryslow -crf 33 -tune film -profile:v high
-      -pix_fmt yuv420p -movflags +faststart landscape-spin-card.mp4
-  which gives about 0.38 MB; the card draws it ~390 px wide.
+  The landscape card is the landscape figure itself, in its #card mode
+  (scripts/sync-landscape-figure.mjs): the Overview step alone, standing closer
+  and with heavier marks, turning only while the card is on screen. It is the
+  same file as the figure below, so it costs no extra download, and it is sharp
+  at any size, where the old video loop (landscape-spin-card.mp4, now in
+  dennis-scratch/) smeared the dots. The poster shows until it has drawn, so
+  it is the card mode's own first frame: landscape.html#card at a 960x720
+  viewport and 2x pixel ratio, saved as a 1920x1440 AVIF (quality 60).
+  The game card is the game's title screen with its blurb, buttons and colour
+  picker hidden: petadex-game.html at a 1000x750 viewport (wide enough that
+  the title survives the expand window's tall crop) and 1.92x pixel ratio,
+  saved as a 1920x1440 AVIF (quality 55). The calendar card draws the
+  season from the calendar's own data (DryLabSeasonRibbon).
 */}
+
+<Expandable title="PETadex in three ways" wide>
 
 <FeatureCards>
   <FeatureCard
     href="#petadex-model-landscape"
     title="PETadex Model Landscape"
-    video="/figures/dry-lab-overview/landscape-spin-card.mp4"
-    poster="/figures/dry-lab-overview/landscape-spin-poster.avif"
+    poster="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/landscape-spin-poster.avif"
+    live="/figures/dry-lab-landscape/landscape.html#card"
     cta="Explore"
   >
     300 million proteins in three layers: what we found, what we know about each, and what we predict.
@@ -44,7 +52,7 @@ We introduce our PetaBite model in three ways: explore our model landscape, play
   <FeatureCard
     href="#petamon-game"
     title="PETamon Game"
-    img="/figures/dry-lab-overview/game-still.avif"
+    img="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/game-title.avif"
     cta="Play"
   >
     One enzyme, a beach full of plastic, and a planet's worth of sites to clean up.
@@ -52,12 +60,14 @@ We introduce our PetaBite model in three ways: explore our model landscape, play
   <FeatureCard
     href="#petadex-project-calendar"
     title="PETadex Project Calendar"
-    img="/figures/dry-lab-overview/calendar-still.avif"
+    picture={<DryLabSeasonRibbon />}
     cta="See the season"
   >
     Our season week by week, including what went wrong and what we changed.
   </FeatureCard>
 </FeatureCards>
+
+</Expandable>
 
 ## PETadex Model Landscape
 

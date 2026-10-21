@@ -47,6 +47,8 @@ jobs:
       - name: Build static wiki
         env:
           GATSBY_SITE_URL: ${{ secrets.WIKI_DEMO_URL }}
+          # Mol* needs more than Node's default ~4 GB heap to bundle.
+          NODE_OPTIONS: --max-old-space-size=6144
         run: npm run build:gatsby
 
       - name: Trigger Vercel wiki redeploy

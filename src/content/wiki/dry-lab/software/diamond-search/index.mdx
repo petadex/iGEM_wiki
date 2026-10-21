@@ -71,7 +71,7 @@ These pointed us to a serverless design: split the database into pieces, search 
 ## Architecture
 
 <ArchitectureFigure
-  src="/figures/diamond-search/diamond-search-architecture.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-architecture.svg"
   alt="Architecture of the sharded DIAMOND search. The petadex.net search page sends the query to an orchestrator Lambda, which parses it, reads the current database version and shard manifest from S3, returns a job ID at once and starts a Step Functions Map. The Map runs one worker Lambda per shard in parallel; each downloads its shard from S3, runs diamond blastp and writes its hits to S3. An aggregator Lambda merges the shard results, validates that every shard reported, ranks hits by bit score, adds metadata from RDS and writes the result, index and timings, which the web page polls for."
   caption="Data flow of one search. Amber boxes are compute (Lambda and Step Functions), dark cylinders are storage (S3 and RDS); dashed lines are the immediate reply and the web app's polling. Click a component to read how it works."
   width="36rem"
@@ -87,7 +87,7 @@ The search runs on Amazon Web Services and has four parts, all built from one co
 The query sequence travels inside each worker's start request, which is far below Lambda's 256 KB request limit, so no shared scratch space is needed. Because the orchestrator answers straight away, the web app shows a results page immediately and checks for it every few seconds until it appears.
 
 <Figure
-  src="/figures/diamond-search/diamond-search-temporal.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-temporal.svg"
   alt="Sequence diagram of one search over time. The web app sends the search to the orchestrator, which reads the database version and manifest from S3, starts Step Functions and returns a job ID within about a second, after which the web app starts polling. Step Functions then invokes all 32 workers in parallel; each downloads its shard, runs diamond blastp and writes its hits to S3, taking about 40 seconds. Once every part has landed, the aggregator reads all 32 parts, merges, sorts and enriches them, and writes the result and index, which the web app's poll finds."
   caption="The same search over time. The orchestrator returns before the search runs; the web app bridges the gap by polling for the index file the aggregator writes last."
   width="100%"

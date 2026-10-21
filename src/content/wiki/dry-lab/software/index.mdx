@@ -8,6 +8,7 @@ description: "Software tools and workflows built for computational PETase discov
 owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
+hideHeaderSub: true
 ---
 
 {/*
@@ -65,19 +66,24 @@ We built four pieces of software while searching for plastic-degrading enzymes. 
   VERIFY the ">50% nucleotide savings" figure before publishing it.
 */}
 
-To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER utilizes golden gate fragment assembly and degenerate codons to create efficient fragment pool designs that can be combinatorially assembled to form a library of full-length cores. LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage. To keep the generated libraries experimentally feasible, this coverage optimization is run subject to nucleotide quantity and library size constraints. Additionally, since the full cores are combinatorially assembled, golden gate assembly will create cores not found in the PETadex. While these chimeras of naturally-occurring mutations were not identified through natural sequencing, it is still plausible that they show plastic-degrading activity. This further expands our Wet Lab validation space of potentially active PETases.
 
-<Placeholder>
+To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER (Library Optimization for Bioprospecting Sequences Through Economical Recombination) algorithm. Rather than naively purchasing full-length DNA sequences for each PETase core, LOBSTER splits the full-length sequence into sections called fragment positions. LOBSTER then designs fragments at these positions to be combinatorially assembled using Golden Gate assembly and degenerate codons. Overall, LOBSTER seeks to maximize the number of PETadex natural PETase cores which are generated in the resulting full-length library, which we define as coverage, under library size and nucleotide constraints. By running LOBSTER on 90pid clusters, we can experimentally validate them for a fraction of the nucleotide cost (~45%), greatly expanding our full validation space.
 
-This section will also explain how the algorithm chooses fragments, how we checked its output against enzymes with known activity, and how to install and run it on your own sequences.
+FIGURE: overview.png to the side of this paragraph
 
-</Placeholder>
+LOBSTER operates by isolating the PETase cores, identifying and selecting Golden Gate cut sites, then greedily adding cores to the solution using additional fragments and degenerate codons. Using this approach, the LOBSTER output designs reduce the purchased nucleotides by 55% to cover the LCC and IsPETase 90pid clusters. This expands our PETase activity validation search space across more clusters. Additional details on LOBSTER's implementation can be found on its own page.
 
-<Placeholder label="Placeholder demo">
+Output:
+As literature controls, we ran LOBSTER on two 90pid clusters, one containing IsPETase and the other containing LCC. Below is an interactive example of LOBSTER's output designs for the IsPETase and LCC clusters. Hovering over the different fragment positions shows the nucleotide sequences of each oligo at that position. Additionally, Golden Gate information including the overhangs between fragment positions and adapter sequences are displayed.
 
-LOBSTER on one enzyme cluster: adjust the degeneracy and see the fragment library, the number of variants it encodes, and its cost against ordering every sequence in full.
+HTML LOBSTER Fragment Map: lobster_fragment_map.html
 
-</Placeholder>
+Savings:
+The following figures show the nucleotide savings of LOBSTER's output designs for the IsPETase and LCC clusters.
+
+Figure: ispetase_nt_coverage.png Figure: lcc_nt_coverage.png
+
+<MethodsLink href="/dry-lab/software/lobster/">How LOBSTER works in detail</MethodsLink>
 
 ## Sharded DIAMOND search
 
@@ -86,11 +92,9 @@ LOBSTER on one enzyme cluster: adjust the degeneracy and see the fragment librar
   the Methods sub-page, src/content/wiki/dry-lab/software/diamond-search/,
   and the sources for every number are listed in its writer notes.
 
-  Assets are served locally from static/figures/diamond-search/ for now.
-  Upload them to drylab-page/figures/ on tools.igem.org/uploads, then
-  replace "/figures/diamond-search/" in both DIAMOND pages with
-  "https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/" and
-  delete the static/ copies:
+  Assets are on static.igem.wiki under drylab-page/figures/. The CDN caches
+  for 24 h, so upload a re-rendered figure under a new name (-v2) and swap
+  the src in both DIAMOND pages. Sources:
     - diamond-search-logo.avif, from
       petadex-sequence-search/assets/diamond-logo-web.png
     - diamond-search-architecture-simple.svg (this page), rendered from
@@ -135,7 +139,7 @@ We can tell what it is by looking at the enzymes that are similar to it using th
 
 <ArchitectureFigure
   variant="simple"
-  src="/figures/diamond-search/diamond-search-architecture-simple.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-architecture-simple.svg"
   alt="The sharded DIAMOND search, left to right. The petadex.net search page sends one sequence to an orchestrator, which replies with a job ID straight away and starts a Step Functions Map. The Map runs 32 workers at once, each taking one of the 32 shards of the database from S3 and searching it. Their hits go to an aggregator, which merges and ranks them and writes the stored result that the web page polls for."
   caption="One search, left to right. The database is split into 32 shards that are all searched at the same time, then merged into one ranked list. Amber boxes are compute, blue cylinders are storage, and the dashed lines are the immediate reply and the web app's polling. Hover or click a component to read how it works."
   width="100%"
@@ -147,7 +151,7 @@ Nothing runs between searches, so the tool costs almost nothing while it waits f
 <Dropdown title="One search over time, step by step">
 
 <Figure
-  src="/figures/diamond-search/diamond-search-temporal.svg"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-temporal.svg"
   alt="Sequence diagram of one search over time. The web app sends the search to the orchestrator, which reads the database version and manifest from S3, starts Step Functions and returns a job ID within about a second, after which the web app starts polling. Step Functions then invokes all 32 workers in parallel; each downloads its shard, runs diamond blastp and writes its hits to S3, taking about 40 seconds. Once every part has landed, the aggregator reads all 32 parts, merges, sorts and enriches them, and writes the result and index, which the web app's poll finds."
   caption="The page gets a job ID within a second and shows results when the fan-out and merge finish, usually in under a minute."
   width="100%"
@@ -177,40 +181,71 @@ MHETase is the one to try for a contrast: it is IsPETase's partner enzyme but ha
   Around 50 KB.
 */}
 
-<Placeholder>
+From our vast dataset of millions of putative plastic-degrading enzymes, it is important to not lose track of the minute details of each sequence. To explore these details, we've given each ORF (sequence) in PETadex its own page, documenting everything that we've annotated for these enzymes.
 
-Every sequence in the corpus has a record that gathers everything we know about it in one place: its domains, its predicted structure, the environment it was sampled from, the cluster it belongs to and its predicted activity.
+We've annotated everything from the structures of these enzymes, down to their catalytic mechanisms and which residues in the sequence are specifically responsible. In addition, we've included metadata features, such as where each of these sequences comes from, its homologous neighbours and how they fall within our hierarchical clustering. We've even included how we ordered these sequences with the LOBSTER algorithm and even the readout we got from our Wet Lab validation of these enzymes!
 
-This section will explain how a record is assembled and how to look one up.
-
-</Placeholder>
+Check out the demo below to see how this looks on two reference enzymes, and see [petadex.net](https://petadex.net) for the full pages.
 
 *Owner: Dennis / Sara / Lisa*
 
-Placeholder: data model, Postgres RDS, byte-offset retrieval, Next.js rebuild.
-
-<Placeholder label="Placeholder demo">
-
-One candidate enzyme's record, with each annotation layer shown in turn.
-
-</Placeholder>
-
-## ESM Atlas
-
 {/*
-  Demo D4 (High, build only if D1 to D3 land early). ~350 words.
-  <AtlasMap /> below is the live atlas and calls the petadex.net API. Swap it
-  for the frozen-data version if the external content check rejects it.
-  Covers: what the atlas shows, how the map is produced from protein
-  language model embeddings, metadata search, links through to sequence
-  pages.
-  Demo: family centroids downsampled to about 2,000, canvas scatter, hover
-  for metadata, colour by one axis. Under 500 KB.
+  Copy is Dennis/Sara/Lisa's. Three edits to it: "the petadex" → PETadex and
+  "web-lab" → "Wet Lab", to match the rest of the page, and petadex.net
+  linked.
+
+  Note against this section's own brief above: it no longer covers the data
+  model or how the layers are stored and retrieved (Postgres, byte offsets,
+  the Next.js rebuild). If that is wanted, it is Methods sub-page material
+  behind a <MethodsLink>, the way the DIAMOND section does it, rather than
+  something to put back in the overview.
+
+  Numbers: "millions of putative plastic-degrading enzymes" is the one
+  figure in this section — check it reads the way Numbers.md states the
+  corpus size before publishing.
 */}
 
-To allow for exploration of PETadex enzymes in a more intuitive manner than alignment search, we built an Atlas of UMAPed embeddings of PETadex enzymes, modelled off of https://biohub.ai/esm/protein/atlas. This atlas provides an accessible way for users to see the scale of PETadex, even for those not familiar with biology. The embeddings capture rich information about the proteins themselves: colouring along metadata terms shows clustering along CATH domains, domains, and phylum, showcasing the diversity of PETadex. Clicking on any point on the atlas takes the user to a page for that family (for example https://petadex.net/family/23828/) providing a quick summary glance of that 30% cluster, including metadata terms associated with its centroid.
+{/*
+  Demo D3 is built: <RecordCardDemo />, src/data/recordCardDemo.json (41 KB)
+  and src/data/worldOutline.json (50 KB), no calls off this site. Frozen on
+  2026-10-20 by scripts/build-record-card-demo.mjs (its header lists every
+  call) and scripts/build-world-outline.mjs.
 
-<AtlasMap />
+  The structure layer runs Mol*, the same viewer petadex.net uses, ported
+  from petadex.io/frontend/src/components/protein/ProteinViewer.js into
+  src/components/mdx/interactive/StructureViewer.js. molstar is pinned to
+  5.6.1, the version that frontend runs. Mol* is not bundled (it was ~0.9 MB
+  of the 5 MB iGEM archive): its prebuilt viewer is served from
+  static.igem.wiki/.../drylab-page/figures/ and loaded with a script tag on
+  mount, so it only reaches a reader who opens this layer. The structures are served from static/figures/record-card/*.pdb
+  (~95 KB each: backbone plus the triad's side chains, no hydrogens), which
+  the build script writes.
+
+  BEFORE PUBLISHING, upload those two .pdb files with the other figures and
+  repoint StructureViewer's src, the way the DIAMOND figures are handled.
+
+  Records: IsPETase (ORF 1, WP_054022242.1) and LCC (ORF 33, G9BY57.1), the
+  two literature controls LOBSTER was run on (igem-toronto issue 109). Seven
+  layers: structure, sequence, origin, neighbours, clusters, library,
+  activity. LCC has no activity layer, as it is not one of the genes we
+  synthesised and assayed.
+
+  The structure layer draws the CA trace of the site's own ColabFold
+  prediction, coloured along the chain or by pLDDT, with the catalytic triad
+  marked. Triad positions are the literature ones; the script checks each
+  serine falls in a G-x-S-x-G motif.
+
+  The library layer's fragment designs are read from Alex's
+  lobster_fragment_map.html (LOBSTER Page folder on the team Drive), kept in
+  dennis-scratch/ and passed with --lobster. The same page would make a good
+  figure for the LOBSTER section above.
+
+  BEFORE PUBLISHING, check the outward links (/sequence/{accession},
+  /sequence/orf/{id}, /cluster/{level}/{id}, /results?job={sessionId}) open
+  on petadex.net.
+*/}
+
+<RecordCardDemo />
 
 ## Availability and licensing
 

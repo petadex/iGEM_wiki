@@ -191,9 +191,8 @@ export const DiamondSearchDemo = () => {
           <Kicker>Demo · replays of real searches</Kicker>
           <Title>What is this enzyme? Ask its neighbours.</Title>
           <Sub>
-            Pick a known plastic-degrading enzyme to replay its search against
-            every protein in PETadex. Each result is a real search run on the
-            live tool, trimmed to its top hits.
+            Pick an enzyme to replay a real search of it against every protein
+            in PETadex.
           </Sub>
         </div>
         <Cta href={SEARCH_URL} target="_blank" rel="noopener noreferrer">
@@ -270,9 +269,7 @@ export const DiamondSearchDemo = () => {
           <Stat>
             <b>{best ? `${best.pid.toFixed(1)}%` : "—"}</b>
             <span>
-              {exactSelf
-                ? "identity of the top hit that isn't an exact match"
-                : "identity of the top-ranked hit"}
+              {exactSelf ? "closest hit that isn't exact" : "identity of the top hit"}
             </span>
           </Stat>
           <Stat>
@@ -322,7 +319,7 @@ export const DiamondSearchDemo = () => {
           </label>
         </Controls>
 
-        <Table>
+        <Table $open={open}>
           <HeadRow aria-hidden="true">
             <span>#</span>
             <span>Hit</span>
@@ -345,10 +342,9 @@ export const DiamondSearchDemo = () => {
         </Table>
 
         <Foot>
-          <span>
-            Showing {rows.length} of the top {query.hits.length} of{" "}
-            {fmtInt(query.n)} hits · searched {fmtInt(DEMO.db.sequences)}{" "}
-            sequences · database {DEMO.db.version}
+          <span title={`database ${DEMO.db.version}`}>
+            {rows.length} of the top {query.hits.length} hits · {fmtInt(DEMO.db.sequences)}{" "}
+            sequences searched
           </span>
           <a
             href={`${SITE}/results?job=${query.sid}`}
@@ -683,9 +679,13 @@ const Demo = styled.section`
 const Head = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-start;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
   justify-content: space-between;
+
+  > div {
+    flex: 1 1 22rem;
+  }
 `
 
 const Kicker = styled.div`
@@ -696,8 +696,11 @@ const Kicker = styled.div`
   text-transform: uppercase;
 `
 
+// &&& outranks the wiki's own h3 margins.
 const Title = styled.h3`
-  margin: 0.15rem 0 0.25rem;
+  &&& {
+    margin: 0.15rem 0 0.25rem;
+  }
   font-family: var(--font-display), Georgia, serif;
   font-size: 1.6rem;
   font-weight: 400;
@@ -714,21 +717,22 @@ const Sub = styled.p`
   color: ${INK_SOFT};
 `
 
+// Four &s to outrank the demo's own "&&& a" link colour.
 const Cta = styled.a`
-  &&& {
+  &&&& {
     display: inline-flex;
     gap: 0.4rem;
     align-items: center;
     padding: 0.6rem 1rem;
     border-radius: 999px;
     background: ${INK};
-    color: ${PAPER};
+    color: #fff;
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
   }
 
-  &&&:hover {
+  &&&&:hover {
     background: ${COMPUTE};
   }
 `
@@ -736,7 +740,7 @@ const Cta = styled.a`
 const Chips = styled.div`
   display: flex;
   gap: 0.5rem;
-  margin: 1.1rem 0 0.85rem;
+  margin: 0.85rem 0 0.7rem;
   padding-bottom: 0.25rem;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -809,30 +813,19 @@ const Go = styled.button`
   }
 `
 
+// The whole sequence, wrapped: a 300-residue query is three or four lines.
 const Fasta = styled.div`
-  position: relative;
   grid-column: 1 / -1;
-  max-height: 4.6em;
   padding: 0.5rem 0.6rem;
-  overflow: hidden;
   border: 1px solid ${LINE};
   border-radius: 6px;
   background: #fff;
   color: ${INK_SOFT};
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.75rem;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-all;
-
-  &::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 1.4em;
-    background: linear-gradient(transparent, #fff);
-  }
 `
 
 const Loading = styled.div`
@@ -913,13 +906,13 @@ const Note = styled.div`
 `
 
 const Results = styled.div`
-  margin-top: 0.85rem;
+  margin-top: 0.7rem;
 `
 
 const Summary = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.6fr);
-  gap: 0.6rem;
+  gap: 0.5rem;
 
   ${PHONE} {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -927,14 +920,14 @@ const Summary = styled.div`
 `
 
 const Stat = styled.div`
-  padding: 0.6rem 0.75rem;
+  padding: 0.4rem 0.7rem;
   border: 1px solid ${LINE};
   border-radius: 10px;
   background: ${CARD};
 
   b {
     display: block;
-    font-size: 1.35rem;
+    font-size: 1.15rem;
     font-weight: 600;
     line-height: 1.1;
     font-variant-numeric: tabular-nums;
@@ -955,7 +948,7 @@ const HistStat = styled.div`
 const HistSvg = styled.svg`
   display: block;
   width: 100%;
-  height: 34px;
+  height: 22px;
   margin-top: 0.25rem;
 `
 
@@ -971,7 +964,7 @@ const Controls = styled.div`
   flex-wrap: wrap;
   gap: 0.6rem 1.1rem;
   align-items: center;
-  margin: 0.85rem 0 0.5rem;
+  margin: 0.6rem 0 0.45rem;
   font-size: 0.82rem;
 
   label {
@@ -1020,11 +1013,21 @@ const SegButton = styled.button`
   }
 `
 
+// The hit list scrolls inside a fixed height so the whole demo fits on one
+// screen; in the expanded window it shows every row.
 const Table = styled.div`
-  overflow: hidden;
+  max-height: min(18rem, 32vh);
+  overflow: auto;
   border: 1px solid ${LINE};
   border-radius: 10px;
   background: #fff;
+  overscroll-behavior: contain;
+
+  ${({ $open }) =>
+    $open &&
+    css`
+      max-height: none;
+    `}
 `
 
 const rowGrid = css`
@@ -1049,6 +1052,10 @@ const rowGrid = css`
 
 const HeadRow = styled.div`
   ${rowGrid};
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid ${LINE};
   background: ${CARD};
   color: ${MUTED};
   font-size: 0.75rem;

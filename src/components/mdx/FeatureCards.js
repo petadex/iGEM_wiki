@@ -1,20 +1,31 @@
-import React, { useEffect, useRef } from "react"
+import React, { useContext, useEffect, useRef } from "react"
 import { withPrefix } from "gatsby"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
+import { ExpandContext } from "./ExpandWindow.js"
 
 const prefixed = src => (src && src.startsWith("/") ? withPrefix(src) : src)
 
 /** A row of boxes that introduce a page's sections, each linking down to one. */
-export const FeatureCards = ({ children }) => <Row>{children}</Row>
+export const FeatureCards = ({ children }) => {
+  const windowed = useContext(ExpandContext)
+  return <Row $windowed={windowed}>{children}</Row>
+}
 
 /**
- * One box: a picture, a bold name, a line of text and a link. `video` is a
- * short silent loop shown in place of `img`; readers who ask for reduced
- * motion get its `poster` still instead. The name is not a heading, so the
- * page's section menu lists the sections themselves, not these boxes.
+ * One box: a picture, a bold name, a line of text and a link. The picture is
+ * one of:
+ *   - `live`: a page that draws it at whatever size the box takes (the
+ *     landscape figure's #card mode), over its `poster` until it has drawn.
+ *     It turns only while the box is on screen.
+ *   - `picture`: a React element drawn in place (the calendar's season ribbon).
+ *   - `video`: a short silent loop; reduced motion gets its `poster` instead.
+ *   - `img`: a still.
+ * The name is not a heading, so the page's section menu lists the sections
+ * themselves, not these boxes.
  */
-export const FeatureCard = ({ href, title, cta = "Go", img, video, poster, children }) => {
+export const FeatureCard = ({ href, title, cta = "Go", img, video, poster, live, picture, children }) => {
   const videoRef = useRef(null)
+  const frameRef = useRef(null)
 
   useEffect(() => {
     const el = videoRef.current
@@ -29,10 +40,37 @@ export const FeatureCard = ({ href, title, cta = "Go", img, video, poster, child
     return () => reduce.removeEventListener("change", sync)
   }, [])
 
+  // The live picture keeps still off screen, so the page isn't drawing a
+  // second landscape nobody can see. It also hears once it has loaded, since
+  // a message sent before then is lost.
+  useEffect(() => {
+    const frame = frameRef.current
+    if (!frame) return undefined
+    let shown = false
+    const tell = () => frame.contentWindow?.postMessage({ card: shown ? "play" : "pause" }, window.location.origin)
+    const seen = new IntersectionObserver(([entry]) => {
+      shown = entry.isIntersecting
+      tell()
+    })
+    seen.observe(frame)
+    frame.addEventListener("load", tell)
+    return () => {
+      seen.disconnect()
+      frame.removeEventListener("load", tell)
+    }
+  }, [live])
+
   return (
     <Card href={href}>
       <Media aria-hidden="true">
-        {video ? (
+        {live ? (
+          <>
+            {poster && <img src={prefixed(poster)} alt="" loading="lazy" />}
+            <iframe ref={frameRef} src={prefixed(live)} title="" tabIndex={-1} loading="lazy" />
+          </>
+        ) : picture ? (
+          picture
+        ) : video ? (
           <video ref={videoRef} src={prefixed(video)} poster={prefixed(poster)} muted loop playsInline preload="metadata" />
         ) : (
           img && <img src={prefixed(img)} alt="" loading="lazy" />
@@ -58,6 +96,32 @@ const Row = styled.div`
   @media (max-width: 760px) {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  /* In an expand window the boxes fill it: the row takes the window's height
+     (&& outranks the window's flex: none on its children) and each picture
+     grows into whatever its text leaves, instead of holding to 4:3. */
+  ${({ $windowed }) =>
+    $windowed &&
+    css`
+      && {
+        flex: 1 1 auto;
+        min-height: 0;
+        grid-auto-rows: minmax(0, 1fr);
+        margin: 0;
+      }
+
+      @media (min-width: 761px) {
+        ${Media} {
+          flex: 1 1 auto;
+          min-height: 0;
+          aspect-ratio: auto;
+        }
+
+        ${Body} {
+          flex: none;
+        }
+      }
+    `}
 `
 
 /* &&& outranks the prose rule that underlines every link with a border. */
@@ -102,6 +166,7 @@ const Card = styled.a`
 `
 
 const Media = styled.div`
+  position: relative;
   aspect-ratio: 4 / 3;
   background: #16181a;
 
@@ -120,6 +185,17 @@ const Media = styled.div`
     border-radius: 0;
     box-shadow: none;
     object-fit: cover;
+  }
+
+  /* Over the poster, which shows until the figure draws. Clicks go through to
+     the card's link. */
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    pointer-events: none;
   }
 `
 
