@@ -4861,39 +4861,22 @@ export function HomeScrollPrototype() {
                     filtration, and trash recycling streams.
                   </Section5RecyclingLine>
                   <Section5OceanLine $at={SECTION5_OCEAN_LINES[0]}>
-                    But scientific innovation only matters if it leaves the
-                    lab.
+                    But scientific innovation can only have real impact if it
+                    leaves the lab.
                   </Section5OceanLine>
                   <Section5OceanLine $long $at={SECTION5_OCEAN_LINES[1]}>
-                    Working with regulators, microplastics researchers, and
-                    stakeholders in the plastic removal industry, our{" "}
-                    <Link to="/human-practices/">project</Link> unites the
-                    broader academic and industrial microplastics community. We
-                    advocate for responsible solutions to the continuously
-                    growing microplastics crisis, and PetaBite provides a viable
-                    enzymatic approach to alleviate their prevalence.
+                    Working with regulators, stakeholders, and researchers,
+                    our <Link to="/human-practices/">project</Link> unites the
+                    broader microplastics community. We advocate for
+                    responsible solutions to solve the microplastics crisis, and
+                    PetaBite provides a viable enzymatic approach to do just
+                    that.
                   </Section5OceanLine>
                   <Section5OceanLine $long $at={SECTION5_OCEAN_LINES[2]}>
-                    Just like the data, the academic landscape of microplastics
-                    research was sparse and fragmented. In creating the PETadex —
-                    the largest plastic-degrading enzyme database — we combined
-                    data from several stakeholders, researchers, and industry
-                    professionals, uniting their activity data into a single
-                    resource that is capable of propelling the community
-                    forward.
-                  </Section5OceanLine>
-                  <Section5OceanLine $long $at={SECTION5_OCEAN_LINES[3]}>
-                    Beyond those already involved in plastic research,
-                    PetaBite&apos;s{" "}
-                    <Link to="/beyond-the-bench/outreach/">outreach</Link>{" "}
-                    extends to the general audience, remaining entirely
-                    accessible to those who do not have any previous background
-                    in science.
-                  </Section5OceanLine>
-                  <Section5OceanLine $at={SECTION5_OCEAN_LINES[4]}>
-                    The ultimate enzyme for any use-case is no longer an
-                    unrealistic goal — it&apos;s a future we&apos;re actively
-                    working towards.
+                    In creating the PETadex — the most comprehensive
+                    plastic-degrading enzyme database — we combine data and
+                    lessons learned into a single resource that can transform
+                    the landscape of plastic-active enzymes.
                   </Section5OceanLine>
                   <Section5Cta>
                     Discover more about{" "}
@@ -5633,8 +5616,6 @@ const SECTION5_OCEAN_LINES = [
   // Phones: the long lines run ~16% of the plant tall, so each column
   // starts its next line only once the one above it has ended.
   { at: [61, 4, 41], phone: [53, 3, 43] },
-  { at: [69, 56, 41], phone: [69, 55, 42] },
-  { at: [76, 4, 44], phone: [72, 3, 43] },
 ]
 
 const Section5OceanLine = styled.p`
