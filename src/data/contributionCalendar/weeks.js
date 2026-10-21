@@ -904,9 +904,9 @@ const WEEK_CONTENT_OVERRIDES = {
         link: WL("2026-07-27"),
       },
       dryLab: {
-        summary: "Plasticome re-curated; reproducibility standard.",
+        summary: "PETadex-PAZy re-curated; reproducibility standard.",
         detail:
-          "The Plasticome was re-curated to about 470 validated enzymes. Every script now reads and writes from S3 and records its tool versions and database dates, so any result can be regenerated.",
+          "PETadex-PAZy was re-curated to about 470 validated enzymes. Every script now reads and writes from S3 and records its tool versions and database dates, so any result can be regenerated.",
         link: DRY,
       },
       hardware: {

@@ -144,7 +144,7 @@ we do not know which genomes belong to plastic-degrading organisms.
   the <em>Logan</em> assembly.</>}
 />
 
-### Plasticome Reference Curation
+### PETadex-PAZy Reference Curation
 
 {/*
   *Owner: Dennis* 
@@ -174,6 +174,8 @@ enzymes, which we call PETadex-PAZy.
 
 
 <PlasticomeStats />
+
+<PlasticomeByPlastic />
 
 <PlasticomeExplorer />
 
@@ -205,7 +207,8 @@ enzymes, which we call PETadex-PAZy.
       credits the three routes that were. The 15 matches: 15 distinct
       catalytic CATH superfamilies, with Lcp a 16th domain name and no CATH
       code. Make the manuscript and the wiki say the same thing.
-    - The tree README reports 4 of 33 backbone branches at UFBoot 95 (3
+    - RESOLVED 2026-10-21: the "2 of 33 backbone branches" clause is cut
+      from the caption (Dennis). The tree README reports 4 of 33 backbone branches at UFBoot 95 (3
       recovered independently); the manuscript says 2 of 33. The caption
       follows the manuscript; reconcile before publishing.
     - Every number comes from ~/plasticome-cath-assignment/results/ through
@@ -271,7 +274,7 @@ enzymes such as *Is*PETase and LCC.
   Compare with the manuscript's component paragraphs before publishing and
   drop the wrapper on any sentence that matches.
 
-  411 or 412. The outline said to write 412 centroids "without hedging",
+  411 or 412 (RESOLVED 2026-10-21: 411, per Dennis). The outline said to write 412 centroids "without hedging",
   with NCBI-nr Homology Expansion owning the 412 -> 411 drop. The final
   run has 411 clusters, 411 nodes and 46 components, and CATH Assignment
   and the forest caption both use 411, so this section says 411. Settle
@@ -295,9 +298,9 @@ enzymes such as *Is*PETase and LCC.
   script's original packing.
 */}
 
-The plasticome dataset can be organized into alignable components: groups in which each sequence aligns with at least one other, and so on, while sharing at least 30% amino acid identity. These groups are useful in telling us about shared ancestry, the novelty of new enzymes, and the overall family shape of the dataset.
+The PETadex-PAZy dataset can be organized into alignable components: groups in which each sequence aligns with at least one other, and so on, while sharing at least 30% amino acid identity. These groups are useful in telling us about shared ancestry, the novelty of new enzymes, and the overall family shape of the dataset.
 
-Here we show all of the 46 components that comprise the plasticome dataset. A single component dominates the dataset, containing 232 centroids, including both IsPETase and LCC.
+Here we show all of the 46 components that comprise the PETadex-PAZy dataset. A single component dominates the dataset, containing 232 centroids, including both IsPETase and LCC.
 
 <ComponentMap />
 
@@ -382,13 +385,9 @@ Placeholder: 30/60/90% centroids, cluster quantification, sample density.
   Demo D3 (sequence record card) is shared with the Software page.
 */}
 
-<Placeholder>
+Now that we have a large database of putative plastic-degrading enzymes, the sequences alone tell us little about what is in it, where the sequences come from, or how they can be used. Sequence annotation fills that gap. We add several additional layers to tell us more about the sequence. We can figure out the environment its sample came from, its domain architecture, its predicted 3D structure, and where in the cell it is likely to be sent.
 
-Annotation supplies the features the model learns from. A raw sequence says little on its own, so we attach to each one what can be inferred about it: the environment its source sample came from, including growth temperature and pH; its domain architecture; its predicted three-dimensional structure; and where in the cell it is likely to be sent.
-
-Each layer is computed across the corpus by its own pipeline, and coverage differs from layer to layer. We report that coverage here because a feature the model cannot see for most sequences cannot inform most predictions.
-
-</Placeholder>
+The environment alone carries information that isn't obvious from the sequence. Knowing that a sequence comes from a hot-spring sample, for example, suggests a high temperature, and often an unusual pH and salinity. Each layer gives the model something new to learn from, and together they describe the world each enzyme comes from, beyond its one-dimensional sequence. Not every annotation is available for every sequence, so for each layer we report how much of the database it covers.
 
 ### Biosample Metadata Annotations
 
@@ -401,7 +400,7 @@ caption={<><strong>Fig. X </strong> Known plastic-degrading organisms and the me
 </>}
 />
 
-### [Biosample Metadata Profiles](/dry-lab/model/biosample-profiles/#biosample-profiles-figure)
+### [Biosample Metadata Profiles](/dry-lab/model/biosample-profiles/)
 
 *Owner: Dennis*
 

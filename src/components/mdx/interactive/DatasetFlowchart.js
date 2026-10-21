@@ -11,7 +11,7 @@ import { useFigureViewer, ViewerButton } from "../FigureViewer.js"
  * its text, so rewording a heading means updating both).
  */
 export const FLOWCHART_SECTIONS = [
-  { id: "plasticome-reference-curation", title: "Plasticome Reference Curation" },
+  { id: "petadex-pazy-reference-curation", title: "PETadex-PAZy Reference Curation" },
   { id: "cath-assignment", title: "CATH Assignment" },
   { id: "component-assignment", title: "Component Assignment" },
   { id: "ncbi-nr-homology-expansion", title: "NCBI-nr Homology Expansion" },

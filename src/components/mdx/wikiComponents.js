@@ -44,6 +44,7 @@ import {
   PlasticomeExplorer,
   PlasticomeFlow,
   PlasticomeStats,
+  PlasticomeByPlastic,
 } from "./interactive/PlasticomeCuration.js"
 import {
   CathFlow,
@@ -282,6 +283,7 @@ export const mdxComponents = {
   ProfileStack,
   BiosampleViewer,
   PlasticomeStats,
+  PlasticomeByPlastic,
   PlasticomeCoverage,
   PlasticomeExplorer,
   PlasticomeFlow,

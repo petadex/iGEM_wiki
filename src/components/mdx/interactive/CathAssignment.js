@@ -3,6 +3,7 @@ import { withPrefix } from "gatsby"
 import styled from "styled-components"
 import { CATH_STRUCTURES } from "../../../data/cathStructures.js"
 import { ViewableImage } from "../FigureViewer.js"
+import { SUB, SUBNAME } from "./ComponentAssignment.js"
 import {
   CHAIN_COLORS,
   COFACTOR_COLOR,
@@ -35,6 +36,7 @@ import {
   INK_SOFT,
   LINE,
   Lane,
+  LegendRow,
   MUTED,
   MiniBar,
   Mono,
@@ -46,6 +48,7 @@ import {
   Picker,
   SUNK,
   Stat,
+  Swatch,
   StatLabel,
   StatValue,
   Stats,
@@ -87,7 +90,7 @@ const FOREST_ALT =
   "Circular forest of 16 fold groups. The alpha/beta hydrolase fold fills more than half the circle; amidase and peptidase folds follow, then smaller slices for oxygenases, beta-lactamase-like enzymes, proteases, cytochromes, cupredoxins and SGNH hydrolases, each with a representative structure."
 // Shown under the figure and again in its expanded view.
 const FOREST_CAPTION =
-  "The plasticome spans several unrelated and unalignable folds, so it cannot be aligned as a single family. Instead the 411 centroids are represented as 56 sequence-similarity families (connected components at 30% identity over 50% coverage), assigned to 16 fold groups by the CATH superfamily of their catalytic domain. Each slice is one fold group with its own tree; slices are not related to each other. Phylogenetic relationships are only reliable within families: between the families of the α/β-hydrolase fold only 2 of 33 backbone branches are supported, and no relationship is inferred across folds. Tips are coloured by substrate; dashed lines are supported links between families of the same fold (not to scale). Structures show one representative enzyme per fold, with its CATH superfamily and PDB entry."
+  "PETadex-PAZy spans several unrelated and unalignable folds, so it cannot be aligned as a single family. Instead the 411 centroids are represented as 56 sequence-similarity families (connected components at 30% identity over 50% coverage), assigned to 16 fold groups by the CATH superfamily of their catalytic domain. Each slice is one fold group with its own tree; slices are not related to each other. Phylogenetic relationships are only reliable within families, and no relationship is inferred across folds. Tips are coloured by substrate; dashed lines are supported links between families of the same fold (not to scale). Structures show one representative enzyme per fold, with its CATH superfamily and PDB entry."
 const asset = (src) => (src.startsWith("/") ? withPrefix(src) : src)
 
 /**
@@ -161,16 +164,28 @@ const followHash = (e) => {
 
 export const CathForest = () => (
   <ForestBox>
-    <BoxTitle>What are the Plasticome Structurally?</BoxTitle>
+    <BoxTitle>What is PETadex-PAZy made of, structurally?</BoxTitle>
     <Sub>
       Click a structure to open it in the viewer below, or anywhere else on the figure to expand
-      it. Open the fold groups under the figure to list a fold's enzymes in the plasticome explorer.
+      it. Open the fold groups under the figure to list a fold's enzymes in the PETadex-PAZy explorer.
     </Sub>
+    {/* The figure's own key is too small to read at column width: this one
+        stands in for it, at page size, and ForestKeyCover hides the original. */}
+    <LegendRow style={{ fontSize: "0.9rem" }} aria-label="Tip colour: substrate">
+      <b>Substrate</b>
+      {Object.entries(SUB).map(([k, c]) => (
+        <span key={k}>
+          <Swatch style={{ background: c, borderRadius: "50%", width: 12, height: 12 }} />
+          {SUBNAME[k] || k}
+        </span>
+      ))}
+    </LegendRow>
     <Forest>
+      <ForestKeyCover aria-hidden="true" />
       <ViewableImage
         src={asset(FOREST)}
         alt={FOREST_ALT}
-        title="What are the Plasticome Structurally?"
+        title="What is PETadex-PAZy made of, structurally?"
         caption={FOREST_CAPTION}
       />
       {FOREST_STRUCTURES.map(({ g, style }) => {
@@ -411,8 +426,8 @@ export const CathStructures = () => {
                   <span>
                     Reference {referenceLink(s.reference)}
                     {s.enzyme
-                      ? ` · ${s.enzyme} (PL${s.id}), a plasticome enzyme`
-                      : " · a representative of the fold, not a plasticome sequence"}
+                      ? ` · ${s.enzyme} (PL${s.id}), a PETadex-PAZy enzyme`
+                      : " · a representative of the fold, not a PETadex-PAZy sequence"}
                   </span>
                 </DetailsHead>
                 <dl>
@@ -505,7 +520,7 @@ export const CathFlow = () => {
           <Node>
             <NodeN>{fmt(N)}</NodeN>
             <NodeT>Predicted structures</NodeT>
-            <NodeD>ESMFold, one per plasticome enzyme; sequence read from the same file</NodeD>
+            <NodeD>ESMFold, one per PETadex-PAZy enzyme; sequence read from the same file</NodeD>
           </Node>
           <Node>
             <NodeN>{fmt(D.n_merizo_domains)}</NodeN>
@@ -566,7 +581,7 @@ export const CathFlow = () => {
         <Lane>
           <Node $out>
             <NodeN>{fmt(N)}</NodeN>
-            <NodeT>Plasticome, one row per enzyme</NodeT>
+            <NodeT>PETadex-PAZy, one row per enzyme</NodeT>
             <NodeD>Catalytic and accessory CATH, domain name, Pfam</NodeD>
           </Node>
         </Lane>
@@ -880,7 +895,7 @@ export const CathFolds = () => {
   return (
     <Box>
       <Head>
-        <BoxTitle>The folds of the plasticome</BoxTitle>
+        <BoxTitle>The folds of PETadex-PAZy</BoxTitle>
         <Picker>
           <span>Show</span>
           <select
@@ -949,6 +964,23 @@ const ForestBox = styled(Box)`
       width: auto;
     }
   }
+`
+
+/**
+ * Over the figure's own substrate key (its block of dots and names; the scale
+ * bar under it stays), in the panel's colour, which is what the image's white
+ * becomes under multiply. Measured on the 3789 x 2735 figure, as
+ * FOREST_STRUCTURES is: redo it if the figure is redrawn.
+ */
+const ForestKeyCover = styled.div`
+  position: absolute;
+  z-index: 1;
+  left: 83%;
+  top: 10.4%;
+  width: 8.6%;
+  height: 9.4%;
+  background: ${PANEL};
+  pointer-events: none;
 `
 
 const Forest = styled.div`
