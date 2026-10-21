@@ -58,9 +58,9 @@ PETadex V2 is huge and very redundant. The same enzyme turns up again and again 
 
 Clustering by identity gives us the dataset at three resolutions:
 
-- **90%** collapses near-identical sequences. One centroid stands in for what is effectively one enzyme.
-- **60%** is an intermediate step, roughly a subfamily.
-- **30%** is about where sequences stop aligning reliably, so a 30% cluster is close to a family. This is the level that shows the shape of the dataset.
+- **90%, enzymes.** Collapses near-identical sequences. One centroid stands in for what is effectively one enzyme.
+- **60%, families.** Groups enzymes that are clearly related but no longer near-copies.
+- **30%, superfamilies.** About where sequences stop aligning reliably. This is the level that shows the shape of the dataset.
 
 ## Inputs
 
@@ -100,11 +100,7 @@ So far only the 30% level has been rerun with the v1.1 settings. The 90% and 60%
 
 From a similar amount of input, PETadex V2 has 1.6 to 1.7 times as many clusters as v1.1 at 90% and 60%, and 3.5 times as many at 30%.
 
-<Placeholder label="Placeholder figure">
-
-Centroids at each level for PETadex V2 and v1.1, with singletons shaded (singletons_stacked_dark.png in the Slack thread).
-
-</Placeholder>
+<ClusterFunnel />
 
 ## Where the centroids come from
 

@@ -402,19 +402,7 @@ from; **PETadex-nr**, the homologs recovered from NCBI nr; and **PETadex-Logan**
   don't read as a contradiction.
 */}
 
-<Placeholder>
-
-Almost 300 million catalytic cores is far too many to work with directly, and most of them are near-copies of each other. We clustered PETadex V2 at three levels of amino acid identity: 90% to collapse near-identical sequences, 60% as an intermediate step, and 30% to show the family-level shape of the dataset. The 298,687,363 cores collapse to 30,453,501 clusters at 90%, 2,928,810 at 60% and 77,524 at 30%.
-
-Logan supplies 98% of the cores and about nine in ten centroids at every level. α/β-hydrolases make up roughly half of the dataset, and their share shrinks as clusters get coarser.
-
-</Placeholder>
-
-<Placeholder label="Placeholder figure">
-
-**A.** Centroids at 90%, 60% and 30% identity, split by source (PAZy, nr, Logan), with singletons shaded, against the original PETadex (v1.1). **B.** Share of each CATH superfamily at each level (from domain_composition_dark.png and singletons_stacked_dark.png in the Slack thread).
-
-</Placeholder>
+These 300M catalytic cores are far too many to functionally work with, so we cluster them down to a more manageable yet representative dataset. Here we have clustered PETadex v2 at three levels of amino acid identity, from 90% (enzyme), 60% families and 30% superfamilies. The 298,687,363 cores collapse down to 30,453,501 clusters at 90%, 2,928,810 at 60% and 77,524 at 30%.
 
 <MethodsLink href="/dry-lab/model/clustering/">How the three levels were built, why we cluster within each CATH superfamily rather than each component, where the centroids come from, why the new corpus has more singletons, and what is still being rerun.</MethodsLink>
 
