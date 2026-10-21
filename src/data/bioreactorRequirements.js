@@ -75,8 +75,7 @@ export const BIOREACTOR_REQUIREMENT_VERSIONS = [
     date: "2026-06-17",
     label: "Jun 17",
     note:
-      "Initial requirements brainstorm transcribed from the Centralized Living Hardware Doc " +
-      "(Bioreactor Build → Requirements). This is a living doc; blanks ( _ ) mark values still to be quantified.",
+      "The initial requirements based on the stakeholder interviews with Artem, Matthew Mackay, and Patricia Rea were compiled below. These requirements informed our future requirements and design decisions.",
     sections: [
       {
         id: "culturing",

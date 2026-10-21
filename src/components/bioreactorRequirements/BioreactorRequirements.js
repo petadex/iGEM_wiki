@@ -128,7 +128,6 @@ export function BioreactorRequirements() {
       <Header>
         <div>
           <Eyebrow>Bioreactor build · requirements</Eyebrow>
-          <SelectedDate>{formatLongDate(version.date)}</SelectedDate>
           {version.note && <Note>{version.note}</Note>}
         </div>
         <Counts>
@@ -137,14 +136,10 @@ export function BioreactorRequirements() {
         </Counts>
       </Header>
 
-      <SliderBlock aria-label="Requirements version history">
+      {!singleVersion && <SliderBlock aria-label="Requirements version history">
         <SliderLabelRow>
           <span>Version history</span>
-          {singleVersion ? (
-            <SliderHint>Only one version so far. The slider activates as the doc evolves.</SliderHint>
-          ) : (
-            <SliderHint>Slide to view requirements as they were on each date.</SliderHint>
-          )}
+          <SliderHint>Slide to view requirements as they were on each date.</SliderHint>
         </SliderLabelRow>
         <Slider
           type="range"
@@ -170,7 +165,7 @@ export function BioreactorRequirements() {
             </TickButton>
           ))}
         </Ticks>
-      </SliderBlock>
+      </SliderBlock>}
 
       <Legend aria-label="Flag legend">
         {REQUIREMENT_FLAG_LEGEND.map((item) => (
@@ -328,13 +323,6 @@ const Eyebrow = styled.p`
   text-transform: uppercase;
   color: var(--color-muted);
   margin: 0 0 var(--space-xs);
-`
-
-const SelectedDate = styled.p`
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  color: var(--color-text);
-  margin: 0;
-  font-weight: 600;
 `
 
 const Note = styled.p`
