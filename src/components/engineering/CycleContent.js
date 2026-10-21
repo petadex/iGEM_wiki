@@ -3,6 +3,12 @@ import styled from "styled-components"
 import { ENGINEERING_STAGES } from "../../data/engineeringCycles.js"
 import { EngineeringCycleWheel } from "./EngineeringCycleWheel.js"
 import { EngineeringStage } from "./EngineeringStage.js"
+import { mdxComponents } from "../mdx/wikiComponents.js"
+
+// Passing `components` to an MDX page replaces the MDXProvider context rather
+// than adding to it, so the cycle files would lose Figure, Callout and every
+// other wiki component unless they are merged back in here.
+const cycleComponents = { ...mdxComponents, EngineeringStage }
 
 export function CycleContent({ Content, panelId, titleId, art, stacked = false, wheelWidth }) {
   const [activeStage, setActiveStage] = useState(ENGINEERING_STAGES[0].id)
@@ -61,7 +67,7 @@ export function CycleContent({ Content, panelId, titleId, art, stacked = false, 
         onKeyDown={event => {
           if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) resumeManualScroll()
         }}>
-        <Content components={{ EngineeringStage }} />
+        <Content components={cycleComponents} />
       </ScrollPanel>
     </CycleLayout>
   )
