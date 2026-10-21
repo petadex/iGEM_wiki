@@ -9,6 +9,33 @@ updated: "2026-05-16"
 status: "draft"
 ---
 
+## Protocol Summary
+
+The following protocol summary describes the workflow for both the Biosensor and Selection assays:
+
+1. Prepare plates
+2. Integrate copper sulphate into PET mesh
+3. Transform E. coli (BL21(DE3)) with PD-V2 plasmid (Empty or containing LCC, Fast-PETase, IsPETase, M4-Q IsPETase, Dead-IsPETase, or Dry Lab PETase sequence) and AS plasmid (containing either msGFP2 or sul1)
+4. Plate transformed E. coli onto control (no mesh/no mesh or sulfadiazine) and test (with mesh) plates
+5. Identify colony fluorescence using transilluminator (Biosensor assay)/look for colonies (Selection assay)
+6. Pick colonies selected for by the assay and perform colony PCR
+7. Send the resulting amplicons for sequencing to identify successful PETase variants and their corresponding colonies for downstream testing
+
+## Copper Toxicity
+
+E. coli cells can have their growth impaired by sufficiently high copper concentrations. To test the lethal copper dose, we ran a series of experiments testing E. coli dilutions (10¹⁰, 10⁸, 10⁷, 10⁶ 10⁵,10⁴, 10³, 10²) on a range of copper concentrations (0mM, 0.25mM, 0.5mM, 1mM, 2mM, 4mM, and 8mM) mixed onto agar plates. For details, see the Copper Plate Testing document below. It was determined that the range of all plates up to 4mM (108 to 102) did not alter bacterial growth detrimentally. Finding the highest copper concentration that does not inhibit bacterial growth informs how much copper can be integrated into PET for the assay.
+
+<PdfEmbed
+  title="Copper Plate Testing"
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/copper-plate-testing.pdf"
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/coptox.avif"
+  alt="copper tox"
+  caption="Figure 1. Copper toxicity and pCusC dynamic range testing with selected plates. msGFP2 fluorescence is expected to increase with increasing copper concentrations in plates, while growth is expected to decrease. "
+/>
+
 ## Copper leakage and background fluorescence
 
 We conducted a leakage test to ensure that the PET mesh won’t leach out copper. If the mesh released copper without requiring any PETase activity, this would result in false positives. Thus, we transformed our E. Coli cells with only the biosensor AS plasmid and placed the PET mesh on top of the agar to see if any cells would fluoresce without PETase activity. As seen below, copper was not detected in the cells, indicating that copper leakage from the PET mesh did not occur. Additionally, background fluorescence was insignificant.
@@ -16,30 +43,27 @@ We conducted a leakage test to ensure that the PET mesh won’t leach out copper
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result1.avif"
   alt="result1"
+  caption="Figure 2. AS-msGFP2 test plates incubated with copper infused mesh to test for copper leakage under no PETase activity. "
 />
 
 ## Copper-induced GFP expression
 
-To ensure that our AS plasmid expresses GFP in the presence of copper, we conducted a serial dilution experiment to determine which concentrations of copper colonies would fluoresce at. To observe the fluorescence, a UV light was shone onto the colonies. In the images below, it can be seen that the reporting plasmid functions within an approximate range of [INSERT RANGE].
+To ensure that our AS plasmid expresses msGFP2 in the presence of copper, we conducted a serial dilution experiment to determine which concentrations of copper colonies would fluoresce. To observe the fluorescence, a UV light was shone onto the colonies. In the images below, it can be seen that the reporting plasmid functions within a certain range. Plates were made using 38g/L MHA in MilliQ water. After microwaving, sterile CuSO₄ was added to make 0mM, 0.25mM, 0.5mM, 1mM, 2mM, 4mM, and 8mM plates. Kanamycin was kept at 50ug/mL. BL21(DE3) transformed with AS-msGFP2 was liquid cultured overnight. The cells were washed with saline and spotted onto the plate at different dilutions (dilutions deviate from protocol, see Figure 3).
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result2.avif"
   alt="result2"
-  caption="Figure 2: The growth of BL21 transformed with AS-GFP2 on MHA plates with kanamycin and different copper concentrations."
+  caption="Figure 3. The growth of BL21(DE3) transformed with AS-msGFP2 on MHA plates with kanamycin and different copper concentrations."
 />
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result3.avif"
   alt="result3"
-  caption="Figure 3: Select spots of growth were placed under blue light to check for fluorescence."
+  caption="Figure 4: Select spots of growth were placed under blue light to check for fluorescence."
 />
 
-## Testing assay with known PETase
+One negative control is growing BL21(DE3) transformed with AS-msGFP2 on a plate with 0mM CuSO₄ to check if fluorescence is due to other factors than the copper-induced expression of msGFP2. Figure 4a shows the negative control under blue light, verifying that fluorescence is dependent on copper.
 
-Lastly, we wanted to conduct a positive control to see if the biosensor would perform as expected with a working PETase. Thus, we transformed our cells with a PD plasmid containing a known PETase (INSERT PETASE NAME) and the reporting plasmid. We then placed the copper mesh onto our agar and let it grow overnight to see if the colonies would glow green. As seen below, the copper biosensor assay works as intended and gave us a positive readout when there was PETase activity.
+Another negative control is growing BL21(DE3) that is transformed with the empty AS plasmid with no msGFP2 on a plate with CuSO₄ to check if fluorescence can be induced by copper or other factors without the expression of a fluorescent gene. Figure 4b shows the negative control under blue light, verifying that fluorescence is due to expression of msGFP2.
 
-<Figure
-  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result4.avif"
-  alt="result4"
-  caption="Figure 4: Transformed cells with PD plasmid incubated with copper mesh for 84 hours. Right bottom plate being M4-Q control. "
-/>
+Figure 4c (4mM of CuSO₄) shows that when copper is present to induce expression msGFP2, the cells fluoresce under blue light. **This verifies for the biosensor assay that copper can induce msGFP2 expression.** The next steps are to test whether msGFP2 can be sufficiently expressed with the copper amounts that can be realistically released from the mesh
