@@ -878,21 +878,21 @@ export const ATTRIBUTIONS_SCENE = {
   textEndY: 3720,
 }
 
-/** Finance: one painting of snowy peaks with a mine cart of gold coins. */
+/** Finance: one painting of snowy peaks, a mine cart of gold coins on a ledge. */
 export const FINANCE_SCENE = {
   header: "Finance",
   headerSub: "Securing sponsorships and funding from industry, academic, and community partners to advance our scientific innovation.",
   hideIntro: true,
   assetBase: "https://static.igem.wiki/teams/6187/wiki/finance/",
-  plate: [1216, 4000],
-  background: "#c0d8db",
+  plate: [1079, 4000],
+  background: "#beecfc",
   skyBottom: 400,
   headerColor: "#2f3b52",
   accent: "#94651a",
-  layers: [{ name: "img-3638", box: [0, 0, 1216, 4000] }],
+  layers: [{ name: "new-finance-background", box: [0, 0, 1079, 4000] }],
   side: {
     fill: "#f8fafb",
-    box: [70, 412, 365, 1100],
+    box: [62, 412, 324, 1100],
     navTop: 24,
     linkColor: "#2f3b52",
     activeLinkColor: "#ffffff",
@@ -900,14 +900,14 @@ export const FINANCE_SCENE = {
     linkIndent: 18,
     stripColor: "#f8fafb",
     highlightColor: "#94651a",
-    indicator: { fill: "#94651a", box: [80, 442, 355, 492] },
+    indicator: { fill: "#94651a", box: [71, 442, 315, 492] },
   },
   /** No menu highlight to match: the valley's navy. */
   footerButton: { bg: "#3a4760", text: "#ffffff" },
-  /** Not painted: a flat, cool white box, right of the mine cart. */
+  /** Not painted: a flat, cool white box, right of the sidebar. */
   text: {
     fill: "#f8fafb",
-    box: [400, 412, 1140, 3400],
+    box: [355, 412, 1012, 3400],
     minH: 2000,
   },
   textEndY: 3400,
