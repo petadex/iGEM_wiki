@@ -150,6 +150,11 @@ const SiteWrapper = styled.div`
 `
 
 const ScrollTopButton = styled.button`
+  /* Out of the way while a figure fills the screen (holdFigureUp). */
+  html[data-figure-up] & {
+    display: none;
+  }
+
   position: fixed;
   right: max(1rem, env(safe-area-inset-right));
   bottom: max(1rem, env(safe-area-inset-bottom));

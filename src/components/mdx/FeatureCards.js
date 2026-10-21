@@ -15,7 +15,8 @@ export const FeatureCards = ({ children }) => {
  * One box: a picture, a bold name, a line of text and a link. The picture is
  * one of:
  *   - `live`: a page that draws it at whatever size the box takes (the
- *     landscape figure's #card mode), over its `poster` until it has drawn.
+ *     landscape figure's and the game's #card modes), over its `poster`
+ *     until it has drawn.
  *     It turns only while the box is on screen.
  *   - `picture`: a React element drawn in place (the calendar's season ribbon).
  *   - `video`: a short silent loop; reduced motion gets its `poster` instead.
@@ -87,10 +88,15 @@ export const FeatureCard = ({ href, title, cta = "Go", img, video, poster, live,
   )
 }
 
+/* Side by side, each card spans two rows of this grid (its picture, then its
+   text) on a subgrid, so the three texts take one height and the buttons and
+   pictures line up whatever each text runs to. */
 const Row = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-md);
+  grid-auto-rows: auto;
+  column-gap: var(--space-md);
+  row-gap: 0;
   margin: var(--space-md) 0 var(--space-lg);
 
   @media (max-width: 760px) {
@@ -111,6 +117,11 @@ const Row = styled.div`
       }
 
       @media (min-width: 761px) {
+        && {
+          grid-template-rows: minmax(0, 1fr) auto;
+          grid-auto-rows: auto;
+        }
+
         ${Media} {
           flex: 1 1 auto;
           min-height: 0;
@@ -136,6 +147,15 @@ const Card = styled.a`
     color: var(--color-text);
     text-decoration: none;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  @media (min-width: 761px) {
+    &&& {
+      display: grid;
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+      row-gap: 0;
+    }
   }
 
   /* Stacked on a phone, each box lies on its side so the three fit a screen. */
@@ -218,6 +238,7 @@ const Name = styled.strong`
 
 /* MDX wraps the text in a paragraph; it takes the box's type, not the prose's. */
 const Text = styled.div`
+  padding-bottom: var(--space-xs);
   color: var(--color-muted);
   font-size: 0.9rem;
   line-height: 1.45;
@@ -230,10 +251,30 @@ const Text = styled.div`
   }
 `
 
+/* A button in look only: the whole card is the link. It sits at the foot of
+   the box, so the three line up whatever their text runs to. */
 const Cta = styled.span`
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.4em;
   margin-top: auto;
-  padding-top: var(--space-sm);
-  color: var(--color-accent);
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+
+  ${Card}:hover &,
+  ${Card}:focus-visible & {
+    background: color-mix(in srgb, var(--color-accent) 82%, #000);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `

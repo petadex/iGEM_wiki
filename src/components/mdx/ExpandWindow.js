@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useRef, useState } from "react"
 import styled, { css, keyframes } from "styled-components"
+import { ScrollExpand, holdFigureUp } from "./ScrollExpand.js"
 
 /**
  * A figure that opens into a large in-page window: a panel over the page with
@@ -18,7 +19,11 @@ import styled, { css, keyframes } from "styled-components"
  * without it the window body takes focus, which lets the keyboard scroll it.
  * `ground` is the window's background; `dark` picks light chrome to sit on it.
  * `inlineTitle={false}` keeps the title to the window's bar, for a figure that
- * already sits under a heading saying the same thing.
+ * already sits under a heading saying the same thing. `grow` also has it grow
+ * to fill the screen as the reader scrolls down to it (ScrollExpand), laid out
+ * as in the window meanwhile, holding the page there until the reader
+ * presses Continue; `hint` is a line of how-to beside that button, and
+ * `anchor` an id that links can jump to it by (see ScrollExpand).
  */
 /**
  * True inside an open window. A figure that sizes itself off the screen (the
@@ -33,6 +38,11 @@ export const ExpandWindow = ({
   dark = false,
   ground,
   focusRef,
+  grow = false,
+  hint,
+  continueButton = true,
+  continueTo,
+  anchor,
   children,
 }) => {
   const [open, setOpen] = useState(false)
@@ -74,14 +84,18 @@ export const ExpandWindow = ({
     const prevOverflow = root.style.overflow
     root.style.overflow = "hidden"
     document.addEventListener("keydown", onKey)
+    const releaseUp = holdFigureUp()
 
     // The window can only stack as high as the layers it sits in, and the page
     // column is a z-index 1 layer under the site header (110). Lift each
-    // ancestor that sets a z-index above the header while the window is up.
+    // ancestor that sets a z-index above the header while the window is up,
+    // and each sticky one (ScrollExpand's pin): sticky makes a layer of its
+    // own even without a z-index, which would trap the window under its
+    // backdrop.
     const lifted = []
     for (let el = stageRef.current?.parentElement; el && el !== document.body; el = el.parentElement) {
       const { position, zIndex } = getComputedStyle(el)
-      if (position !== "static" && zIndex !== "auto") {
+      if (position !== "static" && (zIndex !== "auto" || position === "sticky")) {
         lifted.push([el, el.style.zIndex])
         el.style.zIndex = "10000"
       }
@@ -107,6 +121,7 @@ export const ExpandWindow = ({
     return () => {
       root.style.overflow = prevOverflow
       document.removeEventListener("keydown", onKey)
+      releaseUp()
       for (const [el, z] of lifted) el.style.zIndex = z
       try {
         frameWin?.removeEventListener("keydown", onKey)
@@ -117,46 +132,96 @@ export const ExpandWindow = ({
     }
   }, [open, focusRef])
 
-  return (
-    <>
+  // Grown by the scroll it takes the window's layout in place, without its
+  // bar. The placeholder stays in the scroll frame, where the figure was.
+  const stage = (grown, held) => {
+    const filled = open || grown
+    return (
+      <>
+      <HandOver active={open || held} held={held && !open} focusRef={focusRef} />
       {open && (
         <Placeholder $dark={dark} $bg={bg} style={{ height: placeholderH }}>
           Open in the window above
         </Placeholder>
       )}
-      {open && <Backdrop onClick={() => setOpen(false)} aria-hidden="true" />}
       <Stage
         ref={stageRef}
         $open={open}
+        $grown={grown && !open}
         $dark={dark}
         $bg={bg}
         role={open ? "dialog" : undefined}
         aria-modal={open ? "true" : undefined}
         aria-label={open ? title || "Interactive figure" : undefined}
       >
-        <Bar $open={open} $dark={dark}>
-          {title && (open || inlineTitle) && <Title>{title}</Title>}
-          {open ? (
-            <Close $dark={dark} type="button" onClick={() => setOpen(false)}>
-              Close <span aria-hidden="true">✕</span>
-            </Close>
-          ) : (
-            <Opener ref={openerRef} type="button" onClick={expand}>
-              Expand ⤢
-            </Opener>
-          )}
-        </Bar>
+        {!(grown && !open) && (
+          <Bar $open={open} $dark={dark}>
+            {title && (open || inlineTitle) && <Title>{title}</Title>}
+            {open ? (
+              <Close $dark={dark} type="button" onClick={() => setOpen(false)}>
+                Close <span aria-hidden="true">✕</span>
+              </Close>
+            ) : (
+              <Opener ref={openerRef} type="button" onClick={expand}>
+                Expand ⤢
+              </Opener>
+            )}
+          </Bar>
+        )}
         <Body
           ref={bodyRef}
-          $open={open}
+          $open={filled}
           tabIndex={open && !focusRef ? -1 : undefined}
           onClick={followPageLink}
         >
-          <ExpandContext.Provider value={open}>{children(open)}</ExpandContext.Provider>
+          <ExpandContext.Provider value={filled}>{children(filled)}</ExpandContext.Provider>
         </Body>
       </Stage>
+      </>
+    )
+  }
+
+  return (
+    <>
+      {open && <Backdrop onClick={() => setOpen(false)} aria-hidden="true" />}
+      <ScrollExpand off={!grow} ground={bg} dark={dark} hint={hint} continueButton={continueButton} continueTo={continueTo} anchor={anchor}>
+        {stage}
+      </ScrollExpand>
     </>
   )
+}
+
+/**
+ * While the page is held still for a figure (open in its window, or grown and
+ * held by the scroll), the figure gets the input: an iframe figure is told it
+ * owns the wheel ({ wheel: true }, which the landscape listens for), and a
+ * held one takes focus, so its keys work without a first click. The window
+ * does its own focusing.
+ */
+const HandOver = ({ active, held, focusRef }) => {
+  useEffect(() => {
+    const frame = focusRef?.current
+    if (frame?.tagName !== "IFRAME") return undefined
+    const tell = () => frame.contentWindow?.postMessage({ wheel: active }, window.location.origin)
+    tell()
+    frame.addEventListener("load", tell)
+    return () => frame.removeEventListener("load", tell)
+  }, [active, focusRef])
+
+  useEffect(() => {
+    if (!held) return
+    const target = focusRef?.current
+    target?.focus({ preventScroll: true })
+    if (target?.tagName === "IFRAME") {
+      try {
+        target.contentWindow?.focus()
+      } catch {
+        // A cross-origin frame takes focus from the element alone.
+      }
+    }
+  }, [held, focusRef])
+
+  return null
 }
 
 /**
@@ -172,13 +237,17 @@ export const ExpandWindow = ({
  * `wide` lets the content take the window's full width, for a figure that
  * fills the window rather than reads in it (the overview's feature cards).
  */
-export const Expandable = ({ title, inlineTitle = false, wide = false, dark = false, ground, children }) => (
+export const Expandable = ({ title, inlineTitle = false, wide = false, dark = false, ground, grow = false, continueButton = true, continueTo, anchor, children }) => (
   <ExpandableBlock>
     <ExpandWindow
       title={title}
       inlineTitle={inlineTitle}
       dark={dark}
       ground={ground || (dark ? undefined : "var(--color-bg)")}
+      grow={grow}
+      continueButton={continueButton}
+      continueTo={continueTo}
+      anchor={anchor}
     >
       {open => (
         <ExpandableBody $open={open} $wide={wide}>
@@ -236,8 +305,19 @@ const fadeIn = keyframes`
   to { opacity: 1; }
 `
 
-/* Inline it is just a wrapper; open, it is the window. */
+/* Inline it is just a wrapper; open, it is the window; grown, it fills the
+   ScrollExpand frame. */
 const Stage = styled.div`
+  ${({ $grown }) =>
+    $grown &&
+    css`
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 14px;
+    `}
   ${({ $open, $bg }) =>
     $open &&
     css`
@@ -343,6 +423,7 @@ export const Backdrop = styled.div`
 `
 
 const Placeholder = styled.div`
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
