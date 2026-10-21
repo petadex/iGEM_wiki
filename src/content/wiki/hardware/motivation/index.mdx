@@ -14,15 +14,40 @@ hideToc: true
 
 ## Problem statement
 
-Plastic degrading enzymes are a recent solution to a century old problem. With the discovery of PETases, the ability to degrade PET materials that disrupt ecosystems across Earth has become more feasible. With new PETases being discovered regularly, the need to characterize their properties is growing.
+Plastic-degrading enzymes are a recent solution to a century-old problem. With the discovery of PETases, the ability to degrade PET materials that disrupt ecosystems across Earth has become more feasible. With new PETases being discovered regularly, the need to characterize their properties is growing.
 
-### add photo [Triangle of Hardware, Wetlab, Drylab here] (I can’t find)
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/1.avif"
+  alt="fig1"
+  caption="Figure 1: Interactions between iGEM Toronto’s wet lab, dry lab, and hardware teams."
+/>
 
-This cycle, iGEM Toronto’s dry lab subteam has constructed the PETadex, a revolutionary database that profiles millions of plastic-degrading enzymes. To test candidate enzymes, the wet lab subteam has developed novel high-throughput selection assays to identify strong performers under one condition. Yet these assays leave a clear gap: enzymes behave differently under different conditions. Each PETase has its own optimal pH, temperatures, salt concentrations, and more. Thus, to complete the PETase-development pipeline, we require a method to characterize the “fitness landscape” of PETase activity simultaneously and return this data back to the dry lab to improve their models. How can hardware help?
+This cycle, iGEM Toronto’s dry lab subteam has constructed the PETadex, a
+revolutionary database that profiles millions of plastic-degrading enzymes. To
+test candidate enzymes, the wet lab subteam has developed novel high-throughput
+selection assays to identify strong performers under one condition. Yet these
+assays leave a clear gap: enzymes behave differently under different conditions.
+Each PETase has its own optimal pH, temperatures, salt concentrations, and more.
+Thus, to complete the PETase-development pipeline, we require a method to
+characterize the “fitness landscape” of PETase activity simultaneously and
+return this data back to the dry lab to improve their models. How can hardware
+help?
 
 Behold, the bioreactor!
 
-### add photo [Image]?
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/2.avif"
+  alt="fig2"
+/>
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/3.avif"
+  alt="fig3"
+/>
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/4.avif"
+  alt="fig4"
+  caption="Figure 2: Three photos of the bioreactor setup from different angles. "
+/>
 
 This year, iGEM Toronto’s hardware subteam built a bioreactor to bring enzyme screening at scale to the standard wet lab. In our case, the bioreactor was specifically designed for use in the Terrence Donnelly Centre, but it can be used elsewhere. The design retains the standard features of a bioreactor—stirring, temperature control, OD600 readings, etc.—but at a lower cost (&lt;$250 compared to $450+) and transmits data to a central PC in parallel batches of 96. These parts are also widely-accessible, making assembly and repair simpler for the wet lab audience. Finally, it relies on a single, user-validated interface that permits control of multiple bioreactors each under independent conditions.
 
@@ -32,7 +57,13 @@ The ultimate goal? Run an assay based on PET degradation inside the bioreactor. 
 
 ### 1. [Pioreactor](https://docs.pioreactor.com/user-guide/40ml-v15-hardware-setup-intro)
 
-Our bioreactor was most heavily inspired by the Pioreactor: a retail 40 mL capacity bioreactor with modular add on options ($450+). According to the CEO of Pioreactor, this design was made for hobbyists, educators, and even researchers. To begin our first design cycle (see V1), we took notes during assembly on its design, user-friendliness, and improvable qualities.
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/5.avif"
+  alt="fig5"
+  caption="Figure 3: Pioreactor 40 mL option"
+/>
+
+Our bioreactor was most heavily inspired by the Pioreactor: a retail 40 mL capacity bioreactor with modular add-on options ($450+). According to the CEO of Pioreactor, this design was made for hobbyists, educators, and even researchers. To begin our first design cycle (see V1), we took notes during assembly on its design, user-friendliness, and improvable qualities.
 
 #### Advantages
 
@@ -48,6 +79,12 @@ Our bioreactor was most heavily inspired by the Pioreactor: a retail 40 mL capac
 - Tedious wifi/laptop connection process
 
 ### 2. [Open Bioeconomy Lab](https://openbioeconomy.org/projects/open-source-bioreactor/)
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/6.avif"
+  alt="fig6"
+  caption="Figure 4: Open Source Bioreactor design"
+/>
 
 #### Advantages
 
@@ -65,6 +102,12 @@ Our bioreactor was most heavily inspired by the Pioreactor: a retail 40 mL capac
 
 ### 3. [ChiBio Bioreactor](https://chi.bio/tech-specs/)
 
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/7.avif"
+  alt="fig7"
+  caption="Figure 5: Chi.Bio bioreactor "
+/>
+
 #### Advantages
 
 - Complete spectrum of wavelengths can be measured
@@ -78,7 +121,93 @@ Our bioreactor was most heavily inspired by the Pioreactor: a retail 40 mL capac
 - 1:1 ratio between microcontrollers and bioreactors
 - Custom computers raise costs, a powerful custom UI is overkill for relatively simple functions.
 
-
 ## Stakeholders
 
-{/* Add detailed stakeholder interviews here. */}
+<InterviewCard
+  name="Cameron Davidson-Pilon"
+  role="CEO of Pioreactor"
+  context="Scaling up, making devices user-friendly, and learning from the challenges of the first build."
+  photo="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/8.avif"
+  minutesLabel="Meeting Minutes with Cameron Davidson-Pilon"
+  minutesUrl="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/mm-with-cameron.pdf"
+>
+
+- PCB fabrication takes the longest.
+- Software is fast and easy to iterate on, so save it for later in the design cycle.
+- CAD iteration is also quick.
+- The 1:1 ratio of microcontrollers to bioreactors was intended for consumers.
+- Open-source design.
+
+</InterviewCard>
+
+<InterviewCard
+  name="Artem Babaian"
+  role="iGEM Toronto PI; Assistant Professor at the University of Toronto; Director of RNALab"
+  context="Motivation for the design, general assay concepts, and the bioreactor’s physical constraints."
+  photo="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/9.avif"
+  minutesLabel="Bioreactors Brainstorm — Artem Ideas tab"
+  minutesUrl="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/artem.pdf"
+>
+
+- Wi-Fi is not feasible for 96 bioreactors.
+- Temperature and pH are important.
+- Price is important; a cost below $100 is preferred.
+- Bioreactors should be able to run for long periods and have controlled actuators.
+
+</InterviewCard>
+
+<InterviewCard
+  name="Matthew Mackay"
+  role="Professor, Teaching Stream, Mechanical Engineering; Associate Chair, Undergraduate Curriculum; Wallace Chalmers Chair in Engineering Design"
+  context="Identifying opportunities to reduce costs and improve efficiency, including different arrangements of microcontrollers and power supplies, drawing on experience with engineering systems design."
+  photo="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/10.avif"
+  minutesLabel="Bioreactors Brainstorm — Matthew Mackay tab"
+  minutesUrl="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/matthew.pdf"
+>
+
+- A Raspberry Pi provides an excessive amount of computing power for one bioreactor.
+- Scheduling or a separate power supply can make mixing, stirring, and heating less energy-intensive while maintaining their function.
+
+</InterviewCard>
+
+<InterviewCard
+  name="Milica Radisic"
+  role="Professor and Canada Research Chair in Functional Cardiovascular Tissue Engineering"
+  context="A researcher’s perspective on how our bioreactor would be used in the lab and how we can make it useful to researchers."
+  photo="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/11.avif"
+  minutesLabel="Milica Radisic interview"
+  minutesUrl="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/milica.pdf"
+>
+
+- Follow safety regulations and certification standards when designing a bioreactor to operate for days at a time.
+- Ensure sufficient stability to avoid losing data during power or operational outages.
+- Modularity is essential: researchers benefit from being able to swap capabilities in and out to suit different experiments.
+
+</InterviewCard>
+
+<InterviewCard
+  name="Patricia Rea"
+  role="DIYBio researcher and Wet Lab lead with a home lab"
+  context="A student researcher’s priorities for homemade devices that improve experimentation, and a DIYBio perspective informed by the search for better equipment for a home lab."
+  photo="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/12.avif"
+  minutesLabel="Patricia Presentation"
+  minutesUrl="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/patricia-presentation.pdf"
+>
+
+- A design shaped around wet lab use is critical to a good user interface and experience.
+- Discussed examples of user-friendly and user-unfriendly wet lab equipment.
+
+</InterviewCard>
+
+<InterviewCard
+  name="Raphael Loll-Krippleber, Ph.D."
+  role="Senior Research Associate at Brown Lab, University of Toronto"
+  context="Additional insight from someone who regularly uses bioreactors for experiments."
+  photo="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/motivation/13.avif"
+  minutesLabel="N/A — conversation at a conference"
+>
+
+- Learned more about the ChiBio bioreactor, a similar system used for yeast growth rather than E. coli.
+- Learned about the challenges of pH control to consider for future versions of our bioreactor.
+
+</InterviewCard>

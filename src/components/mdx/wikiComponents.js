@@ -1,5 +1,6 @@
 import { HardwareIterations } from "../hardwareIterations/HardwareIterations.js"
 import { HardwareMap } from "../hardwareIterations/HardwareMap.js"
+import { InterviewCard } from "./InterviewCard.js"
 import React from "react"
 import { withPrefix } from "gatsby"
 import styled, { css } from "styled-components"
@@ -194,6 +195,7 @@ export const ContributionCalendar = ({ title, caption }) => (
 )
 
 export const mdxComponents = {
+  InterviewCard,
   a: MdxLink,
   HardwareIterations,
   HardwareMap,
