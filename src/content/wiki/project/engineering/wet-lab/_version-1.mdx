@@ -1,31 +1,107 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**A1.1 — The assay and display plasmids.** The system had to turn PET hydrolysis into a
+measurable signal, which meant a sequence-verified, Registry-compatible *E. coli* vector
+carrying the reporter, the selection marker and the candidate PETase.
 
-Wet Lab · Version 1: Describe the problem, requirements, and design choices for this iteration.
+We split it across two plasmids with compatible origins so both could be co-transformed into
+the same cell: an **assay plasmid (AS)** on the **pJUMP26-1A** backbone (p15A origin,
+kanamycin), and a **PETase-display plasmid (PD)** on a **pUC57-Mini-Key IIS-Free** vector
+from GenScript (pUC origin, ampicillin). Assembly standardised on **BsmBI Golden Gate**
+after we found the pUC19
+prototype vector carried internal recognition sites for *both* BsaI and BsmBI — Type IIS
+sites that survive into an assembled construct cause continuous cutting and re-ligation, so
+we removed the conflict before finalising. We then built the required Type IIS sites
+directly into the ordered DNA rather than adding them later by PCR, which cut downstream
+cloning steps and the chances of sequence error.
+
+Part choices, each with its reason:
+
+| Choice | Over | Why |
+| --- | --- | --- |
+| **dfrB10** | dfrA1 | dfrA1 closely resembles native *E. coli* DHFR, risking recombination with the chromosome. dfrB10 is a small Type II DHFR, structurally and evolutionarily distinct; BLAST against the *E. coli* genome returned no significant similarity. |
+| **sul1 and sul2** | picking one | Both carried in parallel so their performance could be compared directly. |
+| **msGFP2** | mCherry | A monomeric reporter avoids the oligomerisation artifacts of multimeric ones. |
+| **J23102** | J23119, J23106 | Reliably strong signal without unnecessary metabolic burden. PETase expression runs from a separate promoter on PD, so this one was tuned for the controls. |
+| **A validated terminator** | random DNA | Random sequence does not guarantee transcriptional silence — roughly 10% of random sequences act as weak promoters in *E. coli*. |
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+We fixed **three validation steps before building anything**: sequence verification for
+every construct, a copper induction curve, and an antibiotic kill curve — with positive and
+negative controls required in every assay, cloning workflows the only exception.
 
-Wet Lab · Version 1: Describe what the team built or changed, including methods and materials.
+Primers were ordered **2026-06-30** as a dry 96-well plate for roughly $500, about half the
+cost of individual tubes. The order included Gibson assembly oligonucleotides as a
+contingency in case Golden Gate failed. We declined PAGE purification, which would have
+added about $80 per primer, because the long primers were for PCR-based overhang addition
+rather than sequencing.
+
+Benchmark controls came from the Brown Lab through an Addgene MTA reviewed **2026-06-09**;
+*E. coli* strains carrying **IsPETase** and **FAST-PETase** arrived **2026-06-08**.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/protocal/image1.avif"
+  alt="Flow diagram of the AS plasmid assembly workflow"
+  caption="The AS plasmid assembly workflow: KLD circularisation, then BsaI Golden Gate of pCusC with msGFP2, sul1 or sul2."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+Transformation was validated against a pUC19 positive control on **2026-06-29**. That same
+week **IsPETT, pJUMP26, pRBS and pEFTerm** transformed successfully, while **EcCO WT** and
+**pTac** produced only two colonies each. Sequencing confirmed the **IsPETase W159H**
+construct on **2026-07-06**, giving us a verified benchmark variant.
 
-Wet Lab · Version 1: Add the tests, controls, measurements, and results for this iteration.
+**Then verification started failing in a way we did not expect.** On **2026-07-16**
+sequencing returned no plasmid at all despite healthy colony growth and measurable DNA after
+miniprep. A second construct did the same on **2026-07-20** — the nanodrop showed sufficient
+DNA, but sequencing could not generate a consensus. By early August several cloned constructs
+appeared empty despite otherwise successful cloning.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/journal/miniprep-nanodrop-aug12.avif"
+  alt="NanoDrop readings for the AS variant minipreps"
+  caption="NanoDrop readings for the AS variant minipreps (2026-08-12). Concentration looked adequate on the instrument while sequencing still failed — the measurement that sent us looking at prep format rather than assembly."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+**The bottleneck was plasmid preparation, not assembly.** Most failures traced back to a
+~20 mL "mini-midi hybrid" workflow that routinely produced DNA below the sequencing vendor's
+recommended threshold of about 200 ng/µL. Short-read verification had occasionally returned
+partial data, which masked the problem for weeks.
 
-Wet Lab · Version 1: Explain what the evidence showed and how it informed the next iteration.
+We switched to **whole-plasmid nanopore sequencing** to remove the ambiguity. The first
+runs, on **2026-08-11**, had few reads and genomic DNA contamination: msGFP2 and sul2 were
+readable, while **sul1 simply needed a fresh miniprep** — a read-quality problem, not an
+assembly failure. That distinction is the whole point of the cycle, and we only had it
+because whole-plasmid data showed us the construct rather than a failed consensus.
+
+A fresh prep settled it on **2026-08-15**: **AS-msGFP2 confirmed** (carrying a single
+base-pair mismatch inherited from the backbone) and **AS-sul1 confirmed**, while **AS-dfr
+and AS-sul2 had to be redone**. Of the three resistance genes attempted in the AS vector,
+**only the sul1 assembly succeeded, so all subsequent selection testing used sul1.**
+
+The design change this forced: we had been treating failed sequencing as evidence of failed
+assembly. Whole-plasmid sequencing showed the real issue was yield. **Whole-plasmid
+verification became mandatory before any construct could enter an assay** — which is the
+practice the October rebuild in A1.2 depended on.
+
+<Callout tone="note" title="Why the verification change mattered">
+
+Had we kept reading short-read failures as assembly failures, **sul1 — the one resistance
+construct that actually assembled — would have been discarded**, and the selection assay
+would have had no working marker. The constructs that genuinely needed rebuilding, dfr and
+sul2, were identified in the same run. Whole-plasmid verification did not just catch a bad
+prep; it prevented a correct construct from being thrown away.
+
+</Callout>
 
 </EngineeringStage>

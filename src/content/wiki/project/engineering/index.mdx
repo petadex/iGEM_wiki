@@ -6,17 +6,178 @@ navTitle: "Engineering"
 order: 40
 description: "How the project follows the design, build, test, and learn cycle."
 owners: ["Project Leads"]
-updated: "2026-05-16"
-status: "draft"
+updated: "2026-10-21"
+status: "published"
 ---
 
 import { EngineeringExplorer } from "../../../../components/engineering/EngineeringExplorer.js"
+
+## The system specification
+
+Most known plastic-degrading enzymes require laboratory conditions that do not reflect the
+environments where plastic pollution accumulates. Although PAZy catalogued 495 validated
+plastic-active enzymes as of October 2026, the best-characterised PETases still depend on
+elevated temperatures, controlled pH, or pretreated substrates to achieve high activity.
+
+Instead of engineering entirely new enzymes, we asked whether nature had already solved the
+problem:
+
+> **Do ambient-condition PETases already exist in environmental microbial communities,
+> hidden within vast public sequencing datasets?**
+
+**We hypothesised that they do** — and that the field's main challenge is not designing
+better enzymes but *finding* them, through a systematic workflow for discovery,
+prioritisation and experimental validation.
+
+### What each track contributes
+
+| Engine | Input | Output |
+| --- | --- | --- |
+| **Dry Lab** | Public SRA assemblies and PAZy seed enzymes | Ranked candidate enzyme library |
+| **Wet Lab** | Synthesised candidate library | Activity labels (active/inactive), then quantitative characterisation of the actives |
+| **Hardware** | Candidate strains | Condition-specific activity dataset |
+
+### Constraints
+
+- Target **ambient-temperature** PET degradation rather than thermostable activity.
+- Fixed *E. coli* as the chassis (May 2026).
+- Maintain Registry compatibility through **BsmBI** Type IIS Golden Gate assembly.
+- Candidate testing limited by wet-lab throughput and synthesis budget.
+- Reactor capacity constrained by a single laboratory circuit.
+
+### Assumptions and simplifications
+
+- We use **copper release as a proxy** for PET hydrolysis — the assay measures copper
+  concentration, not polymer mass.
+- We use **BHET hydrolysis as a proxy** for PET depolymerisation.
+- We define diversity at a **90% sequence identity threshold**, sampling sequence clusters
+  rather than individual variants.
+- Environmental metadata are sparse in public repositories: only **2.3% of SRA BioSamples
+  (157,613 of 6,796,722)** include environmental measurements, so we infer temperature and
+  pH from taxonomy and project metadata rather than measuring them per sequence.
+- PlasticESM is built on **ESM-C 300M**, roughly half the parameters of the smallest model
+  in our original plan.
+
+### What we did not know at the start
+
+1. Whether we could load copper into PET and reliably release it through enzymatic
+   hydrolysis.
+2. Where the induction window would fall relative to copper toxicity in the host strain.
+3. Whether our ranking model would enrich for active enzymes beyond random selection.
+4. Whether environmental metadata could meaningfully improve prioritisation despite the
+   sparsity of public records.
+
+### Success criteria
+
+We set these targets before development, and every Learn block below is measured against
+them.
+
+| Track | What would count as success | Status at the freeze |
+| --- | --- | --- |
+| **Dry Lab** | A ranked, synthesisable library delivered to Wet Lab, and measured model enrichment over random selection on held-out activity labels | Library delivered and ordered. Enrichment not yet measurable; the label split cannot evaluate in its current form |
+| **Wet Lab** | Both readouts working, each with a positive control (FAST-PETase, IsPETase), a negative control (dead PETase) and a copper-dependence control, across a defined dynamic range | Copper induction confirmed. Both arms produced results in an integrated 84-hour run with a dead-enzyme control |
+| **Hardware** | Reactors holding temperature and reading OD against a reference spectrophotometer, at low cost per unit | OD calibrated at R² ≈ 0.99; *E. coli* grown end to end; ≈$204 CAD per unit against a $441 commercial reference |
+| **HP and Entrepreneurship** | Documented design changes traceable to external review, and a validated primary customer segment with at least one letter of intent | Five external reviewers produced traceable design changes. **No letter of intent obtained** |
+| **The loop** | At least one round where model-ranked sequences were tested and the result changed the model or the next order | First turn in progress. **No activity label has returned to the model** |
+
+### Attribution
+
+The **Logan index and the 161-candidate halo screen that inspired this project originated
+from Babaian lab research conducted before the 2026 iGEM season.** Our work begins with
+rebuilding the PETadex corpus and extends through the design of the assay architecture,
+reactor platform, and candidate library selection algorithm used throughout this project.
+
+---
 
 ## Engineering Cycles
 
 Explore each subteam's iterations through Design, Build, Test, and Learn. Choose a subteam and version, then select a stage of the circle or scroll through its notes.
 
 <EngineeringExplorer />
+
+---
+
+## Engineering principles used
+
+**Standards.** We standardised on Type IIS Golden Gate assembly with a deliberate split
+between the two enzymes: **BsaI for the AS plasmid inserts** (pCusC, msGFP2, sul1, sul2,
+dfrB10) and **BsmBI for the PD display arm and every PETase insert**, so the two assembly
+levels cannot cross-cut one another. The split was fixed after we found internal BsaI *and*
+BsmBI sites in the pUC19 prototype vector. Constructs maintain Registry compatibility, and
+the library-design algorithm uses Kazusa *E. coli* codon tables as its default reference.
+**Fifteen parts were submitted to the Registry in two collections** — the PETase Display
+System Collection and the AS Plasmid Inserts Collection.
+
+**Modularity.** Each reactor subsystem had a single owner and an independent design of
+experiment. The enzyme library assembles from three interchangeable fragments, so designs
+can be updated without rebuilding the entire construct. The reactor platform separates
+high-throughput screening from detailed characterisation, letting each tier evolve
+independently.
+
+**Measurement.** We required positive and negative controls on every assay plate, with
+cloning workflows the only exception. After discovering that short-read sequencing had
+masked a plasmid-yield problem, whole-plasmid verification became the standard. We embedded
+controls in the computational pipeline too, validating the corpus against 425 exact-match
+known plastic-active enzymes rather than relying on bench controls alone.
+
+**Reproducibility.** All analysis scripts read from and write to S3, eliminating dependence
+on local files. Tool versions and database release dates are mandatory metadata, and any
+analysis lacking version information is rerun rather than accepted. The library-design
+algorithm produces seed-reproducible outputs, and the reactor platform ships with a complete
+bill of materials and version-controlled firmware.
+
+---
+
+## What we would do next
+
+**Wet Lab.** Confirm the mesh is PET by Raman spectroscopy before any further copper
+experiments. Quantify copper release with ICP-MS rather than qualitative test strips.
+Characterise the induction window with a full dose-response curve and archive the raw data.
+Progress from BHET to polymer-film substrates. Resolve the sul1 verification question.
+
+**Dry Lab.** Deploy the fused-LoRA fix and rerun training — roughly 20 GPU-hours, far less
+than we assumed. Re-stratify the label split by both negative examples and label provenance
+before reporting any enrichment metric. Separate label units into one prediction target per
+task. Recover the 3,150 labels stranded on discarded sequence fragments. Populate a
+per-sequence thermal-property feature, without which the ambient-temperature hypothesis
+cannot be evaluated directly. Release the v260701 corpus or stop treating the rebuild as the
+active corpus.
+
+**Hardware.** Fix the OD sensor so live readings match its calibration, and recalibrate
+across at least five concentrations before experimentation. Add fault isolation so a single
+reactor failure cannot silence the array. Close the thermal gap between the per-reactor
+limit and the temperature degradation experiments need. Build and characterise the
+lower-volume screening tier. Improve 3D-printing access, which proved the real constraint on
+iteration speed.
+
+**Human Practices and Entrepreneurship.** Secure at least one letter of intent. Run the
+product-market-fit survey described in our own manifesto. Quantify enzyme production cost, a
+gap identified repeatedly and never closed. Record the rationale behind every scope
+reduction, as our own governance rule required. Collect post-event feedback from attendees
+rather than relying on registration counts.
+
+**The loop.** Define a formal handoff specification with quantitative acceptance criteria
+and a standardised return format for the labels Wet Lab sends back to Dry Lab.
+
+---
+
+## Connecting the evidence
+
+| Page | What a judge will find there |
+| --- | --- |
+| [/description](/description/) | The hypothesis, the condition we tested, and the success criteria this page measures against |
+| [/wet-lab/results](/wet-lab/results/) | Assay data, plate images and the screen outcomes referenced in Track A and Cycle E |
+| [/model](/model/) | PlasticESM in full, the parameter tables, the corpus funnel, the label set, and the LOBSTER library algorithm |
+| [/hardware](/hardware/) | The bill of materials, assembly guide, firmware and CAD — the reproduction target for Track C |
+| [/wet-lab/overview](/wet-lab/overview/) | Protocols, the validation workflow, and the full construct inventory |
+| [/wet-lab/parts](/wet-lab/parts/) | The construct and primer tables behind Track A |
+| **Registry** | Every part, with sequence annotation, design rationale, controls and characterisation. **Parts are judged there, not on the wiki** |
+| [/wet-lab/notebook](/wet-lab/notebook/) and [/hardware/notebook](/hardware/notebook/) | Dated bench records behind every Build and Test block above |
+| [/human-practices](/human-practices/) | The stakeholder register in full, the three reports, and the responsibility argument |
+| [/entrepreneurship](/entrepreneurship/) | The four verticals, market sizing, competitive analysis and the business model |
+| [/education](/education/) | The microplastics conference, the high-school mentorship, and the public engagement programme |
+| [/contribution](/contribution/) | What we are leaving for future teams, including the troubleshooting records behind the failure log |
+| [/safety](/safety/) | Risk assessment, containment and the chassis rationale |
 
 ## Dry Lab
 

@@ -1,0 +1,112 @@
+<EngineeringStage id="design">
+
+**B2.4 — LOBSTER, the library design algorithm.** We framed this as a **sequence-purchasing
+optimisation problem**: represent the natural catalytic diversity within a 90% identity
+cluster using the fewest synthesised oligonucleotides possible. The approach exploits
+degenerate codons at positions where cluster members differ, then partitions the resulting
+design into fragments compatible with Golden Gate assembly.
+
+We first formalised it on **2026-05-26** as choosing degenerate-codon oligo libraries that
+maximise recovery of natural wild-type sequences while satisfying constraints on RNA
+stability, codon composition and vendor ordering limits. We reviewed existing approaches —
+an integer-programming coverage formulation, SwiftLib, CoLiDe and DeCoiL — but adopted none
+directly, because none accommodated our full set of assembly constraints.
+
+The algorithm enforces these simultaneously:
+
+- **No BsmBI recognition sites** within any fragment, including sites created inadvertently
+  across fragment junctions.
+- **Four-nucleotide overhangs** that are unique between assembly buckets, shared within
+  buckets, and non-palindromic.
+- **Reserved backbone junction overhangs** of CGGA and GGTG.
+
+The CGGA choice does double duty. Because CGGA encodes the terminal glycine of the GS
+linker, reserving that overhang **preserves the reading frame by design** rather than
+through padding or post-hoc correction. We confirmed with Wet Lab on **2026-09-11** that the
+resulting assembly strategy introduces no additional residues before or after the coding
+sequence.
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+We implemented the algorithm with a **bookend architecture**, finalised **2026-09-10**:
+outer fragments carry a BsmBI site, spacer sequence and backbone-compatible overhang, while
+internal fragments carry a recognition site, spacer and the appropriate half of the shared
+two-nucleotide junction sequence. The output is an **order-ready CSV** containing all oligo
+designs and the assembly metadata required for synthesis.
+
+<RecordCardDemo />
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+We evaluated the method on the **IsPETase and LCC 90%-identity clusters** and measured what
+it saved against synthesising every sequence individually.
+
+The designed library covers **1,744 sequences at roughly 45% of the individual-synthesis
+cost**. In nucleotides, the design saves **13,874 nt on the IsPETase cluster and 6,104 nt on
+LCC**. The algorithm completes **within 20 minutes** across all fragment counts, so the
+design step is not a bottleneck in the order cycle.
+
+To verify correctness rather than assume it, we built a validation pipeline on
+**2026-08-27**. It checks Golden Gate junction integrity, forbidden BsmBI sites in both
+orientations including sites created across junctions, recovery of every intended natural
+catalytic core, codon integrity, absence of internal stop codons, compliance with
+library-size and nucleotide limits, and reproducibility from a fixed random seed.
+
+As an additional structural sanity check, we folded two independent sets of 100 designed
+constructs with **ESMFold2** on **2026-09-10** and **2026-09-11**.
+
+<CathStructures />
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+Two design questions were resolved through discussion with Wet Lab rather than in isolation.
+
+**Fragment lengths vary across library members**, because cluster representatives contain
+insertions and deletions relative to one another. Wet Lab identified this as a potential
+assembly risk on **2026-09-09**; we reviewed it jointly and resolved it on a design call on
+**2026-09-10**, allowing variable-length fragments to remain in the final design.
+
+**The codon table does not match the expression strain.** The algorithm uses codon
+frequencies from the Kazusa *E. coli* **W3110** table (taxid 316407, 4,332 CDSs over
+1,372,057 codons, accessed 2026-08-27), while expression experiments use
+BL21(DE3). We judged the difference unlikely to materially affect library construction and
+did not pursue further optimisation — **though the choice was never formally benchmarked**,
+and we note that rather than claim it was validated.
+
+The broader lesson is that **assembly and purchasing constraints matter as much as sequence
+diversity**. A library that maximises biological coverage but cannot be synthesised,
+assembled or validated is not useful. By building those constraints directly into the design
+algorithm rather than filtering for them afterwards, we cut synthesis cost while preserving
+complete coverage of known natural catalytic-core diversity in the target cluster.
+
+<Callout tone="warning" title="Three claims this cycle does not make">
+
+**There is no cost-reduction iteration.** One benchmark exists, on one cluster, on one date.
+There is no second version of the algorithm and no re-benchmark on the same input, so there
+is no before-and-after. **The cost metric is not dollars.** On 2026-09-29 the algorithm's
+author declined to estimate a dollar figure, on the grounds that we have no sound basis for
+per-sequence cost estimates over PETadex — nucleotides and oligos are the units used here.
+**No link between HMM quality and synthesis cost is documented**; the only HMM-and-cost
+connection in our records is that curation was front-loaded so a Logan search costing
+thousands would not run against an unfinished corpus.
+
+</Callout>
+
+<Callout tone="warning" title="Two cost figures that must not be mixed">
+
+The Software pages state the saving two ways — **"~45% of the individual-synthesis cost"**
+and **"reduce the purchased nucleotides by 55%"**. Those are reconcilable (paying 45% means
+saving 55%) but they are currently written as if independent, and a reader meeting both will
+suspect one is wrong. Pick one framing across the Engineering and Software pages. The
+interactive component above also ships a different run than the figures quoted here, so
+caption the two separately.
+
+</Callout>
+
+</EngineeringStage>

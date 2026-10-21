@@ -1,0 +1,107 @@
+<EngineeringStage id="design">
+
+**A3 — Running the whole assay.** Three assay formats ran in parallel from May: **surface
+display**, **selection** and **biosensor**. The reasoning, recorded **2026-05-06**, was that
+too many unknowns remained to predict which would work, and the three shared enough
+components that developing them together would not triple the workload.
+
+The selection route changed shape along the way. A **2026-05-14** re-read of the Logan
+preprint showed no auxotrophic strains had been used in its PETase work — the yeast strain
+appeared only for plasmid maintenance — so on **2026-05-23** the nutrient-dropout design
+became antibiotic selection, keeping the same logic: break PET to survive.
+
+Surface display was **deprecated 2026-07-17**, on a structural risk rather than a
+measurement. Evidence from **2026-05-24** showed PETases interact *dynamically* with PET
+surfaces through hydrophobic interaction rather than binding one fixed site. A binding
+module that tethers a cell to PET could therefore lose its attachment as the enzyme degrades
+the very surface it is anchored to — the risk was assay instability, not failed degradation.
+
+That left the biosensor and selection routes, and the question this cycle exists to answer:
+**do they work together as one assay, rather than individually?** The design under test is
+the integrated path — copper loaded into PET, released on hydrolysis, crossing into the
+cell, driving pCusC, and producing either a fluorescent readout or a growth difference under
+antibiotic selection — against the validation framework fixed on **2026-06-07**, which
+separates PET from no-PET and copper from no-copper and compares FAST-PETase, IsPETase and
+control constructs on the same plates.
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+The integrated assay was assembled from the components verified in the preceding cycles: AS
+carrying the pCusC reporter or resistance marker, PD carrying the candidate PETase,
+co-transformed on compatible origins, with IPTG in the media and cation-adjusted
+Mueller-Hinton agar for the selection arm.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/protocal/image2.avif"
+  alt="Diagram of serial transformation into BL21(DE3)"
+  caption="Serial transformation into BL21(DE3): AS first, then PD into AS-competent cells — the route used to get both plasmids into one strain."
+/>
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+**Both arms of the integrated assay produced a result.** Each ran for 84 hours with copper
+mesh, against enzyme controls on the same plates.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result4.avif"
+  alt="BL21(DE3) with AS-msGFP2 and PD-V2 incubated with copper mesh for 84 hours"
+  caption="Biosensor arm: BL21(DE3) carrying AS-msGFP2 and PD-V2, incubated with copper mesh for 84 hours. Only M4-Q IsPETase grew, and it fluoresced. The bottom-right plate is an M4-Q IsPETase control plated without mesh; mesh was partly or fully removed from the test plates before the image was taken."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/5.avif"
+  alt="BL21(DE3) with AS-sul1 and PD-V2 incubated with copper mesh for 84 hours"
+  caption="Selection arm: BL21(DE3) carrying AS-sul1 and PD-V2 under the same conditions. All test plates grew except Dead-IsPETase, top left — the dead-enzyme negative control behaving as it should. Mesh is still present in all six plates."
+/>
+
+The selection arm carries a proper **dead-enzyme negative control**, which is what makes it
+more informative than the component-level result in A2.2: the difference between the
+Dead-IsPETase plate and the rest is attributable to enzyme activity rather than to selection
+stringency.
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+**The biosensor arm answers A2.1's open risk, and the selection arm does not — yet.**
+
+The load-bearing question from A2.1 was the mentor's 30%-then-50% estimate that PETase
+activity might never release enough copper to cross the pCusC threshold. The biosensor plate
+speaks to it directly: **M4-Q IsPETase grew *and* fluoresced** on copper mesh, which requires
+copper to have been released, crossed the membrane and driven the promoter. That is the full
+chain working once. The published result is careful to call it an **initial test**, and so
+are we — one plate, one enzyme, no replicates, no dose-response.
+
+**The selection arm carries a confound we should name rather than let a judge find.** All
+test plates grew except Dead-IsPETase, which looks like clean enzyme-dependent survival. But
+the surviving colonies were **morphologically similar to those on the sul1 copper-toxicity
+plates** from A2.2 — the plates where growth was driven by copper tolerance, not by enzyme
+activity. We cannot presently separate "survived because the enzyme released copper" from
+"survived because this construct tolerates copper", because both produce growth on a copper
+plate. The dead-enzyme control narrows it but does not close it: Dead-IsPETase differs from
+the others in more than its catalytic residues.
+
+**What this changes for the next iteration.** The biosensor is the readout to push on,
+because its signal is positive and specific — fluorescence has no copper-tolerance
+explanation. The selection arm needs a copper-dose-matched control before any hit from it
+counts, and that control is cheap: the same plates at the same copper concentration with a
+catalytically dead enzyme *and* an enzyme-free construct. Running the formats in parallel was
+the right call in May, but by October the evidence says they are not equally trustworthy, and
+we should say which one we would bet on.
+
+<Callout tone="note" title="What this cycle does not claim">
+
+We never generated a head-to-head comparison of the three original assay formats — that
+dataset does not exist, and the surface-display decision was made on anticipated failure
+modes and literature, not measured performance. No throughput figure is stated either: we
+never measured wells or plates per day for any format. The only screening-scale target in
+our records is 10,000 to 100,000 candidates screened for presence or absence of activity
+with quantification on the positives, set 2026-09-22.
+
+</Callout>
+
+</EngineeringStage>

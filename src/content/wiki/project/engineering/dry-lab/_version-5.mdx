@@ -1,0 +1,84 @@
+<EngineeringStage id="design">
+
+**B2.3 — Does the representation beat a ruler?** With the split repaired in B2.2, the
+question the whole track exists to answer finally becomes askable: **do PlasticESM
+embeddings predict activity better than trivial baselines?**
+
+The design is deliberately adversarial toward our own model. A ridge probe is trained on
+embeddings and scored under **component-grouped cross-validation** — folds split by
+connected homology components, with no group spanning folds — against two controls that
+require no model at all: **sequence length** and **amino-acid composition**. The rule set
+before running it: *a representation counts only if it beats sequence length and composition.*
+Scoring is fold-centred, one value per sequence, with permutation tests and jackknife
+confidence intervals.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/ml-pipeline.svg"
+  alt="Five-step pipeline: PETadex cluster draws, LoRA masked-language modelling on ESM-C 300M, embeddings, a component-grouped ridge probe, and a verdict against length and composition controls"
+  width="100%"
+  caption="From corpus to verdict. PlasticESM trains on PETadex, each labelled sequence is embedded by stock ESM-C and by PlasticESM, and a ridge probe is scored under component-grouped cross-validation."
+/>
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+The benchmark set is **1,137 labelled sequences**, scored across **5 human-curated and 7
+language-model-augmented targets**. The reproducibility layer ships with it as named
+functions — `grouped_out_of_fold`, `jackknife_ci`, `permutation_p` — so the protocol can be
+rerun rather than described.
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+**Sequence length beat both embeddings on every target.**
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/controls-sweep.svg"
+  alt="Dot plot of Spearman correlation for five activity targets; sequence length scores highest or near-highest on every target, setting the baseline that stock ESM-C and PlasticESM do not yet reach"
+  width="100%"
+  caption="Sequence length sets the baseline. Spearman ρ for each feature set on five human-curated targets, under component-grouped five-fold cross-validation with fold-centred scoring. Point estimates only."
+/>
+
+On **kcat** — 227 sequences across 40 homology components — length scores **ρ = +0.343**,
+stock ESM-C **−0.025**, and PlasticESM **−0.217**. The length signal replicates on kcat/Km
+at **ρ = +0.350, p = 0.001**, jackknife interval **[0.152, 0.522]**. Controls beat both
+embeddings on **all twelve target sets**.
+
+**The leakage measurement is the reason this matters.** Under a conventional random
+five-fold split, stock ESM-C reaches **ρ = 0.72 on kcat** and **0.74 on Tm**. Moving to a
+component-grouped split costs it **0.49 to 1.01** across the five human targets, while
+sequence length moves **at most 0.18**. The cause is measurable: **90–92% of labelled
+sequences have a homologous relative** in the set.
+
+Two further limits are stated rather than buried. Only **53 of 1,137 labelled sequences
+(4.7%)** are among the 60%-cluster draws PlasticESM actually trained on, and **48% of all
+labelled sequences sit in a single homology component**. Two shipped targets — relative
+activity and weight loss — span too few components to score at all.
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+The finding this cycle exists to report is a negative one about our own model, and it is the
+most useful thing the track produced:
+
+> Under the conventional random split, we would have reported a correlation of 0.72 for a
+> model that, evaluated correctly, does not yet beat sequence length.
+
+That is the whole argument for the evaluation discipline built in B2.2. A random split would
+have produced a publishable-looking number from a representation that carries no usable
+activity signal, and nothing in the pipeline would have flagged it.
+
+**Why the model has not learned activity yet is also measurable, not mysterious.** Only 4.7%
+of the labelled sequences appear in PlasticESM's training draws, so the domain adaptation and
+the benchmark barely overlap — the model was adapted to a corpus it is then asked about
+through a nearly disjoint label set. That is a data-coverage problem, not evidence that
+protein language models cannot work here, and it points directly at what Cycle E's screen is
+for: labels on the PETadex sequences the model was actually trained on.
+
+The release reports these downstream results **alongside the weights**, so no one reuses the
+adapters expecting them to predict activity.
+
+</EngineeringStage>

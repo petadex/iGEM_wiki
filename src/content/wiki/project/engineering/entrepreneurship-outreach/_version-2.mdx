@@ -1,31 +1,123 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**D2 — From a voted list to four verticals and a sized market.** The question this cycle has
+to answer is who pays, what they are paying for, and what evidence we have that they will.
 
-Entrepreneurship & Outreach · Version 2: Describe the problem, requirements, and design choices for this iteration.
+We started from an internal vote that narrowed the field to four segments: wastewater, oil
+and gas, waste management, and landfills.
+
+On **2026-07-01** we adopted the governance rule that makes the rest of this cycle legible:
+**one owner per vertical**; an owner who judges their vertical infeasible may pivot it
+provided they tell the team lead; and **every change is appended to the record rather than
+overwriting what came before.** That last clause is the only reason this cycle can be
+written at all — without it the pivots would be invisible.
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+Two things were built in parallel: the **vertical list** and the **price-anchored market
+model**.
 
-Entrepreneurship & Outreach · Version 2: Describe what the team built or changed, including methods and materials.
+The list churned — three verticals at launch, seven with owners, and finally **a WWTP
+beachhead plus three adjacent verticals**: textile effluent, landfill leachate, and
+filtration. Each of the four received a full report covering technical feasibility and SWOT,
+market size, barriers to entry, and a competitor matrix.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/venture/figures/5-customersegment1.avif"
+  alt="Customer segment figure for the wastewater treatment plant beachhead"
+  caption="The WWTP beachhead: enzymes immobilised in packed-bed reactors, degrading PET inside the plant while keeping the enzyme contained."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/venture/figures/5-customersegment2.avif"
+  alt="Customer segment figure for the three adjacent verticals"
+  caption="The three adjacent verticals: textile effluent, landfill leachate and filtration."
+/>
+
+**The model was built from a price rather than a top-down total.** PetaScale sells enzymatic
+PET removal at **$15.75 per megalitre** of plant influent treated — set deliberately at
+roughly 35% of the **$45.26/ML** Region of Peel already spends on process chemicals across
+G.E. Booth and Clarkson (2023), so it fits inside an existing budget line instead of
+requiring a new one. Variable cost is **$3.02/ML** ($1.62 enzyme, $1.40 cold-chain delivery,
+dosing and Py-GC/MS verification); fully loaded cost is **$7.51/ML**, a roughly 2.1× markup.
+Pilots bill at **$80,000 per pilot-year** and convert to full contracts once performance is
+validated.
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+**The vertical list tested itself through its own change log, and the reasons are the
+result:**
 
-Entrepreneurship & Outreach · Version 2: Add the tests, controls, measurements, and results for this iteration.
+| Date | Change | Reason |
+| --- | --- | --- |
+| 2026-06-08 | Started with three verticals: wastewater, bioremediation, detergent | The market subteam launched |
+| 2026-06-09 | Dropped in-wash detergent, added post-wash filtration | Our enzyme degrades polyester, so a detergent containing it could damage polyester clothing — and we could not rely on people reading a warning label |
+| 2026-07-07 | Expanded to seven verticals, each with an owner | Restructured under the new one-owner rule |
+| 2026-07-27 | Dropped oil and gas, and degreasers | **Not recorded** |
+| 2026-08-17 | Narrowed again | **Not recorded** |
+| 2026-08-24 | Dropped consumer drinking-water filtration, added industrial laundering | The consumer market was already crowded with established players, and drinking-water products need heavy regulatory approval |
+
+**The market tested as:** a total addressable market of **$1.37 billion a year** — plants in
+the United States, Canada and Western Europe treat 87.3 billion m³ of wastewater annually at
+our price. The serviceable market is **$69.1 million a year**: Canada's 4.38 billion m³ of
+secondary and tertiary treatment across 11 provinces and territories, with Ontario, Quebec,
+Alberta and British Columbia holding 89.6% of the volume. The obtainable market is
+**$15.80 million in annual recurring revenue** — 24 plants across seven authorities treating
+1.0 billion m³, or **22.9% of the Canadian market**, by Year 4.
+
+The beachhead itself was validated through **20 interviews** with operators, researchers and
+technical staff across Ontario, Alberta and Newfoundland, which confirmed the approach fits
+existing plant workflows.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/venture/figures/10-financialprojections-deployment.avif"
+  alt="Deployment ramp figure showing plants and authorities by year"
+  caption="The deployment ramp: pilots at Region of Peel, Metro Vancouver and Calgary in Year 1, contracts in Years 2–3, and York-Durham, OCWA, Winnipeg and Quebec City joining by Year 4."
+/>
+
+A **2026-09-29 internal audit** failed an earlier version of this sizing on a wrong pilot
+count, three unlabelled assumptions and one unverified source — which is what prompted the
+method change below.
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+**Both cuts with recorded reasons came down to consumer behaviour and market structure
+rather than technical problems** — a category of finding only this track produces. The
+enzyme worked fine in a detergent; the problem was that we could not control what consumers
+washed with it.
 
-Entrepreneurship & Outreach · Version 2: Explain what the evidence showed and how it informed the next iteration.
+**The two changes without recorded reasons are a failure of our own governance rule**, which
+existed precisely to capture them. We are stating that rather than quietly presenting a
+clean four-vertical story.
+
+**The deeper change was methodological: we abandoned top-down sizing altogether.** The
+chemical-spend figure stopped being a way to *size* the market and became the way to
+*justify the price* — showing that plants already budget for chemical treatment, so the
+money exists. That is why the surviving model starts at $15.75/ML and builds upward through
+named authorities and named plants, rather than taking a percentage of a large number. The
+projections are explicitly scoped to the WWTP vertical alone, use published LCC-ICCG
+benchmarks until our own pilot data replaces them, and hold prices and costs flat.
+
+**Honest gaps, stated rather than omitted.** No customer has given us a letter of intent or
+a letter of support. Our own planning document set a bar of twenty customer interviews, at
+least one letter of intent, and a score of 40% or higher on a product-market-fit survey —
+**we never ran the survey**. We flagged per-unit enzyme production cost as the key gap on
+2026-04-29, again in May, and again in August, and never put an independent number on it. On
+2026-10-04, two days after declaring this work complete, we recognised that a business model
+canvas was effectively expected, and we had not built one.
+
+<Callout tone="warning" title="Verify before publishing">
+
+The claim that Canada designated plastic manufactured items a toxic substance under CEPA on
+**2026-01-30** is load-bearing for the entire market thesis, and our only citation for it
+points at a 2021 source key. Confirm against the Canada Gazette or cut the date.
+
+</Callout>
 
 </EngineeringStage>

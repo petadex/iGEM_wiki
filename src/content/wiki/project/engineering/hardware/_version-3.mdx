@@ -1,0 +1,113 @@
+<EngineeringStage id="design">
+
+**C1.3 — V2, and a scale we had wrong.** V2 addressed the post-mortem list and added
+**serviceability as a requirement in its own right**: removable pump tubing so the pump can
+be autoclaved, a new vial, and a dedicated OD sensor housing. The vial is **40 mL
+borosilicate glass with a 10–25 mL working volume**.
+
+Treating maintenance as a design requirement rather than an afterthought came directly from
+V1, where tool-less teardown had been listed as a target but not designed for.
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+CAD v2 drawn from **2026-08-17**. Pump redesigned for tool-less removal. **V2 assembled
+2026-09-28.**
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/o3.avif"
+  alt="Protoboard integration with housing beside new mechanical shells and tubing"
+  caption="Protoboard integration with the housing (left), and the new mechanical shells and tubing (right)."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/od-n-1.avif"
+  alt="Refined V2 OD sensor CAD with dedicated reference and collecting compartments"
+  caption="The refined V2 OD housing, with dedicated reference and collecting compartments — the direct answer to V1's unverified OD accuracy."
+/>
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+**The OD calibration closes the largest V1 defect.** On **2026-09-01** the sensor was
+calibrated against the donated spectrophotometer: **nOD tracks OD600 with a trendline
+R² ≈ 0.99.**
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/journal/claire-od-calibration-sep1.avif"
+  alt="OD true vs reported chart"
+  caption="Spectrophotometer OD600 against bioreactor nOD (2026-09-01). The trendline reaches R² ≈ 0.99 — the measurement V1 never had."
+/>
+
+Two caveats were recorded in the same run, and both matter: **taking the vial out and
+putting it back shifts the reading**, because the gap between cap and holder admits varying
+amounts of room light, and loose jumper wires dropped out mid-run (resolved by moving to
+StemmaQT connectors). Changes beyond two decimal places are noise from light and LED
+fluctuation.
+
+A follow-up on **2026-09-06** established how little calibration is actually needed: a
+**three-point calibration matches a ten-point one at R² = 0.993**, which is what the shipped
+requirement now specifies.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-notebook/journal/claire-od-calibration-points-sep6.avif"
+  alt="Calibration curves from all points and from three points"
+  caption="Calibration from all ten points (black) against first, middle and last only (green). Three points are enough."
+/>
+
+**Against that, V2's integrated OD readings were still not trustworthy.**
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/o5.avif"
+  alt="Noisy and strange OD600 readings from the bioreactor"
+  caption="Noisy and erratic OD600 readings from the assembled V2. The calibration proves the sensor can track OD600; this shows the integrated system was not yet delivering it."
+/>
+
+The pump redesign also failed its own test: the snap-fit flaps **did not snap**, so the two
+planned pump experiments were never run.
+
+Temperature control, by contrast, met spec — **±0.2 to 0.45 °C** across 30, 37, 40, 45 and
+50 °C targets after the PID work.
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+**On 2026-08-31 Professor Milica Radisic joined as our first formal mentor and told us the
+scale was wrong.** She accepted the low-cost high-throughput argument and the in-vessel
+directed-evolution case, but judged the **40 mL vessel an order of magnitude too large for
+the intermediate screen**, where the binding constraints are bench space and the volume of
+enzyme required.
+
+That replaced a single-scale platform with **two instruments that have different jobs**:
+
+1. A **lower-volume screening tier**, to reduce a large pre-screened candidate set to a
+   shortlist.
+2. The **40 mL reactors**, retained for what they are uniquely suited to — long-horizon
+   directed evolution, programmatic growth curves and gradients, and kinetics including
+   Michaelis-Menten parameters and binding affinity.
+
+It also converted a one-off review into a standing one: Radisic agreed to **monthly design
+reviews** and began sourcing a fourth-year thesis student to develop the screening tier.
+
+**What changed going into C1.4:** the platform became two instruments with different jobs
+rather than one instrument compromising between them.
+
+<Callout tone="warning" title="Two claims to keep out of this cycle">
+
+**The "14 different dyes" result does not exist.** No dye-discrimination data, figure or
+text appears anywhere in the repo. What exists is the **AS7343 sensor's 14 channels** — 11
+in the visible spectrum plus near-infrared, clear and flicker detection — and the same
+passage describes red-wavelength dye release as *a future planned dye assay*. Do not state
+a measured dye result.
+
+**The deep-well specifics are not sourced.** The 96-to-384-well, PDMS-membrane,
+few-hundred-microlitre description has no trace in the repo; `384`, `deep well`, `PDMS` and
+`microliter` return nothing across the hardware pages. Radisic's judgement and the direction
+of travel are documented; the implementation details are not.
+
+</Callout>
+
+</EngineeringStage>

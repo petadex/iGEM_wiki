@@ -1,31 +1,88 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**Cycle E — the loop's first turn.** The three engines only matter if they interconnect.
+This cycle states exactly how far the loop got.
 
-Full Team · Version 1: Describe the problem, requirements, and design choices for this iteration.
+The handoff is specified in both directions. **Dry Lab** ranks candidates by predicted
+activity, predicted thermostability and cluster prevalence, sizes the order to Wet Lab
+throughput, and hands over sequences. **Wet Lab** clones and screens them against
+FAST-PETase and a dead PETase **on the same plates**. **Activity labels return to the
+model** to retrain the ranking head.
+
+The last step is the one that makes it a loop rather than a pipeline, and it is the step
+that has not happened yet.
+
+<DatasetLoop />
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+The **first order was submitted 2026-09-25**, covering the IsPETase and LCC clusters with
+naturally occurring novel sequences from Logan. The quote was approved and production
+started **2026-09-28**, split into two oPools, one per cluster, at roughly **$2,900 CAD list
+for 60 kb**.
 
-Full Team · Version 1: Describe what the team built or changed, including methods and materials.
+This slipped from a **1 September target** set on 2026-08-24, which had been sized against
+Wet Lab throughput on a plan of roughly two weeks' synthesis plus four weeks' testing,
+putting results in mid-October.
+
+The library LOBSTER designed for this order covers **1,744 sequences** across the two
+clusters. Patricia began designing sequencing primers for the library on **2026-09-28**, so
+the verification step was set up alongside the order.
+
+**We do not state how many variants were cloned or sequence-verified, because those counts
+were never recorded.** The order went out and production started; what came back has not been
+written down anywhere we can cite. That is a gap in our own record-keeping rather than a
+pending experiment, and it is the first thing a formal handoff specification would fix.
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+**In progress at the time of writing, and we are precise about which part.**
 
-Full Team · Version 1: Add the tests, controls, measurements, and results for this iteration.
+On **2026-10-05**, Thomas and Purav ran a halo assay at the Donnelly Centre to test the Dry
+Lab model's predictions and to check whether the high-throughput assay works in principle.
+**No result from that run is recorded** — no hit count, no image, no comparison.
+
+**The screen on the ordered library has not been run.** The oPools only entered production on
+2026-09-28 against roughly two weeks of synthesis, so the model-selected library could not
+have been in hand for the October run. The feasibility of the assay and the test of the
+ranked library are two different experiments, and only the first has been attempted.
+
+What makes the pending test meaningful is that **its baseline is already fixed**. Published
+prior work screened **161 natural homologs chosen at random**, expressed them in **yeast**,
+and assayed them on BHET in a **384-colony halo assay**: **35 were active — a 22% hit rate** —
+and HPLC on the top hits showed **two released more terephthalic acid than FAST-PETase, by up
+to four-fold**. That 22% is the number model ranking has to beat, and the screen it comes
+from was **random**, which is exactly what makes it a fair baseline rather than a competitor.
+
+When the screen does run, the numbers that decide it are already specified: how many
+candidates were screened, how many were active, and the resulting hit rate set against that
+22% baseline, with FAST-PETase and dead-PETase controls on the same plates.
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+**This block is deliberately short, because the loop has not closed.**
 
-Full Team · Version 1: Explain what the evidence showed and how it informed the next iteration.
+The honest statement of status: the order was placed and went into production, a feasibility
+halo assay ran in October without a recorded result, and **no activity label has yet returned
+to the model.** The loop has turned far enough to place an order from a ranked list. It has
+not turned far enough to change the model, which is the step that would make it a loop rather
+than a pipeline.
+
+We are stating that plainly instead of implying a closed cycle, because the one thing this
+page cannot afford is a claim a judge can check and find hollow. The round-2 library *will*
+be chosen by model uncertainty rather than predicted activity — testing the clusters the
+model is least sure about, among those whose environmental metadata looks promising, so each
+measurement lands where the current labels say least. That design is settled; its first
+results are not in.
+
+What B2.3 already tells us about this screen's value is concrete: only **4.7% of labelled
+sequences** are among the clusters PlasticESM trained on, so labels returning from PETadex
+sequences are exactly the data the model is missing.
 
 </EngineeringStage>

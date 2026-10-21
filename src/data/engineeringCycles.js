@@ -40,10 +40,12 @@ export const ENGINEERING_ART = {
 
 // Content lives in project/engineering/<team>/_version-N.mdx.
 // Register new files in components/engineering/contentRegistry.js.
-function initialVersions(count) {
+// `versionLabels` names each gear after its cycle in the engineering write-up
+// (A1.1, B2.4, Cycle E); teams without it fall back to "Version N".
+function initialVersions(count, labels) {
   return Array.from({ length: count }, (_, index) => ({
     id: `version-${index + 1}`,
-    label: `Version ${index + 1}`,
+    label: labels?.[index] || `Version ${index + 1}`,
   }))
 }
 
@@ -54,19 +56,22 @@ export const ENGINEERING_TEAMS = [
     centerBounds: [85, 129, 150, 120],
     links: ["https://2026.igem.wiki/toronto/hardware/"],
     buttonCrop: [138, 1120, 220, 196],
-    id: "hardware", label: "Hardware", color: "#9a7837", versionCount: 2,
+    id: "hardware", label: "Hardware", color: "#9a7837", versionCount: 4,
+    versionLabels: ["C1.1", "C1.2", "C1.3", "C1.4"],
     barCrop: [162, 1259, 178, 55], petamonCrop: [174, 1137, 174, 135] },
   { centerImage: `${ART_BASE}drylab-circle.avif`, centerCrop: [281, 2034, 146, 108],
     centerBounds: [110, 132, 125, 95],
     links: ["https://2026.igem.wiki/toronto/dry-lab/overview/"],
     buttonCrop: [362, 1120, 182, 196],
-    id: "dry-lab", label: "Dry Lab", color: "#738555", versionCount: 2,
+    id: "dry-lab", label: "Dry Lab", color: "#738555", versionCount: 6,
+    versionLabels: ["B1.1", "B1.2", "B2.1", "B2.2", "B2.3", "B2.4"],
     barCrop: [364, 1259, 177, 55], petamonCrop: [364, 1137, 174, 131] },
   { centerImage: `${ART_BASE}wetlab-circle.avif`, centerCrop: [217, 1996, 261, 154],
     centerBounds: [92, 116, 150, 140],
     links: ["https://2026.igem.wiki/toronto/wet-lab/overview/"],
     buttonCrop: [550, 1120, 198, 196],
-    id: "wet-lab", label: "Wet Lab", color: "#497a68", versionCount: 3,
+    id: "wet-lab", label: "Wet Lab", color: "#497a68", versionCount: 5,
+    versionLabels: ["A1.1", "A1.2", "A2.1", "A2.2", "A3"],
     barCrop: [567, 1259, 177, 55], petamonCrop: [565, 1137, 174, 134] },
   { centerImage: `${ART_BASE}venhp-circle.avif`, centerCrop: [285, 1993, 142, 158],
     centerBounds: [110, 106, 130, 125],
@@ -74,12 +79,14 @@ export const ENGINEERING_TEAMS = [
     petamonOffsetX: "6%",
     buttonCrop: [762, 1120, 182, 196],
     id: "entrepreneurship-outreach", label: "Entrepreneurship & Outreach", color: "#35657b", versionCount: 3,
+    versionLabels: ["D1", "D2", "D3"],
     barCrop: [764, 1259, 178, 55], petamonCrop: [793, 1137, 178, 128] },
   { centerImage: `${ART_BASE}full-cycle-circle.avif`, centerCrop: [258, 1970, 160, 182],
     centerBounds: [103, 103, 115, 130],
     links: ["https://2026.igem.wiki/toronto/human-practices/", "https://2026.igem.wiki/toronto/wiki/"],
     petamonOverlap: "clamp(-22px, -1.7vw, -6px)",
     buttonCrop: [190, 1370, 718, 208],
-    id: "full-team", label: "Full Team", color: "#497a68", versionCount: 3, fullWidth: true,
+    id: "full-team", label: "Full Team", color: "#497a68", versionCount: 1, fullWidth: true,
+    versionLabels: ["Cycle E"],
     barCrop: [192, 1523, 714, 54], petamonCrop: [190, 1409, 680, 136] },
-].map(team => ({ barImage: "", ...team, versions: initialVersions(team.versionCount) }))
+].map(team => ({ barImage: "", ...team, versions: initialVersions(team.versionCount, team.versionLabels) }))

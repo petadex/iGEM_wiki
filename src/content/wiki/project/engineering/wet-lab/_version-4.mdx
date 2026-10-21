@@ -1,0 +1,117 @@
+<EngineeringStage id="design">
+
+**A2.2 — The detection circuit and its medium.** On **2026-05-31** we selected **CopA over
+CusC**, because a previous iGEM team had reported success with the promoter, because it is
+regulated by CueR, and because increasing CusC sensitivity appeared to require knocking out
+endogenous copper-transport genes. We confirmed that on **2026-06-19**, noting that CopA
+responds to **cytoplasmic** copper — meaning copper must cross the inner membrane before
+detection, which in principle reduces cheater phenotypes and allows detection as low as
+0.1 mM — whereas CusC responds to **periplasmic** copper and is generally associated with
+higher, near-toxic concentrations.
+
+On **2026-07-04** we nevertheless finalised **pCusC** as the assay promoter, on the grounds
+that it has a more established literature base and stronger prior characterisation. Both
+decisions are recorded because the reversal is the interesting part: we traded a mechanistic
+argument for a characterisation one.
+
+**The medium mattered as much as the promoter.** Standard LB agar contains enough thymine
+and thymidine for cells to bypass the folate-pathway inhibition that both trimethoprim and
+sulfonamides rely on. To preserve selection pressure we adopted **cation-adjusted
+Mueller-Hinton agar**, the CLSI-recommended medium for trimethoprim and sulfonamide
+susceptibility testing, on **2026-06-26**.
+
+Published pCusC characterisation set our expectations before we tested anything: detectable
+fluorescence above background at roughly 39 µM copper, a quantifiable response from about
+118 µM, stable high-level induction at 500 µM over 16 hours, and toxicity at 1000 µM where
+fluorescence declines after about 4 hours. **These are published values used to guide assay
+design, not our measurements.**
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/plasmid3.avif"
+  alt="Plasmid map of the assay-specific plasmid"
+  caption="The AS plasmid: pJUMP26-1A base, p15A origin, kanamycin resistance, and the pCusC-driven reporter."
+/>
+
+</EngineeringStage>
+
+<EngineeringStage id="build">
+
+On **2026-08-11** we designed a plate grid with **eight copper concentrations** on one axis
+and **four construct-selection conditions** on the other. The purpose was not just to find
+the pCusC activation threshold but to separate genuine promoter induction from the
+alternative failure modes that produce similar-looking plates: copper toxicity, promoter
+leakiness, weak resistance expression, and overly stringent selection.
+
+</EngineeringStage>
+
+<EngineeringStage id="test">
+
+On **2026-08-17**, **AS-msGFP2 expression was confirmed copper-inducible** — the first
+validated experimental signal of the summer.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/journal/msgfp-copper-glow-aug17.avif"
+  alt="UV light on an AS-msGFP2 plate showing a glowing spot"
+  caption="AS-msGFP2 fluorescing on a copper plate under UV (2026-08-17) — the first validated experimental result of the summer."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result2.avif"
+  alt="Growth of BL21(DE3) with AS-msGFP2 on MHA plates across copper concentrations"
+  caption="BL21(DE3) carrying AS-msGFP2 on Mueller-Hinton agar with kanamycin across a copper series, spotted as dilutions."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/result/result3.avif"
+  alt="Selected growth spots under blue light checked for fluorescence"
+  caption="Spots from the series above placed under blue light to check for fluorescence, alongside the negative controls."
+/>
+
+On **2026-08-21**, **AS-sul1 grew across all tested sulfadiazine concentrations while the
+negative control stopped growing at 16 µg/mL**, indicating the resistance gene functions.
+**Read the direction carefully:** 16 µg/mL is where the *control* cut off, not a threshold
+the construct cleared.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/journal/selection-series-aug24.avif"
+  alt="Row of selection test plates"
+  caption="Sulfonamide and copper plate series for AS-sul1 and AS-sul2 (2026-08-24)."
+/>
+
+**A failure worth showing, 2026-08-03.** We prepared Mueller-Hinton plates spanning a range
+of copper concentrations and **the copper gradient did not behave as expected**. We
+suspected the medium and commissioned two literature reviews: one on Mueller-Hinton agar in
+trimethoprim and sulfonamide susceptibility testing, and one on its effect on copper
+bioavailability through phosphate chelation and precipitation. The second, returned
+**2026-08-05**, found little directly relevant literature because the assay design is novel.
+**This question remains open.**
+
+</EngineeringStage>
+
+<EngineeringStage id="learn">
+
+We chose Mueller-Hinton because it is the standard medium for trimethoprim and sulfonamide
+susceptibility testing. But **a medium that is optimal for antibiotic selection may be
+suboptimal for copper bioavailability**, and those two requirements are in tension in an
+assay that needs both at once. We could not resolve the trade-off: neither our own data nor
+the available literature established how Mueller-Hinton agar affects copper availability in
+this system.
+
+That is the honest state of the detection circuit. The promoter responds to copper and the
+resistance gene expresses — both shown above — but the medium that makes the selection arm
+work may be the same medium suppressing the copper signal the biosensor arm depends on.
+
+What changed going into A3: we added a readout path that does not depend on copper chemistry
+at all, and began testing the two surviving formats as one integrated assay.
+
+<Callout tone="warning" title="Two gaps in this cycle's evidence">
+
+The **2026-08-17 induction result** has no archived raw plate or fluorescence file — a
+review of the archive on 2026-08-24 recorded this explicitly. The page therefore states the
+qualitative result and **must not imply a dose-response curve**. The **AS-sul1 result**
+remains subject to the sul1 verification question raised in A1.1. The **2026-08-03
+Mueller-Hinton failure** was never photographed, so it is described here rather than shown.
+
+</Callout>
+
+</EngineeringStage>

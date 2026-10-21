@@ -1,31 +1,99 @@
 <EngineeringStage id="design">
 
-**Write-up to add**
+**C1.2 — Subsystem builds to first integration.** We chose to validate each subsystem
+independently against its own design of experiment before attempting integration, and we set
+a **fixed integration deadline: July 30, all subsystems connected and a physical V1
+prototype existing.**
 
-Hardware · Version 2: Describe the problem, requirements, and design choices for this iteration.
+A fixed date was deliberate. Subsystem work can expand indefinitely when nothing forces the
+pieces together, and the failures we most needed to find were the ones that only appear at
+the interfaces.
 
 </EngineeringStage>
 
 <EngineeringStage id="build">
 
-**Write-up to add**
+**90% of the V1 bill of materials arrived 2026-07-13** — the first point in the season with
+parts physically in hand, after prototype assembly had slipped across four consecutive
+meetings. A wavelength-specific OD sensor was ordered **2026-07-06** rather than using a
+general-purpose one. CAD was complete bar printing by **2026-07-20**. Transistor faults in
+the pump drivers were diagnosed and fixed by **2026-07-27**, and a minimum-viable user
+interface was running as a serial reader feeding a Python script. A UofT lab donated an
+older spectrophotometer to serve as the OD calibration reference — which becomes the key
+instrument in C1.3.
 
-Hardware · Version 2: Describe what the team built or changed, including methods and materials.
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/overview3.avif"
+  alt="Heating plate secured with a temporary cardboard holder during prototyping"
+  caption="Securing the heating plate with a temporary cardboard holder during prototyping."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/data1.avif"
+  alt="System architecture diagram for bioreactor to laptop data transfer"
+  caption="The data architecture: bioreactor to laptop over USB serial, after the move away from networked units."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="test">
 
-**Write-up to add**
+**The 30 July integration hit its date**, with all subsystems physically connected. By
+**2026-08-10** all subsystem electronics were consolidated and the Python host was reading
+sensor data end to end, with the integration bugs in the JSON configuration resolved.
 
-Hardware · Version 2: Add the tests, controls, measurements, and results for this iteration.
+Integration then produced the track's most valuable artifact: **a defect list.**
+
+- **One reactor failing stops every other reactor from reporting data.** A single point of
+  failure that is tolerable at one unit and unacceptable at eight.
+- **OD accuracy unverified.** The sensor was built and installed but never validated against
+  a reference.
+- **Port parsing for multiple reactors incorrect.**
+- **Fan speed unresponsive between 1,800 and 2,800 RPM** regardless of setting.
+- **Heating reached only ~56 °C** against the aspiration of 80 °C.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/tempv1-6.avif"
+  alt="Heating test graph showing temperature against time for three fill volumes"
+  caption="Heater testing: time (min) against temperature (°C) for 10 mL (red), 20 mL (blue) and 30 mL (green), with an exponential fit. The ceiling this shows is the gap between what V1 could heat to and what degradation experiments need."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/stir3.avif"
+  alt="Stirring subsystem test setup"
+  caption="The stirring subsystem. The Sunon fan ran at 6,000 RPM and would not go below 1,800 RPM despite tach-pin, transistor and resistor attempts — the fan-unresponsiveness defect that scoped the V2 fan replacement."
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v1/power-result.avif"
+  alt="Power supply stability test results"
+  caption="Power-supply stability: 5 V ±0.2 V, steady at roughly 12 W and never above 16 W across 30 minutes running the heater and three pumps."
+/>
 
 </EngineeringStage>
 
 <EngineeringStage id="learn">
 
-**Write-up to add**
+We wrote a **V1 Post-Mortem Analysis**, completed **2026-08-17**, mapping each defect to a
+specific V2 change. The defects were **mechanical and architectural rather than
+electronic**, which is precisely why V2 was scoped as mechanical redesign, fan replacement
+and OD sensor work rather than a circuit revision — the post-mortem determined the shape of
+the next iteration rather than producing a list nobody acted on.
 
-Hardware · Version 2: Explain what the evidence showed and how it informed the next iteration.
+**We also identified our real rate limiter, and it was not design capability.** **3D print
+access** was named as the constraint on iteration speed. That is worth stating plainly
+because it is the kind of bottleneck a team can work around once it is named and will keep
+absorbing otherwise.
+
+**What changed going into C1.3:** maintenance designed in from the start rather than
+retrofitted, which is why serviceability becomes a first-class requirement in V2.
+
+<Callout tone="note" title="Two defects described rather than shown">
+
+The single-point-of-failure defect and the pump PWM stall threshold exist in our records as
+text and tables only — neither was photographed or plotted. They are listed above on the
+strength of the post-mortem and the integration notes.
+
+</Callout>
 
 </EngineeringStage>
