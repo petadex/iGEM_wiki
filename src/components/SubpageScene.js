@@ -2194,7 +2194,6 @@ function sceneVars(scene, plate) {
     // Long headers shrink to stay inside ~88% of the width (≈0.6em a letter).
     "--title-fit": `calc(var(--art-w, 100vw) * ${(0.88 / ((scene.header || "").length * 0.6 || 1)).toFixed(5)})`,
     "--pad-bottom": pp(H - scene.textEndY),
-    "--text-min-h": pp(scene.text.minH),
     // Anything else the scene themes (e.g. the contribution calendar).
     ...scene.vars,
   }
@@ -5480,13 +5479,13 @@ const TextBox = styled.div`
      draggable sticky notes) stay under the section menu and site header. */
   isolation: isolate;
   grid-column: ${({ $solo }) => ($solo ? 2 : 4)};
-  min-height: var(--text-min-h);
+  /* Let the panel follow its content, including font-size and image changes. */
+  min-height: 0;
   margin-top: var(--text-offset);
 
   ${NARROW} {
     grid-column: 2;
     margin-top: 1rem;
-    min-height: 60vh;
   }
 `
 

@@ -106,6 +106,8 @@ While powered and non-powered USB hubs were tested, the powered USB hubs failed
 to transmit signal and only delivered power. Thus, the team decided to use
 non-powered USB hubs.
 
+<br />
+
 Following this decision, we developed a flowchart to understand the software flow between the user interface and the bioreactor hardware.
 
 <Figure
@@ -138,7 +140,11 @@ However, upon conducting research, we realized that the Grafana dashboard did
 not permit sending controls to the Arduino. Thus, the team decided to seek
 alternative methods to develop the user interface.
 
+<br />
+
 The next iteration of the user interface was developed in Python and was hosted on the local terminal. Since there were many bugs and the user interface did not have any visual components, it did not meet the requirements of displaying the information in a user-friendly manner. Thus, the team decided to further seek alternative methods of displaying the data.
+
+<br />
 
 Upon exploring the development of the user interface using Python and Tkinter, the following prototype was developed:
 
@@ -148,6 +154,8 @@ Upon exploring the development of the user interface using Python and Tkinter, t
 />
 
 While it includes several buttons and a slider and shows a sample layout that includes preliminarily necessary components of the user interface, the software does not look easy to read, there are no colours, and the graphing feature was not yet implemented. Furthermore, the connection between the Arduino and user interface was not yet implemented at this stage.
+
+<br />
 
 The code for version 1 of the Data + Controls subsystem can be found [here](https://gitlab.igem.org/2026/software/toronto/hardware/-/blob/main/Data%20and%20Controls/V1.py).
 

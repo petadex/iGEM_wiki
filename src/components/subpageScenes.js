@@ -201,7 +201,6 @@ export const DRY_LAB_SCENE = {
     box: [274, 320, 804, 2488],
     caps: [40, 40],
     /** Shortest box (plate px): the mockup's length. */
-    minH: 2168,
     /** Callouts, placeholders and other capped blocks span the whole box. */
     fullWidthBlocks: true,
   },
@@ -301,7 +300,6 @@ export const VENTURE_SCENE = {
     name: "text-space",
     box: [339, 412, 980, 3691],
     caps: [4, 4],
-    minH: 2000,
   },
   /** Bottom of the mockup's text box; the river below is the ending. */
   textEndY: 3691,
@@ -460,7 +458,6 @@ export const HP_SCENE = {
     name: "text",
     box: [339, 412, 980, 3691],
     caps: [4, 4],
-    minH: 2000,
   },
   /** Bottom of the mockup's text box; the treeline below is the ending. */
   textEndY: 3691,
@@ -548,7 +545,6 @@ export const HARDWARE_SCENE = {
     name: "text-space",
     box: [339, 412, 980, 3691],
     caps: [4, 4],
-    minH: 2000,
   },
   /** Bottom of the mockup's text box; the pool below is the ending. */
   textEndY: 3691,
@@ -673,7 +669,6 @@ export const WET_LAB_SCENE = {
     name: "16-main-body-box",
     box: [340, 413, 980, 3691],
     caps: [4, 4],
-    minH: 2000,
   },
   /** Bottom of the mockup's text box; the seabed below is the ending. */
   textEndY: 3691,
@@ -816,7 +811,6 @@ export const CONTRIBUTION_SCENE = {
   text: {
     fill: "#fdf9f0",
     box: [90, 412, 1020, 2640],
-    minH: 900,
   },
   textEndY: 2640,
   /**
@@ -892,7 +886,6 @@ export const ATTRIBUTIONS_SCENE = {
   text: {
     fill: "#fffbf7",
     box: [140, 412, 970, 3720],
-    minH: 2000,
   },
   textEndY: 3720,
 }
@@ -927,7 +920,6 @@ export const FINANCE_SCENE = {
   text: {
     fill: "#f8fafb",
     box: [355, 412, 1012, 3400],
-    minH: 2000,
   },
   textEndY: 3400,
 }
@@ -971,7 +963,6 @@ export const SAFETY_SCENE = {
     name: "text-space",
     box: [135, 413, 979, 3691],
     caps: [4, 4],
-    minH: 2000,
   },
   /** Bottom of the painted box; the pond below is the ending. */
   textEndY: 3691,
@@ -1047,7 +1038,6 @@ export const ENGINEERING_SCENE = {
     name: "text-space",
     box: [135, 413, 979, 3691],
     caps: [4, 4],
-    minH: 2000,
   },
   /** Bottom of the painted box; the quarry below is the ending. */
   textEndY: 3691,
@@ -1208,7 +1198,6 @@ export const OUTREACH_SCENE = {
     name: "big-block",
     box: [339, 404, 988, 3693],
     caps: [4, 4],
-    minH: 2000,
   },
   /**
    * Above the painted box's bottom (3693), so the ending shows the bottom
@@ -1299,7 +1288,6 @@ export const PROJECT_SCENE = {
     // The speckled edges reach 68 (top) and 105 (bottom) plate px in, so
     // they stay out of the stretched middle.
     caps: [75, 110],
-    minH: 1500,
     // Clear of the speckled edges (on top of the box's usual padding).
     inset: [50, 50, 80, 36],
   },
@@ -1428,7 +1416,6 @@ export const WIKI_SCENE = {
     fill: "#f1dece",
     radius: "0.6rem",
     box: [136, 156, 392, 1047],
-    minH: 700,
     // The lower dragon's tail, hung a little lower than painted, comes out
     // over the box's bottom corner, below the last text; its glow, fire and
     // markings below \`line\` (just above the tail) come with it.
