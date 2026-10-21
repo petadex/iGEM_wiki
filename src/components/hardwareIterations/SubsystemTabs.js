@@ -45,7 +45,7 @@ const Tabs = styled.div`
   display: flex; overflow-x: auto; gap: 0.4rem; padding: 0.4rem;
   border-bottom: 2px solid var(--color-border);
   button { flex: 0 0 auto; min-height: 44px; padding: 0.6rem 0.9rem; border: 1px solid var(--color-border); border-radius: 0.6rem 0.6rem 0 0; font: inherit; background: transparent; color: inherit; cursor: pointer; }
-  button[aria-selected="true"] { background: var(--color-accent); color: white; }
+  button[aria-selected="true"] { background: var(--table-head, var(--color-accent)); color: var(--table-head-text, white); }
   button:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
 `
 const Missing = styled.p`

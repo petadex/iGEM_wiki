@@ -472,7 +472,10 @@ const Article = styled.article`
   }
 
   .priority-comparison-table th:nth-child(1) { width: 30%; }
-  .hardware-requirements-table th:nth-child(1) { width: 14%; }
+  .hardware-requirements-table th:nth-child(1) {
+    width: 14%;
+    white-space: nowrap;
+  }
   .hardware-requirements-table th:nth-child(2) { width: 23%; }
   .hardware-requirements-table th:nth-child(3) { width: 23%; }
   .hardware-requirements-table th:nth-child(4) { width: 12%; }
@@ -539,8 +542,8 @@ const Article = styled.article`
   }
 
   th {
-    color: var(--color-text);
-    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--table-head-text, var(--color-text));
+    background: var(--table-head, color-mix(in srgb, var(--color-accent) 15%, transparent));
     text-align: left;
   }
 

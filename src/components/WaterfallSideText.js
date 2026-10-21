@@ -133,41 +133,25 @@ export function WaterfallSideText() {
     <>
       <TextMount ref={leftRef} $side="left">
         <Body>
-          The world produces over 400 million tonnes of plastic each year
-          <span className="wide-copy">
-            , and only a fraction of that number is disposed of responsibly.
-            The rest ends up in garbage patches and urban litter, left to
-            degrade for the next few decades. As plastics degrade, they
-            fragment into{" "}
-          </span>
-          <span className="phone-copy">, which degrade into </span>
+          The world produces over 400 million tonnes of plastic each year —
+          only a fraction of that is disposed of responsibly. The rest are left
+          to degrade, fragmenting into{" "}
           <ExplainTerm
             term="microplastics"
             explanation={MICROPLASTICS_EXPLANATION}
             plain
-          />
-          <span className="wide-copy">
-            {" "}
-            (pieces of plastic that are smaller than 5 millimetres).
-          </span>
-          <span className="phone-copy">.</span>
+          />{" "}
+          (plastic {"<"}5 millimetres in size).
         </Body>
         <PopupHintBlock />
       </TextMount>
 
       <TextMount ref={rightRef} $side="right">
         <Body $side="right">
-          <span className="wide-copy">
-            Microplastics have been found in ecosystems, vital infrastructure
-            (such as stormwater drains), and in human blood, lung, and arterial
-            tissue. Elevated levels of microplastics in human tissue have been
-            associated with adverse health outcomes, such as an increased risk
-            of cardiovascular disease.
-          </span>
-          <span className="phone-copy">
-            Microplastics have been found in stormwater drains and in human
-            blood, lung, and arterial tissue.
-          </span>
+          Microplastics have been found in ecosystems, infrastructure, and human
+          tissue. Elevated levels of microplastics found in human tissue have
+          been associated with adverse health outcomes, like increased risk of
+          heart disease.
         </Body>
       </TextMount>
     </>
@@ -278,7 +262,7 @@ const Body = styled.p`
   overflow: visible;
 
   ${phone} {
-    font-size: ${({ $side }) => phoneSize($side === "right" ? 0.62 : 0.7)};
+    font-size: ${({ $side }) => phoneSize($side === "right" ? 0.44 : 0.56)};
   }
 `
 

@@ -237,10 +237,11 @@ const TabButton = styled.button`
           }
         `
       : css`
-          border: 1px solid ${$selected ? "var(--color-accent)" : "var(--color-border)"};
+          border: 1px solid ${$selected ? "var(--table-head, var(--color-accent))" : "var(--color-border)"};
           border-radius: 999px;
           padding: 0.45rem 1rem;
-          background: ${$selected ? "var(--color-accent)" : "transparent"};
+          background: ${$selected ? "var(--table-head, var(--color-accent))" : "transparent"};
+          color: ${$selected ? "var(--table-head-text, var(--color-text))" : "var(--color-text)"};
           font-size: 0.8125rem;
           font-weight: ${$selected ? 600 : 500};
           letter-spacing: 0.03em;

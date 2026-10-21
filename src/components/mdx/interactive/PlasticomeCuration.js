@@ -9,6 +9,7 @@ import {
   Box,
   LinkButton,
   BoxTitle,
+  ChartHeading,
   ChartScroll,
   FRAME,
   Flow,
@@ -183,7 +184,7 @@ export const PlasticomeByPlastic = () => {
   const max = PLASTICS[0].rows.length
   return (
     <Box>
-      <BoxTitle>Which plastics do the enzymes act on?</BoxTitle>
+      <ChartHeading>Which plastics do the enzymes act on?</ChartHeading>
       <Bars role="list" aria-label="Enzymes per plastic">
         {PLASTICS.map((p) => (
           <BarRow
@@ -344,7 +345,7 @@ export const PlasticomeCoverage = () => {
   return (
     <Box>
       <Head>
-        <BoxTitle>What is PETadex-PAZy?</BoxTitle>
+        <ChartHeading>What is PETadex-PAZy?</ChartHeading>
         <Picker>
           <span>Show enzymes by</span>
           <select value={view} onChange={changeView}>

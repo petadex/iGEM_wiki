@@ -5,6 +5,7 @@ import {
   Arrow,
   Box,
   BoxTitle,
+  ChartHeading,
   ChartScroll,
   FRAME,
   Flow,
@@ -931,7 +932,7 @@ export const IdentityHistogram = () => {
 
   return (
     <Box>
-      <BoxTitle>Where the identity cutoff sits</BoxTitle>
+      <ChartHeading>Where the identity cutoff sits</ChartHeading>
       <Sub>
         Best alignment per pair of centroids, for every pair with E &lt; 10⁻⁵,
         binned by percent identity. Hover a bar for the count.
@@ -1016,7 +1017,7 @@ export const ComponentSizes = () => {
   const top = Math.max(...rows.map(r => r[1]))
   return (
     <Box>
-      <BoxTitle>Component sizes</BoxTitle>
+      <ChartHeading>Component sizes</ChartHeading>
       <Sub>Components by number of centroids.</Sub>
       <Bars>
         {rows.map(([k, n]) => (
