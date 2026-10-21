@@ -35,6 +35,13 @@ import { DiamondSearchDemo } from "./interactive/DiamondSearchDemo.js"
 import { RecordCardDemo } from "./interactive/RecordCardDemo.js"
 import { DatasetLoop, ModelDatasets } from "./interactive/ModelDatasets.js"
 import { BiosampleViewer, ProfileShares, ProfileStack, ProfileSteps } from "./interactive/BiosampleProfiles.js"
+import {
+  EricksonSequences,
+  PlasticomeCoverage,
+  PlasticomeExplorer,
+  PlasticomeFlow,
+  PlasticomeStats,
+} from "./interactive/PlasticomeCuration.js"
 import { AntibioticSelectionAnimation, GfpBiosensorAnimation } from "./interactive/CopperReleaseAnimation.js"
 import Dropdown, { CodeDropdown } from "../Dropdown.js";
 import { embedComponents } from "./embeds.js"
@@ -216,6 +223,11 @@ export const mdxComponents = {
   ProfileShares,
   ProfileStack,
   BiosampleViewer,
+  PlasticomeStats,
+  PlasticomeCoverage,
+  PlasticomeExplorer,
+  PlasticomeFlow,
+  EricksonSequences,
   AntibioticSelectionAnimation,
   GfpBiosensorAnimation,
   CodeDropdown,

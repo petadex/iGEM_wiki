@@ -115,32 +115,36 @@ From each family we search outward, first into the NCBI protein database and the
 *Owner: Dennis*
 
 {/*
-  OUTLINE — not rendered. ~120 words of the Dataset Generation budget.
-  Notebooks 76, 70. Page Tree §1.1 [M].
+  WRITER NOTES — not rendered.
 
-  This is the "495 known enzymes" the whole corpus grows from, so it has to
-  establish that the seed set is trustworthy before anything downstream can
-  be. Lead with that, not with the tooling.
+  Overview tier. The full write-up is /dry-lab/model/plasticome/, reached
+  only from the Methods link below. Ported from the draft in
+  plasticome/wiki-reference-curation/ (template.html).
 
-  - Why curate at all: no single database is complete, and PAZy and PlasticDB
-    disagree on both membership and sequence
-  - PAZy pulled through its API; PlasticDB reconciled against it
-  - Identity resolved by MD5 matching cascades, since accessions alone miss
-    the same sequence deposited twice
-  - Union with Plasticome v1.1, every entry tagged with its source
-  - The Erickson hand-curation, and DOI backfill for entries that arrived
-    without a citation
-  - Close on what came out: the reference set, and what "reference" means
-    here (reported activity, not activity we measured)
+  Text: the first paragraph is Introduction ¶3 of petadex-manuscript.tex,
+  verbatim. The second adapts Results ¶4 ("To generate this updated
+  PETadex-260701 dataset...") and the abstract.
 
-  Numbers owed: seed count. Narrative §4 flags the baseline as contested —
-  brain dump says both ~2,000 known and PAZy ~495, and the narrative uses
-  ~500. The flowchart above says 609 PETadex-PAZy proteins, which is a third
-  figure again. RESOLVE before writing: these cannot all be the same
-  quantity, and this section is where a judge will notice.
+  Numbers, all from plasticome.v2.xlsx through src/data/plasticomeCuration.json,
+  and all agreeing with the manuscript: 495 records in the PAZy pull; 473
+  after curation; 212 in pazy-240826; 609 in the union (397 pazy-260701
+  only, 136 pazy-240826 only, 76 both); 411 centroids at 90% identity. The
+  old outline's 495 / ~500 / 609 conflict is resolved: 495 is PAZy, 609 is
+  the plasticome, and the flowchart's "609 PETadex-PAZy proteins" is the
+  same 609.
 */}
 
-Placeholder: PAZy pull, PlasticDB reconciliation, MD5 cascades, DOI backfill.
+Existing databases of plastic-degrading enzymes (PDEs) are limited in scope and diversity. The plastics-active enzymes database (PAZy) contains 495 functionally verified plastic-active enzymes, most of them homologs of leaf-branch compost cutinase (LCC) or IsPETase.
+
+To build PETadex, we created a starting search query by combining two versions of the PAZy database: the one used in the original PETadex generation (pazy-240826) and a recently updated, manually curated version (pazy-260701). Together they give a union of 609 curated, experimentally validated PDEs, which we call the plasticome.
+
+<PlasticomeStats />
+
+<PlasticomeCoverage />
+
+<PlasticomeExplorer />
+
+<MethodsLink href="/dry-lab/model/plasticome/">How the two PAZy snapshots were curated and merged, where every sequence came from, the Erickson enzymes reset to their paper, and what the 609 reduce to after clustering.</MethodsLink>
 
 ### CATH Assignment
 

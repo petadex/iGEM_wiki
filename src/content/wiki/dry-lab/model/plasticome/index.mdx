@@ -1,0 +1,233 @@
+---
+title: "Plasticome Reference Curation: Methods"
+section: "Dry Lab"
+path: "/dry-lab/model/plasticome/"
+navTitle: "Plasticome curation methods"
+order: 23
+description: "How two snapshots of the PAZy database were curated against their papers and merged into the plasticome, the 609 experimentally validated plastic-degrading enzymes every PETadex search starts from."
+owners: ["Dry Lab"]
+updated: "2026-10-20"
+status: "draft"
+---
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Methods tier for the Plasticome Reference Curation subsection of the Model
+  page. The overview, with <PlasticomeCoverage /> and <PlasticomeExplorer />,
+  is on /dry-lab/model/#plasticome-reference-curation. This page is reached
+  only from the Methods link there; it is not in any menu. Owner: Dennis.
+
+  Ported from the draft in plasticome/wiki-reference-curation/
+  (template.html). Facts follow petadex-manuscript.tex. Counts come from
+  plasticome.v2.xlsx through src/data/plasticomeCuration.json and agree
+  with it.
+
+  Everything inside <Placeholder> is either drafted for the wiki with no
+  manuscript text behind it, or is manuscript Methods text flagged
+  % AI-GENERATED in the .tex. Team rule: rewrite it in your own words, then
+  remove the wrapper. Text outside a wrapper is hand-written manuscript text.
+
+  Open checks:
+    - SEQUENCES (changed from the draft). The draft said a sequence taken
+      from a paper beats the database record, and listed four Erickson
+      enzymes (503, 611, 701, 702) where it did. That was the old
+      is_manual() rule. build_union.py dropped it: the retrieved sequence
+      wins wherever retrieval is possible, and the final run
+      (runs/2026-08-06.final-usearch.3/01-union.tsv) carries the database
+      sequence for those four (294, 293, 301, 262 aa). The section below
+      describes the rule as it is. Decide whether that is the rule we want:
+      it means nine of the 21 Erickson enzymes reset to the paper in v1.1
+      are back on their database sequence in the plasticome.
+    - The direct / indirect split (459 / 14) is from the workbook; the
+      manuscript does not report it. Decide whether the wiki should, and
+      define the two terms in one sentence if so.
+    - None of "Preparing pazy-240826" is in the manuscript. Check we want it.
+    - The step-1 README gives a different resolution split (NCBI 65,
+      UniProt +45, RCSB +2, UniParc +4) for the 116 pazy-240826-only rows
+      only. The table below is fetched_sequences.json from the final run,
+      which covers all 565 distinct accessions.
+    - Add the GitHub / Hugging Face link for the workbook and repo once they
+      are public.
+*/}
+
+<Callout title="Methods for the plasticome">
+This page is the full write-up behind the [Plasticome Reference Curation](/dry-lab/model/#plasticome-reference-curation) subsection of the Model page.
+</Callout>
+
+## Why curate
+
+Existing databases of PDEs are limited in scope and diversity. The plastics-active enzymes database (PAZy) contains 495 functionally verified plastic-active enzymes, most of them homologs of leaf-branch compost cutinase (LCC) or IsPETase. Following established workflows for the homology-based retrieval and expansion of a given set of enzymes of interest, we built a workflow for the retrieval of PDEs from NCBI-nr and the SRA, using the Logan assembly.
+
+<Placeholder>
+
+PETadex links back to characterized enzymes through the plasticome. Apart from the plasticome, PETadex entries are putative enzymes that have not been validated experimentally.
+
+Because every downstream search starts from these sequences, an enzyme wrongly included pulls in false relatives, and one that is missing leaves a family unsearched. That is why each record was checked against its source publication before the search began.
+
+</Placeholder>
+
+## Building the plasticome
+
+To generate this updated PETadex-260701 dataset, we created a starting search query from combining two versions of the PAZy database: the first from the original PETadex generation (pazy-240826; *n* = 212; 26 August 2024), and a recently updated version (pazy-260701; *n* = 473; retrieved 30 June 2026). Sourcing 136 enzymes from pazy-240826, 397 enzymes from pazy-260701 and 76 merged between both generates a 609-enzyme union set, the plasticome. The plasticome was then clustered at 90% amino acid identity to 411 cluster centroids.
+
+<PlasticomeFlow />
+
+## Inputs
+
+| Source | What it is | Records | Workbook sheet |
+|---|---|---|---|
+| pazy-260701 | Every record in PAZy, retrieved 30 June 2026 | 495 | `pazy-260701_pull` |
+| pazy-260701, curated | After curation against each source publication | 473 | `cleaned_pazy-260701` |
+| Original PETadex seed set | Plasticome v1, used to build PETadex v1 | 213 | `plasticome.v1` |
+| pazy-240826 | The seed set after cleaning (plasticome v1.1) | 212 | `plasticome.v1.1` |
+| Erickson changes | Sequences reset to the paper's supplement | 21 | `erickson-changes` |
+
+## Curating pazy-260701
+
+<Placeholder>
+
+pazy-260701 was retrieved on 30 June 2026; 260701 is the version label of the dataset, not the retrieval date. The 495 records in the 2026 snapshot were curated manually against their source publications: 26 records without experimentally reported activity were removed and 4 sequences were added (one reported in the literature but absent from PAZy, one replacing an inactive PAZy record, and two that PAZy aggregates under a single identifier), leaving 473 enzymes.
+
+Of the 495 records, 175 were already in the original PETadex seed set, 287 were new and 33 came with no sequence. The curator checked that the paper reports the enzyme, that the accession points to the protein the paper tested, and whether the paper shows activity on a plastic directly or only indirectly. Each decision is recorded in sheet `pazy-260701_manual-curation` by cell colour.
+
+</Placeholder>
+
+| Decision | Marked as | Records |
+|---|---|---|
+| Sequence taken from the accession | Green, sequence column | 470 |
+| No sequence could be recovered | Red, sequence column | 26 |
+| Only a fragment is available | Yellow, sequence column | 3 |
+| Accession added or corrected | Green, accession column | 28 |
+| Name changed to the one in the paper | Green, name column | 6 |
+| Direct evidence of activity | Activity column | 459 |
+| Indirect evidence of activity | Activity column | 14 |
+| No experimentally reported activity (removed) | Activity column | 26 |
+
+<Placeholder>
+
+Curators left free-text notes on 53 records explaining a change, and on 21 explaining where a sequence came from when it had to be recovered by hand: translating a DNA sequence from a supplement, locating a gene from its PCR primers in a genome, or copying a sequence out of a patent. A few examples:
+
+</Placeholder>
+
+| Enzyme | Curator note |
+|---|---|
+| PLE628 | This gene is correlational to plastic degradation through RNA-seq upregulation and plastic-degrading enzyme homology, but there is no concrete evidence. |
+| Mors1 | Changed the accession to the accession from the paper. |
+| Cut190 | Wt has very little PET degradation, Mt has more |
+| Est1 | BAI99230.2 = Est119 |
+| CalB | The first two citations on PAZy didn't mention CalB exactly, but third does, so I removed the first 2. |
+
+## Preparing pazy-240826
+
+<Placeholder>
+
+The first snapshot, pazy-240826 (26 August 2024; *n* = 212), is the seed set of the original PETadex build. In the workbook it appears as plasticome v1 (213 records) and, after cleaning, plasticome v1.1 (212 records), the version merged here. Cleaning involved four changes.
+
+1. **Accessions.** 13 records had their accession corrected to the one that matches the reported protein.
+2. **Erickson sequences.** The 21 metagenomic enzymes from Erickson et al. (2022) were reset to the sequences in the paper's supplementary table D1 (below).
+3. **DOIs.** Every record now carries the DOI of its source paper (212 of 212).
+4. **Labels.** Kingdom was written several ways ("Bacteria", "Metagenome", "Archaea", "Eukaryota", "Eukaryotic", "Eukarya"); these were normalised to superkingdom during annotation.
+
+</Placeholder>
+
+<EricksonSequences />
+
+## Merging
+
+<Placeholder>
+
+The two snapshots were joined on accession, ignoring accession version, giving a union of 609 enzymes: 397 from pazy-260701 only, 136 from pazy-240826 only and 76 present in both.
+
+</Placeholder>
+
+| Source tag | Meaning | Records |
+|---|---|---|
+| pazy-260701 only | pazy-260701 record with no match in pazy-240826 | 397 |
+| Both snapshots | Accessions match across the two snapshots | 76 |
+| pazy-240826 only | pazy-240826 record with no match, appended | 136 |
+| **Total** | | **609** |
+
+<Placeholder>
+
+**Duplicates are kept on purpose.** When the two snapshots cite the same enzyme under different accessions, nothing joins them and the enzyme appears twice. Cut190, for example, is in pazy-240826 as `BAO42836.1` and in pazy-260701 as `WP_015787089.1`. These are not resolved by hand: identical and near-identical sequences are collapsed by clustering (see [Outputs](#outputs)), which is a rule rather than a judgement call.
+
+</Placeholder>
+
+## Sequences
+
+<Placeholder>
+
+Sequences were retrieved by accession rather than copied from an older table. Each accession was looked up in turn against NCBI Protein, UniProt, RCSB PDB, NCBI Nucleotide (for coding sequences), MGnify and UniParc, taking the first hit. All 565 distinct accessions resolved.
+
+</Placeholder>
+
+| Database | Accessions resolved |
+|---|---|
+| NCBI Protein | 473 |
+| UniProt | 53 |
+| UniParc | 26 |
+| MGnify | 6 |
+| RCSB PDB | 4 |
+| NCBI Nucleotide (coding sequence) | 3 |
+| **Total** | **565** |
+
+<Placeholder>
+
+The retrieved sequence wins wherever retrieval is possible. A sequence is carried over unchanged only where there is no accession to retrieve from: 13 pazy-240826 records whose sequence exists only in their paper (12 of the Erickson enzymes, and jmPE13), and 28 pazy-260701 records that keep the sequence attached to their PAZy record.
+
+This means the paper's sequence survives for only 12 of the 21 Erickson enzymes. The other nine have an accession, either in pazy-240826 or through a pazy-260701 record they merged with, and carry the sequence retrieved from it. Every record's source is listed in the explorer on the [Model page](/dry-lab/model/#plasticome-reference-curation).
+
+</Placeholder>
+
+## Annotation and structures
+
+<Placeholder>
+
+Each record was joined back to its source tables to recover substrate, organism, superkingdom, metagenomic origin, UniProt accession and PDB structure. Where the two snapshots disagreed, pazy-260701 won. Several PDB IDs in the sources were typos or obsolete; each correction was checked by aligning the RCSB sequence to the record's own sequence. After correction, 91 records link to an experimental structure.
+
+Structures were predicted with ESMFold2. For the 609 plasticome enzymes the mean pLDDT was 0.94, and 605 structures (99.3%) had a mean pLDDT of at least 0.70. These structures are the input to [CATH Assignment](/dry-lab/model/#cath-assignment).
+
+</Placeholder>
+
+## Outputs
+
+<Placeholder>
+
+The 609 sequences were clustered at 90% amino acid identity with USEARCH v11.0.667 in a reference-seeded scheme. Thirteen well-characterized enzymes were fixed as cluster centroids, the remaining sequences were first recruited to these centroids, and those left unassigned were clustered *de novo* with centroids chosen by decreasing length. This produced 411 clusters (13 reference-seeded and 398 *de novo*). The 411 centroids are the query set for the NCBI-nr search. Separately, collapsing the plasticome at 100% identity gives 493 non-redundant proteins, which were used to seed the profile HMMs.
+
+</Placeholder>
+
+| Set | How it is made | Size | Used for |
+|---|---|---|---|
+| Plasticome (union) | pazy-260701 and pazy-240826 merged on accession | 609 | The reference record of every enzyme |
+| Non-redundant | Collapsed at 100% identity | 493 | Seeding the profile HMMs |
+| 90% centroids | Reference-seeded clustering at 90% identity | 411 | The NCBI-nr search query, and [Component Assignment](/dry-lab/model/#component-assignment) |
+
+<Placeholder>
+
+In the non-redundant set, 384 sequences come from a single record and 109 are shared by two or more records. The 411 centroids fall into 46 graph components.
+
+</Placeholder>
+
+## What "validated" means
+
+<Placeholder>
+
+An enzyme is in the plasticome because a published paper reports experimental activity on a plastic. We did not test these enzymes ourselves, and the evidence varies from paper to paper, but the search treats every plasticome enzyme the same way.
+
+</Placeholder>
+
+Most of PAZy's enzymes are homologs of LCC or IsPETase, so the families the pipeline searches most thoroughly are the ones already best studied.
+
+## Reproducing
+
+The curation workbook, `plasticome.v2.xlsx`, holds every sheet named on this page. The union is rebuilt from the two cleaned tables by the first step of the plasticome pipeline:
+
+```bash
+python3 "lib/01 union/build_union.py" \
+    source-data/plasticome.v1.1/plasticome.v1.1.tsv \
+    source-data/plasticome.v260701/cleaned_pazy-260701-singletons.tsv \
+    -o runs/<run>/01-union.tsv
+python3 "lib/01 union/fetch_sequences.py" runs/<run>/01-union.tsv
+```
