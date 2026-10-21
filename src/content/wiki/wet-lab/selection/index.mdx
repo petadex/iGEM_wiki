@@ -1,0 +1,24 @@
+---
+title: "Selection"
+section: "Wet Lab"
+path: "/wet-lab/selection/"
+navTitle: "Selection"
+order: 50
+owners: ["Wet Lab"]
+updated: "2026-10-21"
+status: "draft"
+---
+
+The Selection assay was designed to help us identify PETase variants that can successfully break down PET by looking at bacterial growth. This assay uses copper embedded into PET to connect PETase activity to antibiotic resistance. When a PETase breaks down the PET mesh, copper ions are released into the extracellular and periplasmic space of the bacteria, which activates the pCusC promoter. This then activates transcription of the downstream secondary antibiotic resistance gene, allowing the bacteria to survive in the presence of the antibiotic. If a PETase is unable to break down enough PET to release sufficient copper, the bacteria would not express enough resistance and their growth would be inhibited. Colonies that survive the selection process can then be sequenced to identify the PETase variants they express. These sequences can also be shared with our Dry Lab team to help improve their model.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/selection1.avif"
+  alt="selection1"
+  caption="Figure 1: Overview of the PETase Selection assay. PETase breaks down copper containing PET mesh, releasing copper that activates pCusC and turns on the antibiotic resistance gene. Bacteria with sufficient resistance can survive and form colonies, while those without enough resistance have limited growth. Surviving colonies can then be sequenced to identify successful PETase variants."
+/>
+
+## Resistance Marker
+
+A bacteriostatic antibiotic was selected, as they prevent bacteria from growing rather than directly killing them, providing cells enough time to express PETase, break down PET, release copper, and activate the resistance gene. We investigated two antibiotic options: sulfonamides and trimethoprim. Both interfere with bacterial folate synthesis, but they target different enzymes in the pathway. For sulfonamides, we considered the sul1 and sul2 resistance genes, while for trimethoprim, we looked into dfrB10.
+
+Sul1 and sul2 encode sulfonamide-resistant variants of dihydropteroate synthase, and dfrB10 encodes a trimethoprim-resistant version of dihydrofolate reductase. GGA was attempted with the AS Plasmid vector and all three resistance genes, however only the assembly with su1 was successful, and so all testing was performed with sul1.

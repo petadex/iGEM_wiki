@@ -17,10 +17,14 @@ export const wikiNav = [
     { to: "/software/", label: "Software" },
   ]},
   { label: "Wet Lab", children: [
-    { to: "/wet-lab/overview/", label: "Experimental Overview" },
-    { to: "/wet-lab/parts/", label: "Parts" },
-    { to: "/wet-lab/notebook/", label: "Notebook" },
+    { to: "/wet-lab/overview/", label: "Overview" },
+    { to: "/wet-lab/plasmid-design/", label: "Plasmid Design" },
+    { to: "/wet-lab/copper-integration/", label: "Copper Integration" },
+    { to: "/wet-lab/biosensor/", label: "Biosensor" },
+    { to: "/wet-lab/selection/", label: "Selection" },
     { to: "/wet-lab/results/", label: "Results" },
+    { to: "/wet-lab/notebook/", label: "Protocols / Lab Notes" },
+    { to: "/wet-lab/parts/", label: "Parts Documentation" },
   ]},
   { label: "Hardware", children: [
     { to: "/hardware/", label: "Overview" },

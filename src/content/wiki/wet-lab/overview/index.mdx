@@ -1,10 +1,9 @@
 ---
-title: "Experimental Overview"
+title: "Overview"
 section: "Wet Lab"
 path: "/wet-lab/overview/"
-navTitle: "Experimental Overview"
+navTitle: "Overview"
 order: 10
-description: "How the Wet Lab converts computational PETase candidates into experimentally validated hits."
 owners: ["Wet Lab"]
 updated: "2026-05-16"
 status: "draft"
@@ -27,111 +26,6 @@ We have designed two high-throughput assays.
 To assess the activity of PETase, our three assays, Biosensor, Selection, and Dye Release, leverage the fact that PETase breaks down PET, triggering observations that are later quantified to calculate PETase activity.
 
 Compared with other PETase testing assays, our assays are cost-effective and high-throughput, while providing reliable quantitative results. With our three assays, we aim to benchmark them against common PETases such as IsPETase and FAST-PETase, obtaining data for quantitative comparisons of PETase activities. This transforms cheap and high-throughput PETase screening from a binary readout into a continuous quantitative readout, and PETase variants can be ranked based on their plastic degradation efficiency
-
-## Plasmid Design
-
-Two sets of plasmids were designed: the PETase Display **(PD)** plasmid, used to display PETases on the surface of E.coli, and the Assay Specific **(AS)** plasmid, which links PETase activity to an observable output for screening.
-
-### PETase Display (PD) Plasmid Design
-
-The **PD plasmid** contains an ice nucleation protein (INP)-based display system upstream of a BsmBI cloning site, allowing for different PETases to be cloned into the PD vector via Golden Gate Assembly (GGA), and expression of PETases on the outer membrane of transformed cells.
-
-The **PD-V1 plasmid** was based on AF_lacZ pDest (BBa_J435300), with a tac promoter (BBa_J435360), BC_B0034 RBS (BBa_J435364), and a double terminator composed of rrnB T1 terminator (BBa_J434007) and the T7 terminator from AF_lacZ pDest. This version of the PD plasmid had the PETase display system controlled by IPTG for an early assay concept that was discarded. To simplify the PD plasmid, a second version was made.
-
-The **PD-V2 plasmid** uses pUC57-Mini-Key IIS Free as its base vector. The promoter-PETase display-terminator unit was adapted from the sequence used in the PD-V1 plasmid. The tac promoter sequence was replaced with the T7 promoter sequence from BBa_K3633015, and the rrnB T1 terminator sequence was replaced with the T7 terminator sequence from the pET-21a(+) vector. The sequences surrounding the promoter and terminator were unmodified. A start codon present between the BC_B0034 RBS and beginning of the INP sequence was also mutated. These modified sequences have been added to the iGEM Registry of Standard Biological Parts.
-
-### INSERT 2 PLASMID MAPS HERE
-
-#### Display System Design
-
-The display system uses the N- and C-termini of INP to localize the PETases to the outside of the outer membrane of E. coli; this system has previously been well-validated in the literature for surface display of other classes of enzymes, such as carboxymethylcellulases and laccases.1–5 The sequence for the INP display system was obtained from BBa_K523013.
-
-A 22-residue flexible GS linker (GGSGGGGSGGGGSGGSGGG) was designed using the principles in Chen et al. 2013,6 and fused to the C-terminal end of the INP display system, followed by a pair of outwards-facing BsmBI restriction sites and a spacer from the pGGASelect vector. The BsmBI sites were arranged so that the vector overhang corresponded to the last four nucleotides of the GS linker, so that the GGA “scar” would not impact the reading frame of any PETases cloned in. Downstream of the BsmBI sites, there is a second shorter GS linker and FLAG tag to allow for verification of PETase surface display. A stop codon was added inside the pGGASelect spacer to prevent the expression of the C-terminal FLAG tag in constructs that don’t contain a PETase, allowing for detection of PETase surface display.
-
-### INSERT LINEAR DNA MAP HERE
-
-### Assay Specific (AS) Plasmid Design
-
-To connect PETase activity to a visible output, the Biosensor assay and Selection assay use a second plasmid. These Assay Specific (AS) plasmids are specific to both of these assays but use a common backbone. They are also very conceptually similar: the AS plasmid backbone uses the pCusC promoter (BBa_K1980004) to respond to copper released from digested PET.
-
-### INSERT PLASMID MAP HERE
-
-pJUMP26-1A was chosen as the basis for the AS backbone due to it being one of the only non-pBR322/ColE1 ori-based backbones in the entire 2026 iGEM distribution kit. It instead contains a medium copy number p15A origin of replication, which uses a different copy number determination system than the ColE1 ori-based AF lacZ_pDest and pUC57-Mini-Key IIS Free used in V1 and V2 of the PD plasmid, respectively. This allows the two plasmids to be independently and stably maintained in the same cell. pJUMP26-1A also contains the KanR selection marker. As this is a different selection marker from V1 and V2 of the PD plasmid, this choice allows for selection of double transformants. The BC_B0034 RBS and EF_ECK9600 terminator were selected from the E. coli Protein Expression Toolkit.
-
-#### Promoter Selection
-
-Copper was selected as the inducer for its favourable mode of integration. Unlike alternative inducers such as arabinose and tetracycline, copper can be incorporated directly into the PET substrate instead of the cell media. This effectively reduces the risk of inducer leakage and false positive activation.
-
-Two promoters were considered when designing the reporter plasmid. copA and CusC were the two most common promoters in copper systems used in previous literature [@fu2024copper; @yamamoto2005copper]. copA is part of the CueR system, which is a copper efflux regulator. CueR activates transcription through copA in the presence of copper. CusC is part of a similar system with CusCFBA copper efflux, which also activates transcription through CusC in the presence of copper. CusRS is also included in this system that allows for increased gene expression under high copper conditions.
-
-CusC was determined to be advantageous as it can detect copper in the periplasm, which may be the first location of copper intake into cells [@jbc80206]. In contrast, CueR detects only cytoplasmic copper, which could increase false negatives in the assay if copper is not able to readily enter intracellular locations. CusC also works optimally near toxic concentrations of copper, allowing us to be less concerned about copper toxicity at higher levels. This also makes CusC a less leaky promoter as it requires a higher concentration of copper to be activated. Therefore, pCusC (BBa_K1980004) was selected for use in both assays.
-
-### Assembly
-
-The empty vectors were intended to be assembled through GGA using parts from the 2026 iGEM distribution kit and ordered fragments, however the empty AS plasmid fragment was ordered and circularized via KLD reaction to save time. The empty AS plasmid fragment was ordered without pCusC to allow for a different promoter to be used if needed. pCusC, msGFP2, sul1, sul2, and dfrB10 inserts were cloned into the empty AS plasmid by GGA using BsaI to make the various complete AS plasmids. PETase inserts were cloned into the empty PD-V2 plasmid by GGA using BsmBI.
-
-## Copper Integration Design
-
-### Copper toxicity
-
-E. coli cells can have their growth impaired by high enough copper concentrations. To test the lethal copper dose, we ran a series of experiments testing E. coli dilutions [list dilutions] on a range of copper concentrations [list copper concentrations] mixed into agar plates. For details, see copper toxicity testing. It was determined that the range of [list viable range] did not alter bacterial growth detrimentally. Finding the highest copper concentration that does not inhibit bacterial growth informs how much copper can be integrated into PET for the assay.
-
-### Integration of Copper into PET mesh
-
-#### Materials and Preparation
-
-First, a copper sulfate solution was prepared by dissolving 94.8g of CuSO₄ in 300mL of milliQ water in a 500mL beaker. Separately, a 0.65M sodium hydroxide solution was prepared by dissolving 10.72g of NaOH in 400mL of milliQ water in a glass baking plate. PET mesh was cut into 6 by 6 inch squares as needed for the desired number of plates.
-
-#### Mesh Pretreatment
-
-The PET mesh requires surface preparation prior to copper incorporation to facilitate even copper uptake. The cut mesh squares were soaked in the NaOH solution for 40 minutes at 37°C, covering with aluminum foil to prevent contamination. Following incubation, the mesh was washed thoroughly under tap water to remove all residual NaOH. Incomplete removal at this stage will cause copper sulfate precipitation and compromise the integration process. The mesh was air dryed on paper towels before proceeding.
-
-#### Copper Incorporation via Boiling
-
-The prepared copper sulfate solution was heated to approximately 90°C on a hot plate. This temperature was maintained with constant monitoring to avoid exceeding 100°C, which promoted precipitation of copper sulfate in solution. The dried mesh was submerged into the heated CuSO₄ solution and boiling was maintained for a minimum of 2 hours with continuous stirring via magnetic stir bar on high setting. Some copper sulfate precipitation at the bottom of the beaker occurred, and this was expected as well as acceptable as long as a stir bar was present. The solution was monitored throughout the incubation period. If water evaporated and the solution became concentrated, milliQ water was added in small increments to maintain volume and prevent over-saturation.
-
-#### Post-Incorporation Washing and pH Adjustment
-
-After heating, the mesh was removed from the solution and cooled slightly on paper towels before aggressive rinsing under tap water to remove surface copper sulfate contamination. The rinsed mesh was transferred to a falcon tube and approximately 15mL of NaOH solution was added. Incubation occurred at 37°C with shaking at 250 rpm for approximately 10 minutes to remove residual copper sulfate.
-
-#### Precipitation and Verification
-
-The mesh was removed after incubation. Using a pH meter, the solution was neutralized to a 7.5 pH in order to optimize accuracy of copper test strip reading. Slowly approximately 1.6 mL of 37% HCl was added to neutralize the solution. Copper incorporation was verified by testing pH with a pH meter and copper presence using copper test strips ( contact for at least 15 seconds). Successful integration was confirmed by appropriate pH and positive copper detection.
-
-### Protocol summary
-
-1. Prepare plates
-2. PET mesh copper sulphate integration
-3. Transforming E. coli (BL21) with PD plasmid and reporter plasmid
-4. Plating transformed E. coli
-5. Add copper-integrated PET mesh on top of plated E. coli and incubate overnight?
-6. Identify colony fluorescence using blue light
-
-## Biosensor
-
-The Biosensor assay is a plate screening method which allows identification of PETases that can hydrolyze PET by fluorescence. A library of PETases are transformed into E. coli, and are surface displayed. A PET mesh embedded with copper is put on top of these plated E. coli, and the copper molecules released by PET degradation induce expression of msGFP2, allowing colony identification. A fluorescent colony indicates that the PETase expressed by that colony can hydrolyze PET enough to release the copper. The colony can then be sequenced to determine the successful PETase sequence.
-
-### Fluorescence
-
-The assay provides a visual binary outcome of PETase success through colony fluorescence. msGFP2 was selected as the fluorescent protein to express when copper is detected, indicating a successful PETase, as it is a well-characterized GFP that folds efficiently and is photostable [valbuena2020photostable].
-
-It should be noted that colony fluorescence cannot be quantified beyond a binary output due to limited equipment access. However, colony fluorescence may not necessarily indicate a high-performing PETase; it may also reflect PETase expressed at high levels, where higher enzyme amounts increase catalytic activity and inducer access.
-
-## Selection
-
-The Selection assay was designed to help us identify PETase variants that can successfully break down PET by looking at bacterial growth. This assay uses copper embedded into PET to connect PETase activity to antibiotic resistance. When a PETase breaks down the PET mesh, copper ions are released into the extracellular and periplasmic space of the bacteria, which activates the pCusC promoter. This then activates transcription of the downstream secondary antibiotic resistance gene, allowing the bacteria to survive in the presence of the antibiotic. If a PETase is unable to break down enough PET to release sufficient copper, the bacteria would not express enough resistance and their growth would be inhibited. Colonies that survive the selection process can then be sequenced to identify the PETase variants they express. These sequences can also be shared with our Dry Lab team to help improve their model.
-
-<Figure
-  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/selection1.avif"
-  alt="selection1"
-  caption="Figure 1: Overview of the PETase Selection assay. PETase breaks down copper containing PET mesh, releasing copper that activates pCusC and turns on the antibiotic resistance gene. Bacteria with sufficient resistance can survive and form colonies, while those without enough resistance have limited growth. Surviving colonies can then be sequenced to identify successful PETase variants."
-/>
-
-### Resistance Marker
-
-A bacteriostatic antibiotic was selected, as they prevent bacteria from growing rather than directly killing them, providing cells enough time to express PETase, break down PET, release copper, and activate the resistance gene. We investigated two antibiotic options: sulfonamides and trimethoprim. Both interfere with bacterial folate synthesis, but they target different enzymes in the pathway. For sulfonamides, we considered the sul1 and sul2 resistance genes, while for trimethoprim, we looked into dfrB10.
-
-Sul1 and sul2 encode sulfonamide-resistant variants of dihydropteroate synthase, and dfrB10 encodes a trimethoprim-resistant version of dihydrofolate reductase. GGA was attempted with the AS Plasmid vector and all three resistance genes, however only the assembly with su1 was successful, and so all testing was performed with sul1.
 
 ## Antibiotic Selection Assay Design
 
