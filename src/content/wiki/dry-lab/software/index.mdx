@@ -37,21 +37,6 @@ bibliography: "../dry-lab.bib"
     - source mirrored to gitlab.igem.org/2026/software-tools/
     - team confirmed not in the Software & AI Village
 */}
-
-<Callout title="Page in progress">
-This page is being written. Text in dashed boxes is placeholder copy that shows what each section will cover.
-</Callout>
-
-{/*
-  ~150 words. Short overview for a general audience, no heading.
-*/}
-
-<Placeholder>
-
-We built four pieces of software while searching for plastic-degrading enzymes. Each is useful outside our own project, and each is described below with a small demo that runs in this page.
-
-</Placeholder>
-
 ## LOBSTER
 
 {/*
@@ -71,7 +56,7 @@ To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/overview-diagram.avif"
   alt="Overview of the LOBSTER algorithm: full-length PETase cores are split into fragment positions, and fragments with degenerate codons are designed at each position for combinatorial Golden Gate assembly into a full-length library"
-  caption={<><strong>Figure X.</strong> Overview of LOBSTER. Each PETase core is split into fragment positions, and fragments designed at each position, with degenerate codons, assemble combinatorially by Golden Gate into a full-length library that covers as many natural cores as possible.</>}
+  caption={<><strong>Figure 1.</strong> Overview of LOBSTER. Each PETase core is split into fragment positions, and fragments designed at each position, with degenerate codons, assemble combinatorially by Golden Gate into a full-length library that covers as many natural cores as possible.</>}
   width="40%"
   expandable={false}
 />
@@ -85,7 +70,7 @@ As literature controls, we ran LOBSTER on two 90pid clusters, one containing IsP
   src="/figures/dry-lab-software/lobster_fragment_map.html"
   title="LOBSTER Fragment Map"
   aspect="16 / 9"
-  caption="LOBSTER's output designs for the IsPETase and LCC 90pid clusters. Hover over a fragment position to see the nucleotide sequence of each oligo at that position, along with the Golden Gate overhangs between positions and the adapter sequences."
+  caption={<><strong>Figure 2.</strong> LOBSTER's output designs for the IsPETase and LCC 90pid clusters. Hover over a fragment position to see the nucleotide sequence of each oligo at that position, along with the Golden Gate overhangs between positions and the adapter sequences.</>}
 />
 
 ### Savings:
@@ -96,14 +81,14 @@ The following figures show the nucleotide savings of LOBSTER's output designs fo
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/ispetase-nt-coverage.avif"
   alt="Nucleotide savings of the LOBSTER design for the IsPETase 90pid cluster compared with purchasing each full-length sequence"
-  caption={<><strong>Figure X.</strong> Nucleotide savings of the LOBSTER design for the IsPETase 90pid cluster.</>}
+  caption={<><strong>Figure 3a.</strong> Nucleotide savings of the LOBSTER design for the IsPETase 90pid cluster.</>}
   width="100%"
 />
 
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/updated-figures/lcc-nt-coverage.avif"
   alt="Nucleotide savings of the LOBSTER design for the LCC 90pid cluster compared with purchasing each full-length sequence"
-  caption={<><strong>Figure X.</strong> Nucleotide savings of the LOBSTER design for the LCC 90pid cluster.</>}
+  caption={<><strong>Figure 3b.</strong> Nucleotide savings of the LOBSTER design for the LCC 90pid cluster.</>}
   width="100%"
 />
 
@@ -167,7 +152,7 @@ We can tell what it is by looking at the enzymes that are similar to it, found w
   variant="simple"
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-architecture-simple.svg"
   alt="The sharded DIAMOND search, left to right. The petadex.net search page sends one sequence to an orchestrator, which replies with a job ID straight away and starts a Step Functions Map. The Map runs 32 workers at once, each taking one of the 32 shards of the database from S3 and searching it. Their hits go to an aggregator, which merges and ranks them and writes the stored result that the web page polls for."
-  caption="One search, left to right. The database is split into 32 shards that are all searched at the same time, then merged into one ranked list. Amber boxes are compute, blue cylinders are storage, and the dashed lines are the immediate reply and the web app's polling. Hover or click a component to read how it works."
+  caption={<><strong>Figure 1.</strong> One search, left to right. The database is split into 32 shards that are all searched at the same time, then merged into one ranked list. Amber boxes are compute, blue cylinders are storage, and the dashed lines are the immediate reply and the web app's polling. Hover or click a component to read how it works.</>}
   width="100%"
   sectionsPath="/dry-lab/software/diamond-search/"
 />
@@ -179,7 +164,7 @@ Nothing runs between searches, so the tool costs almost nothing while it waits f
 <Figure
   src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/diamond-search-temporal.svg"
   alt="Sequence diagram of one search over time. The web app sends the search to the orchestrator, which reads the database version and manifest from S3, starts Step Functions and returns a job ID within about a second, after which the web app starts polling. Step Functions then invokes all 32 workers in parallel; each downloads its shard, runs diamond blastp and writes its hits to S3, taking about 40 seconds. Once every part has landed, the aggregator reads all 32 parts, merges, sorts and enriches them, and writes the result and index, which the web app's poll finds."
-  caption="The page gets a job ID within a second and shows results when the fan-out and merge finish, usually in under a minute."
+  caption={<><strong>Figure 2.</strong> The page gets a job ID within a second and shows results when the fan-out and merge finish, usually in under a minute.</>}
   width="100%"
 />
 
@@ -192,8 +177,6 @@ Below is what comes back. Each of these ten searches was really run on the live 
 MHETase is the one to try for a contrast: it is IsPETase's partner enzyme [@yoshida2016] but has a different fold, and the search finds only 134 relatives, the closest about 34% identical, where every PETase here fills the 500-hit cap. SRR10663367 is the question we opened with — a sequence from Logan [@chikhi2024logan] that nobody had identified, whose closest neighbours turn out to be *Nonomuraea* PET hydrolases at 71% identity.
 
 <MethodsLink>How the database is split, why the merged ranking is exact, how results are versioned and cached, and how we measured all of this.</MethodsLink>
-
-*Owner: Dennis*
 
 ## Sequence record card
 
@@ -212,8 +195,6 @@ From our vast dataset of millions of putative plastic-degrading enzymes, it is i
 We've annotated everything from the structures of these enzymes, down to their catalytic mechanisms and which residues in the sequence are specifically responsible. In addition, we've included metadata features, such as where each of these sequences comes from, its homologous neighbours and how they fall within our hierarchical clustering. We've even included how we ordered these sequences with the LOBSTER algorithm and even the readout we got from our Wet Lab validation of these enzymes!
 
 Check out the demo below to see how this looks on two reference enzymes, and see [petadex.net](https://petadex.net) for the full pages.
-
-*Owner: Dennis / Sara / Lisa*
 
 {/*
   Copy is Dennis/Sara/Lisa's. Three edits to it: "the petadex" → PETadex and
@@ -280,12 +261,27 @@ Check out the demo below to see how this looks on two reference enzymes, and see
   as a released artifact; how it was built is on the Model page.
 */}
 
-<Placeholder>
+The source code for LOBSTER and the Sharded DIAMOND search lives at https://gitlab.igem.org/2026/software/toronto/petabite . Both tools are released under the MIT License. 
 
-This section will list where the source code for each tool lives, the open-source licence it is released under, and where the datasets and trained model can be downloaded.
+## Installation
 
-</Placeholder>
+Each tool installs separately. Open its folder and follow its README, for example
+[PETadex Sequence Search → Installation](petadex-sequence-search/README.md#installation).
 
-*Owner: Purav*
+```bash
+git clone https://gitlab.igem.org/2026/software/toronto/petabite.git
+cd petabite/<tool-folder>
+```
 
-Placeholder: S3, Hugging Face, bulk downloads, licensing.
+## Usage
+
+See each tool's README for usage examples and expected output, for example
+[PETadex Sequence Search → Usage](petadex-sequence-search/README.md#usage).
+
+## Data and large files
+
+This repository holds source code only. Datasets are deposited on Zenodo and linked from each tool's README:
+
+| Tool | Dataset | Record |
+|---|---|---|
+| PETadex Sequence Search | PETadex catalytic ORF corpus v1.1, sharded search database (23.8 GB) | [doi:10.5281/zenodo.23457986](https://doi.org/10.5281/zenodo.23457986) |
