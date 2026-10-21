@@ -179,13 +179,13 @@ To build PETadex, we created a starting search query by combining two versions o
   scripts/cdn-assets.mjs; it opens in the figure viewer. <CathStructures />
   loads one structure per fold from static.igem.wiki (src/data/
   cathStructures.js); four of the fifteen are not plasticome sequences and
-  name no enzyme. Its caption is built from petadex-manuscript.tex: the
-  first sentence is Results on the forest (hand-written), the rest is
-  Methods, "Domain assignment of the plasticome", which the .tex marks
-  % AI-GENERATED; rewrite before publishing. The manuscript has no caption of
-  its own for these structures, and does not say which predictor made them
-  (the file names, model_0 to model_4, suggest ColabFold), so the caption
-  says only "predicted".
+  name no enzyme. It opens on load, and each fold is drawn in its forest
+  colour (logan-plasticome-figure/palette/fold_palette.tsv). The structures
+  drawn on the forest link to it (#structure=g00); their positions are
+  measured on the figure, so redo them if it is redrawn. It has no caption:
+  the manuscript does not say which predictor made the structures (the file
+  names, model_0 to model_4, suggest ColabFold), so the intro says only
+  "predicted".
 
   Each structure's details card (catalytic and supporting residues,
   mechanism, docked substrate, structural notes) comes from the team's
@@ -201,23 +201,13 @@ To build PETadex, we created a starting search query by combining two versions o
   not enzymes, so the explorer lists more records than the button says.
 */}
 
-<Placeholder>
+When curating this plasticome set of known plastic-degrading enzymes, we were interested in investigating their 3D structures. To do this, we assigned each enzyme a structural label from CATH, the standard system for sorting protein domains according to their 3D structural folds.
 
-Before using the plasticome to search for new enzymes, we checked what kinds of proteins it contains. We gave every enzyme a structural label from CATH, a database that sorts protein domains into families by their 3D fold.
-
-Each enzyme was labelled three independent ways: by comparing its predicted structure with known structures, by matching its sequence against CATH sequence models, and by matching it against Pfam protein families. The structure search and the sequence search against CATH agree on every domain they both label. The plasticome is dominated by the α/β-hydrolase fold shared by IsPETase and LCC, followed by a smaller group of peptidases and amidases.
-
-</Placeholder>
+Each enzyme was labelled by comparing its predicted structure to known structures, and by matching its sequence to both known CATH and Pfam sequence models. We then made a phylogenetic tree of the dataset and found that protein structure is highly conserved in sequence, and that most of our database is dominated by α/β-hydrolases, which include several landmark enzymes such as IsPETase and LCC. It is worth noting the additional presence of groups of peptidases and amidases as well.
 
 <CathForest />
 
 <CathStructures />
-
-<Placeholder>
-
-The domain calls for every enzyme can be browsed in the [plasticome explorer](#plasticome-explorer), under "Domain calls".
-
-</Placeholder>
 
 <MethodsLink href="/dry-lab/model/cath-assignment/">The three routes and how their calls were reconciled, the family CATH has never classified, how the calls became one row per enzyme, and how they check out against the original PETadex labels and a newer CATH release.</MethodsLink>
 
@@ -226,39 +216,49 @@ The domain calls for every enzyme can be browsed in the [plasticome explorer](#p
 *Owner: Dennis*
 
 {/*
-  OUTLINE — not rendered. ~120 words.
-  Notebooks 47/47/47/48. Page Tree §1.2 [M].
+  WRITER NOTES — not rendered.
 
-  Why this exists: the model searches outward from families, not from
-  individual enzymes, so how the seed set is partitioned decides what gets
-  searched for. Say that in the first line to keep the section tied to the
-  model.
+  Overview tier. The full write-up is /dry-lab/model/component-assignment/,
+  reached only from the Methods link below. Ported from the draft in
+  plasticome/wiki-reference-curation/03 Component Assignment/
+  (template.html). Numbers come from runs/2026-08-06.final-usearch.3
+  through the draft's extract_data.py, via src/data/componentAssignment.json.
 
-  - USEARCH all-pairs global alignment, threshold ≥30% aaid and e < 1e-5
-  - Connected-component recomputation rather than best-hit assignment, and
-    why: best-hit fragments families that are genuinely continuous
-  - Output: 412 centroids forming 46 components
-    [Page Tree §1.2. Verify the 46; the 412 is settled — see below]
+  Text: everything is in <Placeholder>; none of it is manuscript text.
+  Compare with the manuscript's component paragraphs before publishing and
+  drop the wrapper on any sentence that matches.
 
-  411 vs 412 IS RESOLVED (2026-10-13). Both numbers are right and they
-  count different things, so write 412 here without hedging:
-    - 412 centroids came out of component assignment, and all 412 were
-      submitted to the DIAMOND nr search
-    - one of them recovered nothing that another centroid did not also
-      recover at a higher score, so only 411 have uniquely attributed hits
-    - 411 is therefore a result of the nr search under best-hit
-      attribution, NOT an output of this section
-  Keep this section at 412 and let NCBI-nr Homology Expansion below own
-  the 412 -> 411 sentence. Do not describe the dropped centroid as having
-  "no hits": it had hits, they were all claimed by a better-scoring query.
-  - The USEARCH/DIAMOND 2x2 factorial: what was varied, and what it showed
-    about how sensitive the partition is to the aligner choice. This is the
-    part worth writing properly — it is a check on the method, not a step
+  411 or 412. The outline said to write 412 centroids "without hedging",
+  with NCBI-nr Homology Expansion owning the 412 -> 411 drop. The final
+  run has 411 clusters, 411 nodes and 46 components, and CATH Assignment
+  and the forest caption both use 411, so this section says 411. Settle
+  which run fed the nr search; if it was a 412-centroid run, its component
+  count needs checking too, and the note under NCBI-nr Homology Expansion
+  needs updating to match.
 
-  Numbers owed: centroid and component counts, 2x2 outcome.
+  <ComponentMap /> is drawn live from logan-plasticome-figure/ssn/out/
+  (ssn_nodes_c30_d40_k3.tsv, ssn_edges_c30_d40_k3.tsv): build_ssn.py's
+  layout, halos redrawn as in its draw_blob(). It is not the pipeline
+  partition: it runs DIAMOND on all 609 sequences with 30% identity over
+  50% coverage, giving 56 components (the forest caption's 56 families).
+  The largest map component is C001 plus one C033 enzyme; C001 falls into
+  8 map components because of the coverage rule; C014, C034 and C015 also
+  split; one map component holds C045's six enzymes plus two from C001.
+  Highlighting uses the pipeline's 46, so a highlighted component can span
+  several halos. The caption says so. The component buttons and the
+  enzyme-click highlight both link the plasticome explorer above
+  (#comp=C001). The hand-edited panel SVG (figure_ai_c30_d40_k3.svg,
+  30 September) moved some sections around; the live map keeps the
+  script's original packing.
 */}
 
-Placeholder: USEARCH all-pairs, ≥30% aaid, connected components, USEARCH/DIAMOND 2×2.
+The plasticome dataset can be organized into alignable components: groups in which each sequence aligns with at least one other, and so on, while sharing at least 30% amino acid identity. These groups are useful in telling us about shared ancestry, the novelty of new enzymes, and the overall family shape of the dataset.
+
+Here we show all of the 46 components that comprise the plasticome dataset. A single component dominates the dataset, containing 232 centroids, including both IsPETase and LCC.
+
+<ComponentMap />
+
+<MethodsLink href="/dry-lab/model/component-assignment/">How the centroids were aligned and linked, why connected components and why 30%, how components relate to folds, and how little the partition depends on the choice of USEARCH or DIAMOND.</MethodsLink>
 
 ### NCBI-nr Homology Expansion
 
@@ -470,14 +470,10 @@ Existing protein structure prediction databases such as AlphaFold DB (AFDB) [htt
 
 We searched these databases to search for predicted structures for 7.8M PETadex v2 significant hits. AFDB is indexed by Uniprot accession, so PETadex accessions were converted to Uniprot accessions using the Uniprot idmapping [https://ftp.uniprot.org/pub/databases/uniprot/current_release/]. In total, structures and metrics for 575,770 PETadex v2 proteins were found in the AFDB, emphasizing the unexplored nature of the PETadex. This number is after accounting for proteins with multiple AFDB structures, as well as those with malformed header rows. Below are the distributions of the downloaded structures grouped by component and domain. We found that Component 16 (Cytochrome P450) was the most common component, while Alpha/Beta hydrolase was the most common domain.
 <Figure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain-distribution.avif"
-  alt="Distribution of the AFDB-downloaded PETadex structures grouped by domain, with Alpha/Beta hydrolase the most common"
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/domain-distribution.svg"
+  alt="Two panels: (A) the number of AlphaFold DB structures downloaded for each PETadex domain; (B) the number of PETadex structures searched compared with the number found on AlphaFold DB"
   width="100%"
-/>
-<Figure
-  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/component-distribution.avif"
-  alt="Distribution of the AFDB-downloaded PETadex structures grouped by component, with Component 16 (Cytochrome P450) the most common"
-  width="100%"
+  caption={<><strong>Fig X.</strong> A: Number of downloaded AFDB structures per PETadex domain B: Count of searched PETadex structures vs ones found on AFDB</>}
 />
 ### Biochemical Properties and Ancestral Reconstruction
 
@@ -496,7 +492,7 @@ To-Do: Repeat the pipeline on the updated database.
   Open with a line tying the labels back to the model as its input.
   Must cover: schema design and protocol (no-LLM rule for human extractors,
   replicate design); human vs LLM agreement and what it licenses.
-  Should cover: LLM extraction pipeline; kinetics dataset.
+  Should cover: LLM extraction pipeline.
 */}
 
 Most data on plastic-degrading enzyme activity is locked inside individual published papers, in free-form text and figures that machine learning cannot directly use for activity prediction or enzyme engineering. Reading papers one by one also limits the breadth and depth of research and makes synthesis across papers laborious. PETadex's literature scraping project aims to bridge this gap with an automated pipeline: using keywords and graph traversal to sample all interconnected plastic literature, then training LLMs to extract each paper's data on enzymes, experimental conditions, and activity measurements. To assess and improve the accuracy of the pipeline, human data scrapers are enlisted to manually extract data from a subset of plastic literature using a standardized organizational schema, forming a ground truth for benchmarking LLM results.
@@ -508,20 +504,10 @@ Most data on plastic-degrading enzyme activity is locked inside individual publi
 
 To populate the PETra database and overcome manual curation bottlenecks an automated literature ingestion pipeline was engineered. Over 11,000 initial document identifiers were gathered using the PAZy API, PETadex sequence accessions and targeted keyword searches. These were filtered into 900 highly relevant seed papers through an automated primary screen. By mapping forward and backward citations a pool of 50,000 new candidate articles was generated. This expanded pool was filtered down to roughly 4,600 critical papers during a secondary screening. Full texts were then retrieved and converted into structured JSON formats using Docling, Grobid and PyMuPDF. A preliminary extraction was run to identify tested substrates alongside metadata like country of origin and publication date. An analysis of this data spread is presented in the figure below. Moving forward the pipeline will be executed again using 3,700 newly captured papers as seeds and supplementary file scraping will be incorporated for exhaustive coverage.
 
-<iframe
-  src="https://2026.igem.wiki/toronto/figures/dry-lab-issue-103/pipeline-animation.html"
-  title="Sequential Pipeline Crab Animation"
-  width="100%"
-  scrolling="no"
-  style={{
-    aspectRatio: "3/4",
-    border: "none",
-    borderRadius: "0.5rem",
-    overflow: "hidden",
-    backgroundColor: "transparent",
-    display: "block",
-    margin: "var(--space-lg) 0"
-  }}
+<FrameFigure
+  src="/figures/dry-lab-model/pipeline-animation.html"
+  title="Literature Ingestion Pipeline"
+  caption="Flow chart of the automated literature ingestion pipeline detailing the cyclical expansion and screening process used to isolate a final corpus of roughly 4,600 structured articles containing plastic degrading activity."
 />
 
 <Figure
@@ -568,32 +554,6 @@ To-Do: Manually reconcile discrepancies between scrapers to create a finalized g
 ### Human vs LLM Agreement
 
 Finally, when checking 26 LLM-extracted papers against 26 double-human-verified papers, large discrepancies remain both between the LLM-Human comparisons and Human-Human comparisons. The LLM found 70% of enzymes that either human listed (a second human finds 83%) and 90% of those both humans agreed on. Only 7 of 180 LLM enzyme names had no human match, and those were naming variants or whole-cell entries. When the enzyme and value match, the LLM's pH agrees 80% of the time (a second human: 91%) and buffer 75% (84%). The errors are usually a condition borrowed from another assay in the same paper, like pH 7 versus 8 for IsPETase, or 37 versus 50 °C for Dkca1. Temperature (92%) and plasmid (95%) are good.
-
-### Kinetics Dataset
-
-*Owner: Dennis*
-
-{/*
-  OUTLINE — not rendered. ~80 words. Keep it short.
-
-  Page Tree §5.4 [S]. Source file plastic_kinetics_published_full.csv.
-
-  WORD BUDGET WARNING: Activity Data Extraction has a 400-word target and
-  the three written subsections above it already run to roughly 1,460
-  (MVP Build Plan §0 follow-ups). This section should be the shortest on the
-  page, and the trimming owed is on those three, not here.
-
-  - What it is: published kinetics assembled as a labelled table, separate
-    from the paper-extraction pipeline above
-    [Page Tree §5.4: 464 rows x 18 columns — unverified]
-  - The polymer library it is encoded against [20 entries, unverified]
-  - Class vs Substrate encoding, and why both are kept: the model can learn
-    at polymer-class level where per-substrate data is too thin
-  - One line on its role: this is the quantitative label set, where the
-    extraction pipeline above supplies the binary one
-*/}
-
-Placeholder: 464 records, 20-polymer library.
 
 <Placeholder label="Placeholder figure">
 
@@ -681,37 +641,6 @@ Controls are then embedded identically to the real proteins, and UMAPed alongsid
 *Owner: Purav*
 
 Placeholder: PlasticESM, ESMC-300M, 18.17M catalytic centroids.
-
-### Corpus-Scale Embedding
-
-*Owner: Dennis*
-
-{/*
-  OUTLINE — not rendered. ~150 words.
-  Notebooks 13, 32. Page Tree §3.2 [M].
-
-  Careful with the framing here. MVP Build Plan §2 is explicit that scale is
-  not impressive on its own, which is why Embedding Controls leads the
-  section. So this subsection should read as "how the representation was
-  computed at this scale", not as a boast about the number of sequences.
-  The controls above have already earned the reader's trust; do not spend it.
-
-  - ESM-2 embeddings across the corpus, computed on Narval
-    [Page Tree §3.2: ~300M sequences — but Narrative §4 lists this as the
-    single most contested number on the project: 215.7M, 216.7M, 300M and
-    ~307M ORFs all appear in different sources. The Overview already
-    published "over 300 million". RESOLVE and cite Numbers.md. This is the
-    headline figure of the whole project and it must match everywhere]
-  - ESM-C 600M per-residue embeddings, and what per-residue buys over
-    per-sequence
-  - The embedding landscape (13, 32)
-  - Practical cost: why this needed an HPC allocation, briefly. One sentence
-  - Relationship to Clustering above: what was embedded in full and what was
-    embedded at centroid level only. Be exact, since the controls section
-    plots centroids and a reader may conflate the two
-*/}
-
-Placeholder: ESM-2 across ~300M sequences, ESM-C per-residue.
 
 ### Activity Prediction
 

@@ -31,6 +31,11 @@ export const GlobalStyle = createGlobalStyle`
     /* Layout */
     --max-width: 75rem;
     --page-padding: clamp(1rem, 5vw, 4rem);
+    /* The tallest a figure is drawn inline. A figure is as wide as the column
+       or as wide as this height allows at its shape, whichever is narrower:
+       wide plots fill the column, square and tall ones stop here and centre.
+       Detail is one click away in the figure viewer. */
+    --figure-max-h: min(32rem, 70vh);
   }
 
   *, *::before, *::after {

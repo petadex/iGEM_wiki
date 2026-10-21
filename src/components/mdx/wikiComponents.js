@@ -1,7 +1,7 @@
 import { HardwareIterations } from "../hardwareIterations/HardwareIterations.js"
 import { HardwareMap } from "../hardwareIterations/HardwareMap.js"
 import { InterviewCard } from "./InterviewCard.js"
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { withPrefix } from "gatsby"
 import styled, { css } from "styled-components"
 import { BioreactorRequirements } from "../bioreactorRequirements/BioreactorRequirements.js"
@@ -56,6 +56,12 @@ import {
   RouteCoverage,
   TedEvalueHistogram,
 } from "./interactive/CathAssignment.js"
+import {
+  ComponentFlow,
+  ComponentMap,
+  ComponentSizes,
+  IdentityHistogram,
+} from "./interactive/ComponentAssignment.js"
 import { AntibioticSelectionAnimation, GfpBiosensorAnimation } from "./interactive/CopperReleaseAnimation.js"
 import Dropdown, { CodeDropdown } from "../Dropdown.js";
 import { embedComponents } from "./embeds.js"
@@ -98,9 +104,29 @@ export const Placeholder = ({ label = "Placeholder text", children }) => (
 // prefix the iGEM build is served under.
 const figureSrc = src => (src.startsWith("/") ? withPrefix(src) : src)
 
+// The image's width / height once it has loaded (cached images can finish
+// before hydration, so a missed load event is covered by `complete`).
+const useImageAspect = () => {
+  const ref = useRef(null)
+  const [aspect, setAspect] = useState(null)
+  useEffect(() => {
+    const img = ref.current?.querySelector("img")
+    if (!img) return undefined
+    const read = () => {
+      if (img.naturalWidth && img.naturalHeight) setAspect(img.naturalWidth / img.naturalHeight)
+    }
+    if (img.complete) read()
+    img.addEventListener("load", read)
+    return () => img.removeEventListener("load", read)
+  }, [])
+  return [ref, aspect]
+}
+
 // On the Dry Lab pages the image opens into the figure viewer with its
 // caption; `expandable` overrides that either way for one figure, and
-// `title` names it in the viewer's bar.
+// `title` names it in the viewer's bar. `width` is the most of the column it
+// takes; a figure that opens in the viewer is also held to --figure-max-h
+// tall, since its detail is a click away.
 export const Figure = ({
   id,
   src,
@@ -113,8 +139,15 @@ export const Figure = ({
   children,
 }) => {
   const viewer = useFigureViewer(expandable)
+  const [wrapRef, aspect] = useImageAspect()
   return (
-    <FigureWrap id={id} $width={typeof width === "number" ? `${width}px` : width}>
+    <FigureWrap
+      ref={wrapRef}
+      id={id}
+      $width={typeof width === "number" ? `${width}px` : width}
+      $capped={viewer}
+      style={aspect ? { "--figure-aspect": aspect } : undefined}
+    >
       {src &&
         (viewer ? (
           <ViewableImage src={figureSrc(src)} alt={alt} title={title} caption={caption} credit={credit} />
@@ -260,6 +293,10 @@ export const mdxComponents = {
   OverlapExamples,
   RouteCoverage,
   CathFolds,
+  ComponentMap,
+  ComponentFlow,
+  IdentityHistogram,
+  ComponentSizes,
   AntibioticSelectionAnimation,
   GfpBiosensorAnimation,
   CodeDropdown,
@@ -379,6 +416,21 @@ const FigureWrap = styled.figure`
   margin: var(--space-lg) auto;
   /* Clears the sticky header when a link lands on the figure's id. */
   scroll-margin-top: 6rem;
+
+  /* Until the image's shape is known the figure takes its full width and the
+     image is held to the height cap inside it, so nothing below moves when
+     the figure then narrows to the image. */
+  ${({ $capped, $width }) =>
+    $capped &&
+    css`
+      max-width: min(${$width}, calc(var(--figure-max-h) * var(--figure-aspect, 100)));
+
+      img {
+        display: block;
+        max-height: var(--figure-max-h);
+        object-fit: contain;
+      }
+    `}
 
   img {
     width: 100%;

@@ -231,7 +231,8 @@ export const DatasetFlowchart = () => {
    <Figure>) and centred in the column; the viewer shows it full size. */
 const FigureWrap = styled.figure`
   width: 100%;
-  max-width: 32rem;
+  /* The figure height cap at the image's 2363 x 2267 shape. */
+  max-width: calc(var(--figure-max-h) * 2363 / 2267);
   margin: var(--space-lg) auto;
 
   figcaption {
