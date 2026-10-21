@@ -20,6 +20,7 @@ import PetadexGame from "../PetadexGame.js"
 import { FeatureCard, FeatureCards } from "./FeatureCards.js"
 import { Expandable } from "./ExpandWindow.js"
 import { useFigureViewer, ViewableImage } from "./FigureViewer.js"
+import { EndingBottleNav } from "./EndingBottleNav.js"
 import { InteractiveGizmo } from "./interactive/InteractiveGizmo.js"
 import { PetAssayAnimation } from "./interactive/PetAssayAnimation.js"
 import {
@@ -33,6 +34,7 @@ import {
 } from "./interactive/DiamondSearch.js"
 import { DiamondSearchDemo } from "./interactive/DiamondSearchDemo.js"
 import { RecordCardDemo } from "./interactive/RecordCardDemo.js"
+import { StructureViewer } from "./interactive/StructureViewer.js"
 import { DatasetLoop, ModelDatasets } from "./interactive/ModelDatasets.js"
 import { BiosampleViewer, ProfileShares, ProfileStack, ProfileSteps } from "./interactive/BiosampleProfiles.js"
 import {
@@ -154,17 +156,23 @@ export const SideFigure = ({
   width = "50%",
   side = "right",
   expandable,
+  /** An interactive in place of an image, e.g. a StructureViewer. */
+  figure,
+  /** Let the text wrap under the figure instead of sitting in its own column. */
+  flow,
   children,
 }) => {
   const viewer = useFigureViewer(expandable)
+  const Wrap = flow ? FlowFigureWrap : SideFigureWrap
   return (
-    <SideFigureWrap
+    <Wrap
       $width={typeof width === "number" ? `${width}px` : width}
       $left={side === "left"}
     >
-      <SideFigureText>{children}</SideFigureText>
+      {flow ? null : <SideFigureText>{children}</SideFigureText>}
       <SideFigureFrame>
         <SideFigureImage>
+          {figure}
           {src &&
             (viewer ? (
               <ViewableImage src={figureSrc(src)} alt={alt} title={title} caption={caption} />
@@ -174,7 +182,8 @@ export const SideFigure = ({
         </SideFigureImage>
         {caption && <figcaption>{caption}</figcaption>}
       </SideFigureFrame>
-    </SideFigureWrap>
+      {flow ? children : null}
+    </Wrap>
   )
 }
 
@@ -227,6 +236,7 @@ export const mdxComponents = {
   DiamondSearchHero,
   DiamondSearchDemo,
   RecordCardDemo,
+  StructureViewer,
   MethodsLink,
   ModelDatasets,
   DatasetLoop,
@@ -262,6 +272,7 @@ export const mdxComponents = {
   FeatureCards,
   FeatureCard,
   Expandable,
+  EndingBottleNav,
 }
 
 const toneStyles = {
@@ -335,7 +346,8 @@ const PaperNote = styled.aside`
 const PaperTitle = styled.p`
   color: var(--color-text) !important;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  /* Shrinks on a narrow column so the longer titles keep to two lines. */
+  font-size: clamp(1.3rem, 2.4vw, 1.55rem);
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--space-sm);
@@ -406,6 +418,64 @@ const GridWrap = styled.div`
   }
 `
 
+/**
+ * The figure floats and the paragraph runs around and under it. A short
+ * paragraph beside a tall figure is what the grid is for; a long one leaves
+ * a column of dead space next to it, and this does not.
+ */
+const FlowFigureWrap = styled.div`
+  max-width: var(--wiki-block-max, 54rem);
+  margin: var(--space-lg) 0;
+
+  > figure {
+    float: ${({ $left }) => ($left ? "left" : "right")};
+    width: ${({ $width }) => $width};
+    margin: 0.35rem 0 var(--space-md) var(--space-lg);
+    ${({ $left }) =>
+      $left &&
+      css`
+        margin: 0.35rem var(--space-lg) var(--space-md) 0;
+      `}
+  }
+
+  /* The grid variant pins the image so the text sets the row height. A float
+     has no such row: the box would collapse to its minimum and shrink the
+     drawing inside it, so here the image lays out at its own height. */
+  > figure > div {
+    position: static;
+    min-height: 0;
+  }
+
+  /* The expand opener is pinned over that box; unpin it with the box, or it
+     escapes to the nearest positioned ancestor. */
+  > figure > div > button {
+    position: static;
+    display: block;
+    width: 100%;
+  }
+
+  > figure img {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  /* The float has to be cleared, or the next section starts beside it. */
+  &::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+
+  @media (max-width: 720px) {
+    > figure {
+      float: none;
+      width: 100%;
+      margin: 0 0 var(--space-md);
+    }
+  }
+`
+
 const SideFigureWrap = styled.div`
   display: grid;
   grid-template-columns: ${({ $left, $width }) =>
@@ -471,6 +541,9 @@ const SideFigureImage = styled.div`
     height: 100%;
     object-fit: contain;
     object-position: top center;
+    /* The same paper Figure 1 sits on, so the figures share one surface. */
+    border: 1px solid var(--color-border);
+    background: #fbf8f2;
   }
 
   @media (max-width: 720px) {
