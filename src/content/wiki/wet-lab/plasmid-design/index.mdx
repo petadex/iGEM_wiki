@@ -9,11 +9,9 @@ updated: "2026-10-21"
 status: "draft"
 ---
 
-## Plasmid Design
-
 Two sets of plasmids were designed: the PETase Display **(PD)** plasmid, used to display PETases on the surface of E.coli, and the Assay Specific **(AS)** plasmid, which links PETase activity to an observable output for screening.
 
-### PETase Display (PD) Plasmid Design
+## PETase Display (PD) Plasmid Design
 
 The **PD plasmid** contains an ice nucleation protein (INP)-based display system upstream of a BsmBI cloning site, allowing for different PETases to be cloned into the PD vector via Golden Gate Assembly (GGA), and expression of PETases on the outer membrane of transformed cells.
 
@@ -27,7 +25,7 @@ The **PD-V2 plasmid** uses pUC57-Mini-Key IIS Free as its base vector. The promo
   caption="Figure 1. Plasmid maps of PD-V1 (left) and PD-V2 (right)."
 />
 
-#### Display System Design
+### Display System Design
 
 The display system uses the N- and C-termini of INP to localize the PETases to the outside of the outer membrane of E. coli; this system has previously been well-validated in the literature for surface display of other classes of enzymes, such as carboxymethylcellulases and laccases.[@pmc91897; @bit10892; @analytica2024; @trends2002; @bioresource2023] The sequence for the INP display system was obtained from BBa_K523013.
 
@@ -36,20 +34,24 @@ A 22-residue flexible GS linker (GGSGGGGSGGGGSGGSGGG) was designed using the pri
 ### INSERT LINEAR DNA MAP HERE
 
 <Figure
-  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/plasmid1.avif"
-  alt="plasmid1"
-  caption="Figure 1. Plasmid maps of PD-V1 (left) and PD-V2 (right)."
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/plasmid2.avif"
+  alt="plasmid2"
+  caption="Figure 2. A linear view of the PETse display system."
 />
 
-### Assay Specific (AS) Plasmid Design
+## Assay Specific (AS) Plasmid Design
 
 To connect PETase activity to a visible output, the Biosensor assay and Selection assay use a second plasmid. These Assay Specific (AS) plasmids are specific to both of these assays but use a common backbone. They are also very conceptually similar: the AS plasmid backbone uses the pCusC promoter (BBa_K1980004) to respond to copper released from digested PET.
 
-### INSERT PLASMID MAP HERE
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/wetlab/overview/plasmid3.avif"
+  alt="plasmid3"
+  caption="Figure 3. Plasmid maps of PD-V1 (left) and PD-V2 (right)."
+/>
 
 pJUMP26-1A was chosen as the basis for the AS backbone due to it being one of the only non-pBR322/ColE1 ori-based backbones in the entire 2026 iGEM distribution kit. It instead contains a medium copy number p15A origin of replication, which uses a different copy number determination system than the ColE1 ori-based AF lacZ_pDest and pUC57-Mini-Key IIS Free used in V1 and V2 of the PD plasmid, respectively. This allows the two plasmids to be independently and stably maintained in the same cell. pJUMP26-1A also contains the KanR selection marker. As this is a different selection marker from V1 and V2 of the PD plasmid, this choice allows for selection of double transformants. The BC_B0034 RBS and EF_ECK9600 terminator were selected from the E. coli Protein Expression Toolkit.
 
-#### Promoter Selection
+### Promoter Selection
 
 Copper was selected as our inducer to allow for future integration into molten PET, as common inducers such as IPTG decompose below the melting point of PET [@sigma2025iptg; @sigma2025pet]. Copper is also an established inducer for S. cerevisiae[@zhou2021copper], allowing for future translation of our assays into yeast.
 
@@ -57,6 +59,6 @@ Two promoters were considered when designing the reporter plasmid. copA and CusC
 
 CusC was determined to be advantageous as it can detect copper in the periplasm, which may be the first location of copper intake into cells [@jbc80206]. In contrast, CueR detects only cytoplasmic copper, which could increase false negatives in the assay if copper is not able to readily enter intracellular locations. CusC also works optimally near toxic concentrations of copper, allowing us to be less concerned about copper toxicity at higher levels. This also makes CusC a less leaky promoter as it requires a higher concentration of copper to be activated. Therefore, pCusC (BBa_K1980004) was selected for use in both assays.
 
-### Assembly
+## Assembly
 
 The empty vectors were intended to be assembled through GGA using parts from the 2026 iGEM distribution kit and ordered fragments, however the empty AS plasmid fragment was ordered and circularized via KLD reaction to save time. The empty AS plasmid fragment was ordered without pCusC to allow for a different promoter to be used if needed. pCusC, msGFP2, sul1, sul2, and dfrB10 inserts were cloned into the empty AS plasmid by GGA using BsaI to make the various complete AS plasmids. PETase inserts were cloned into the empty PD-V2 plasmid by GGA using BsmBI.
