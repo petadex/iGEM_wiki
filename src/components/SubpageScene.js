@@ -3418,10 +3418,12 @@ export function SubpageScene({
                 "--inset-b": pp(text.inset[2]),
                 "--inset-l": pp(text.inset[3]),
               }),
-              // `scene.tableHead`: table header rows in the menu's colour.
+              // `scene.tableHead`: table header rows. `tableHeadText` is set
+              // for dark fills so the type stays readable.
               "--table-head": scene.tableHead,
-              // `scene.chartHead`: chart title text only. Axes, series and
-              // table headers keep their own colours.
+              "--table-head-text": scene.tableHeadText,
+              // `scene.chartHead`: chart title text only. Axes and series
+              // keep their own colours.
               "--chart-head": scene.chartHead,
             }}
           >
@@ -5533,6 +5535,7 @@ const TextInner = styled.div`
 
   && th {
     background: var(--table-head, color-mix(in srgb, var(--color-accent) 15%, transparent));
+    color: var(--table-head-text, var(--color-text));
   }
 
   && [data-chart-heading] {

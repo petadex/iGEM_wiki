@@ -485,14 +485,14 @@ const SectionTab = styled.button`
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  border: 1px solid ${({ $selected }) => ($selected ? "var(--color-accent)" : "var(--color-border)")};
+  border: 1px solid ${({ $selected }) => ($selected ? "var(--table-head, var(--color-accent))" : "var(--color-border)")};
   border-radius: 999px;
   padding: 0.4rem 0.9rem;
   font-family: var(--font-body);
   font-size: 0.8125rem;
   font-weight: ${({ $selected }) => ($selected ? 600 : 500)};
-  color: ${({ $selected }) => ($selected ? "#2a2a2a" : "var(--color-text)")};
-  background: ${({ $selected }) => ($selected ? "var(--color-accent)" : "transparent")};
+  color: ${({ $selected }) => ($selected ? "var(--table-head-text, #2a2a2a)" : "var(--color-text)")};
+  background: ${({ $selected }) => ($selected ? "var(--table-head, var(--color-accent))" : "transparent")};
   transition: border-color 0.15s ease, background 0.15s ease;
 
   &:hover {
