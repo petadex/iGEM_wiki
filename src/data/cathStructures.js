@@ -26,6 +26,10 @@
  * without the first person. Wording is otherwise the sheet's own and is the
  * team's to rewrite.
  *
+ * `summary` is not from the sheet: a one- or two-sentence cut of `mechanism`,
+ * shown first in the viewer with the full text a click away. Keep the two in
+ * step if either is rewritten.
+ *
  * Residues flagged in the sheet keep the flag (`flag`) and are listed but not
  * drawn. Open questions from the sheet's QC column are in `qc`. Also open:
  * the cupredoxin's secondary "C-term T2/T3" site repeats the four catalytic
@@ -99,6 +103,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "The catalytic triad attacks the PET ester, forming an acyl-enzyme intermediate held by the oxyanion hole, while two tryptophans stack with the TPA rings. Water then releases the product.",
     mechanism:
       "The catalytic triad performs a nucleophilic attack on the carboxyl group of the PET, forming an acyl-intermediate. The oxyanion hole stabilizes this tetrahedral intermediate using their amide backbones, while the tryptophans pi-pi stack with the TPA benzene rings. Water then replaces the nucleophile, and the PET is removed from the protein.",
     features: "Monomer; No cofactor",
@@ -164,6 +170,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "A catalytic triad like the α/β-hydrolase's, but split across a dimer: one subunit supplies the serine and aspartate, the other the histidine.",
     mechanism:
       "This domain is similar to an alpha-beta hydrolase domain in that it contains the catalytic triad, but it must be a dimer to function. One subunit supplies the S and D, while the other supplies the H. The paper notes that Cd2+ inhibits the mechanism. The oxyanion hole stabilizes the tetrahedral intermediate.",
     features:
@@ -229,6 +237,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "Ser150, held by a lysine, activates the nucleophile Ser174, which attacks the substrate's carbonyl. Water then frees the substrate from the enzyme.",
     mechanism:
       "Serine 150 activates serine 174, allowing it to perform a nucleophilic attack on the carbonyl carbon of the substrate. The lysine stabilizes serine 150. The oxyanion hole stabilizes the tetrahedral intermediate using the amide of the alanine backbones. To deacylate the ligand from the protein, a water molecule attacks the carboxyl bond.",
     features: "Monomer; No cofactor",
@@ -287,6 +297,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "A tyrosine activates the serine, which attacks the substrate's amide bond; a lysine stabilises the intermediate, and a second tyrosine on a flexible loop helps bind the substrate.",
     mechanism:
       "The tyrosine acts as a base to increase the nucleophilicity of the serine. Serine then performs a nucleophilic attack on the amide bond of the ligand, which creates an anion that is stabilized by the lysine. The flipping tyrosine is located on a flexible loop region and stabilizes the binding of the ligand, and may help the catalytic tyrosine perform proton transfer with the serine.",
     features: "Monomer; No cofactor",
@@ -355,6 +367,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "The precursor cleaves itself at a catalytic threonine, and the two halves assemble into a four-subunit complex. Asparagine, aspartate and a glycine backbone stabilise the reaction.",
     mechanism:
       "The precursor protein self cleaves by having the catalytic threonine attack the alpha carbon of the asparagine just before it. The tetrahedral intermediate performs a N-O acyl shift and the protein is cleaved. Then the protein forms a dimer with the two produced subunits. Then the dimer binds with another dimer to form a 4-subunit quaternary structure. To stabilize the reaction, the asparagine, aspartic acid and amide backbone of the glycine hydrogen bond with the now produced electronically charged oxygen-carbon bond.",
     features:
@@ -428,6 +442,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "A classic Ser–His–Asp triad: the histidine activates the serine to attack the substrate, the oxyanion hole stabilises the intermediate, and water releases the product.",
     mechanism:
       "The histidine activates the serine to perform a nucleophilic attack on the substrate carbonyl. The aspartic acid stabilizes the histidine. The oxyanion hole residues' amide backbones will stabilize the tetrahedral intermediate. After the collapse of the intermediate to form an acyl-enzyme, water attacks the carbonyl to replace the serine and displaces the protein in the substrate.",
     features: "Monomer; No cofactor",
@@ -484,6 +500,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "A Ser–His–Asp triad: the histidine activates the serine to attack the substrate, the oxyanion hole stabilises the intermediate, and water releases the product.",
     mechanism:
       "The histidine activates the serine to perform a nucleophilic attack on the substrate carbonyl. The aspartic acid stabilizes the histidine. The oxyanion hole residues will stabilize the tetrahedral intermediate. After the collapse of the intermediate to form an acyl-enzyme, water attacks the carbonyl to replace the serine and displaces the protein in the substrate.",
     features: "Monomer; No cofactor",
@@ -557,6 +575,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "One of two hemes binds dioxygen, which oxidises and cleaves natural rubber as it passes through a hydrophobic tunnel.",
     mechanism:
       "The protein has two bound heme groups in it, with the first having an open distal axial ligand position open for dioxygen binding, while the second heme group has both axial positions occupied by histidines. The heme group binds to dioxygen, and when the natural rubber enters the hydrophobic tunnel, the dioxygen oxidizes the substrate, cleaving it. The substrate then leaves the hydrophobic tunnel and heme group is primed to bind another dioxygen.",
     features: "Monomer; 2 x heme c (CCD HEC; chains B, C)",
@@ -599,6 +619,8 @@ export const CATH_STRUCTURES = [
       },
     ],
     secondary: [],
+    summary:
+      "A lysine flips away from the heme to open the enzyme, letting oxygen bind the heme and oxidise the substrate.",
     mechanism:
       "The axial ligands bind the heme group in the closed state of the protein, but due to a conformational change in the Lysine to flip away from the heme group, the protein enters an open state. The open state allows for a hyperoxide molecule to bind to the heme group, facilitating catalysis by oxidizing the substrate.",
     features: "Monomer; 1 x heme b (CCD HEM; chain B)",
@@ -649,6 +671,8 @@ export const CATH_STRUCTURES = [
       },
     ],
     secondary: [],
+    summary:
+      "Inferred from its closest characterised homolog (PDB 3CL6): a glutamate acid and histidine base let a water molecule break the substrate's bond.",
     mechanism:
       "The paper that reports this protein does not describe its structure or mechanism, so the mechanism is taken from its closest characterised homolog: a Foldseek search of AF-B2T567-F1 finds PDB 3CL6 (63.1% identity, E = 2.16 × 10⁻⁴⁴). The mechanism of the protein is an acid (glutamic acid) and base (histidine) catalysis. The base and acid destabilize the substrate, allowing for a water to catalysis the bond. The tryptophan is completely conserved, and positions the acid.",
     features: "Monomer; No cofactor",
@@ -707,6 +731,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "A manganese ion, oxidised by peroxide, in turn oxidises and cleaves the substrate; a heme sits bound to a proximal histidine.",
     mechanism:
       "The enzyme binds to a manganese (II) atom with the following ligands: 3 acidic residues, 2 waters, and a heme group. The manganese is oxidized by a peroxide compound, where it then oxidizes the substrate, cleaving it. The heme group is folded around by the protein, with the predominant bond being between the iron and the proximal histidine.",
     features:
@@ -771,6 +797,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "The heme is oxidised by a cofactor and then oxidises the substrate, often with the help of a coenzyme.",
     mechanism:
       "The heme group is oxidized by a cofactor and then will oxidize the substrate. Often, this oxidation of the substrate requires a coenzyme.",
     features: "Monomer; 1 x heme b (CCD HEM; chain B)",
@@ -812,6 +840,8 @@ export const CATH_STRUCTURES = [
       },
     ],
     secondary: [],
+    summary:
+      "Two aspartates appear to catalyse the attack on the substrate's carbonyl bond; the exact reaction is unclear.",
     mechanism:
       "The exact reaction is unclear, but it appears that there are two aspartate residues that perform the catalysis on the carbonyl bond of the substrate.",
     features: "Monomer; No cofactor",
@@ -897,6 +927,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "Two metal ions, bound by aspartates and histidines, are thought to catalyse the reaction; the exact mechanism is unclear.",
     mechanism:
       "The protein binds two metal atoms (homologs use Fe + Zn) using a consort of aspartic acids and histidines. The metals are theorized to react with the substrate and perform catalysis. The paper references three motifs and how they are conserved across different phosphatases (DxH/G, GD, GNH). The exact mechanism for how the histidine works with the metals to catalyze the reaction is unclear, but it is conserved. The histidine is not conserved in this protein, so D, D and N are taken as its conserved residues.",
     features: "Monomer; Fe3+ (CCD FE; chain B), Zn2+ (CCD ZN; chain C)",
@@ -998,6 +1030,8 @@ export const CATH_STRUCTURES = [
         ],
       },
     ],
+    summary:
+      "The T2/T3 copper cluster oxidises the substrate, sometimes passing electrons through the T1 copper. Only the N-terminal copper sites are shared by both plasticome enzymes.",
     mechanism:
       "The catalysis site of these proteins is in the copper cluster of the T2/T3 copper binding sites. The copper cluster oxidizes and in some cases will transfer electrons to the T1 copper, which shuttles the electrons to the substrate. With the two proteins in Plasticome, only the 4 N-terminal copper binding sites are present in both, with one protein missing half of T2/T3 and all of T1. Therefore the conserved residues are the N-terminal T2/T3 cluster histidines.",
     features: "Monomer; 4 x Cu (CCD CU; chains B, C, D, E)",

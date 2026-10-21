@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { withPrefix } from "gatsby"
 import styled from "styled-components"
 import { CATH_STRUCTURES } from "../../../data/cathStructures.js"
@@ -90,12 +90,81 @@ const FOREST_CAPTION =
   "The plasticome spans several unrelated and unalignable folds, so it cannot be aligned as a single family. Instead the 411 centroids are represented as 56 sequence-similarity families (connected components at 30% identity over 50% coverage), assigned to 16 fold groups by the CATH superfamily of their catalytic domain. Each slice is one fold group with its own tree; slices are not related to each other. Phylogenetic relationships are only reliable within families: between the families of the α/β-hydrolase fold only 2 of 33 backbone branches are supported, and no relationship is inferred across folds. Tips are coloured by substrate; dashed lines are supported links between families of the same fold (not to scale). Structures show one representative enzyme per fold, with its CATH superfamily and PDB entry."
 const asset = (src) => (src.startsWith("/") ? withPrefix(src) : src)
 
+/**
+ * The forest's fold colours, from logan-plasticome-figure/palette/
+ * fold_palette.tsv: `label` for each fold's own colour, `tint` for the slice
+ * behind it. Folds that are a single sequence share the grey "Other folds"
+ * slice.
+ */
+const FOLD_PALETTE = {
+  g00: ["#5b8ab9", "#d4e3f2"],
+  g01: ["#b9825b", "#f2e1d4"],
+  g02: ["#b95b5b", "#f2d4d4"],
+  g03: ["#8ab95b", "#e3f2d4"],
+  g04: ["#5bb97a", "#d4f2de"],
+  g05: ["#8a5bb9", "#e3d4f2"],
+  g06: ["#5bb9b1", "#d4f2ef"],
+  g07: ["#b95ba1", "#f2d4ea"],
+  g08: ["#b9a95b", "#f2edd4"],
+  g09: ["#5b5bb9", "#d4d4f2"],
+}
+const OTHER_FOLDS = ["#9a978e", "#e9e9e6"]
+
+/** A structure's fold group in the forest, matched on its catalytic CATH code. */
+const STRUCTURE_GROUP = CATH_STRUCTURES.map(
+  (s) => FOLD_GROUPS.find((g) => g.cath === (s.cath ?? "none"))?.g
+)
+const foldColors = (i) => FOLD_PALETTE[STRUCTURE_GROUP[i]] ?? OTHER_FOLDS
+
+/**
+ * Where each fold's representative structure, with its name and CATH line
+ * under it, sits on the forest figure, as percentages of the image. No two
+ * boxes overlap. Measured on
+ * petadex-manuscript/figures/figure2c_plasticome-forest.png (3789 × 2735), the
+ * file the AVIF was made from: redo them if the figure is redrawn.
+ */
+const FOREST_STRUCTURES = [
+  ["g00", 1129, 652, 1214, 754],
+  ["g01", 102, 616, 183, 718],
+  ["g02", 121, 488, 204, 590],
+  ["g03", 173, 362, 261, 449],
+  ["g04", 52, 215, 131, 316],
+  // g05's top loops reach in under g06's labels, so the two meet at x = 229.
+  ["g05", 147, 158, 229, 261],
+  ["g06", 229.5, 86, 311, 189],
+  ["g07", 316, 48, 397, 148],
+  ["g08", 461, 13, 559, 116],
+  ["g09", 584, 31, 667, 105],
+].map(([g, x0, y0, x1, y1]) => ({
+  g,
+  // Measured on a 1400 × 1010 copy.
+  style: {
+    left: `${(x0 / 1400) * 100}%`,
+    top: `${(y0 / 1010) * 100}%`,
+    width: `${((x1 - x0) / 1400) * 100}%`,
+    height: `${((y1 - y0) / 1010) * 100}%`,
+  },
+}))
+
+/**
+ * Links of the form #structure=g00, from the structures drawn on the forest,
+ * load that fold in the structure viewer below it.
+ */
+const HASH_STRUCTURE = /^#structure=(g\d+)$/
+
+/** Follow a hash link even when the address already ends in it. */
+const followHash = (e) => {
+  if (window.location.hash === e.currentTarget.getAttribute("href")) {
+    window.dispatchEvent(new HashChangeEvent("hashchange"))
+  }
+}
+
 export const CathForest = () => (
-  <Box>
+  <ForestBox>
     <BoxTitle>What are the Plasticome Structurally?</BoxTitle>
     <Sub>
-      Click the figure to expand it. Pick a fold group to list its enzymes in the plasticome
-      explorer.
+      Click a structure to open it in the viewer below, or anywhere else on the figure to expand
+      it. Open the fold groups under the figure to list a fold's enzymes in the plasticome explorer.
     </Sub>
     <Forest>
       <ViewableImage
@@ -104,26 +173,47 @@ export const CathForest = () => (
         title="What are the Plasticome Structurally?"
         caption={FOREST_CAPTION}
       />
+      {FOREST_STRUCTURES.map(({ g, style }) => {
+        const i = STRUCTURE_GROUP.indexOf(g)
+        if (i < 0) return null
+        const s = CATH_STRUCTURES[i]
+        return (
+          <a
+            key={g}
+            href={`#structure=${g}`}
+            style={style}
+            onClick={followHash}
+            aria-label={`Open the ${s.fold} structure in the viewer`}
+            title={`${s.fold} · open in the structure viewer`}
+          />
+        )
+      })}
     </Forest>
-    <FoldButtons aria-label="Fold groups">
-      {FOLD_GROUPS.map((g) => (
-        <a
-          key={g.g}
-          href={`#fold=${g.g}`}
-          title={`CATH ${g.cath} · ${g.n} centroid${g.n > 1 ? "s" : ""} in the tree`}
-        >
-          {g.fold}
-          <small>{g.n}</small>
-        </a>
-      ))}
-    </FoldButtons>
-    <Sub>{FOREST_CAPTION}</Sub>
-  </Box>
+    {/* Closed by default: the figure carries the page, and the fold list and
+        the full caption are there for whoever wants them. */}
+    <TableToggle>
+      <summary>Fold groups and how to read the tree</summary>
+      <FoldButtons aria-label="Fold groups">
+        {FOLD_GROUPS.map((g) => (
+          <a
+            key={g.g}
+            href={`#fold=${g.g}`}
+            title={`CATH ${g.cath} · ${g.n} centroid${g.n > 1 ? "s" : ""} in the tree`}
+          >
+            {g.fold}
+            <small>{g.n}</small>
+          </a>
+        ))}
+      </FoldButtons>
+      <Sub>{FOREST_CAPTION}</Sub>
+    </TableToggle>
+  </ForestBox>
 )
 
 /* ---------- one structure per fold ---------- */
 
 const COLOR_MODES = [
+  { value: "fold", label: "Fold" },
   { value: "plain", label: "White" },
   { value: "chain", label: "Along the chain" },
   { value: "plddt", label: "Confidence" },
@@ -163,11 +253,27 @@ const ResidueGroups = ({ groups, color }) =>
     </div>
   ))
 
+/** The short mechanism, with the sheet's full text behind "Read more". */
+const Mechanism = ({ summary, full }) => {
+  const [more, setMore] = useState(false)
+  if (!summary) return full
+  return (
+    <>
+      {more ? full : summary}{" "}
+      <MoreButton type="button" aria-expanded={more} onClick={() => setMore(!more)}>
+        {more ? "Show less" : "Read more"}
+      </MoreButton>
+    </>
+  )
+}
+
 export const CathStructures = () => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const [pick, setPick] = useState(0)
-  const [mode, setMode] = useState("plain")
+  const [mode, setMode] = useState("fold")
+  const [surface, setSurface] = useState(false)
   const [spin, setSpin] = useState(true)
+  const boxRef = useRef(null)
   const s = CATH_STRUCTURES[pick]
   // Kept per structure: the viewer reloads whenever these arrays change.
   const catalytic = useMemo(() => drawable(s.catalytic), [s])
@@ -177,15 +283,24 @@ export const CathStructures = () => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) setSpin(false)
   }, [])
 
+  useEffect(() => {
+    const fromHash = () => {
+      const m = window.location.hash.match(HASH_STRUCTURE)
+      const i = m ? STRUCTURE_GROUP.indexOf(m[1]) : -1
+      if (i < 0) return
+      setPick(i)
+      setOpen(true)
+      boxRef.current?.scrollIntoView({ block: "start" })
+    }
+    fromHash()
+    window.addEventListener("hashchange", fromHash)
+    return () => window.removeEventListener("hashchange", fromHash)
+  }, [])
+
   return (
-    <Box>
-      <BoxTitle>One structure per fold</BoxTitle>
-      <Sub>
-        A representative predicted structure for each catalytic fold of the plasticome. Pick a fold
-        to load it; drag to turn it, scroll to zoom.
-      </Sub>
-      {/* Mol* is fetched when the viewer first mounts, so it stays closed
-          until a reader opens it. */}
+    <ForestBox ref={boxRef} id="fold-structures">
+      <BoxTitle>What does the CATH Domain actually look like?</BoxTitle>
+      {/* Open from the start, so Mol* is fetched as the page loads. */}
       <TableToggle open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
         <summary>Open the structure viewer</summary>
         {open && (
@@ -198,6 +313,7 @@ export const CathStructures = () => {
                   role="option"
                   aria-selected={pick === i}
                   onClick={() => setPick(i)}
+                  style={{ "--fold": foldColors(i)[0], "--tint": foldColors(i)[1] }}
                 >
                   <span>{f.fold}</span>
                   <Mono>{f.cath ?? "no CATH code"}</Mono>
@@ -218,6 +334,14 @@ export const CathStructures = () => {
                     </button>
                   ))}
                 </Segmented>
+                <Segmented role="group" aria-label="Draw the chain as">
+                  <button type="button" aria-pressed={!surface} onClick={() => setSurface(false)}>
+                    Cartoon
+                  </button>
+                  <button type="button" aria-pressed={surface} onClick={() => setSurface(true)}>
+                    Surface
+                  </button>
+                </Segmented>
                 <Segmented>
                   <button type="button" aria-pressed={!spin} onClick={() => setSpin(!spin)}>
                     {spin ? "Pause" : "Spin"}
@@ -229,11 +353,22 @@ export const CathStructures = () => {
                 sites={catalytic}
                 secondary={secondary}
                 mode={mode}
+                // A colour overrides the mode's ramp, so it is passed in "fold" alone.
+                color={mode === "fold" ? foldColors(pick)[0] : undefined}
+                surface={surface}
                 spin={spin}
                 label={s.enzyme ? `${s.enzyme} · ${s.fold}` : s.fold}
               />
               <ViewerKey>
-                {mode !== "plain" && (
+                {mode === "fold" && (
+                  <span>
+                    <Dot style={{ background: foldColors(pick)[0] }} />
+                    {STRUCTURE_GROUP[pick] in FOLD_PALETTE
+                      ? "the fold's colour in the forest"
+                      : "a fold of a single sequence, grey in the forest"}
+                  </span>
+                )}
+                {(mode === "chain" || mode === "plddt") && (
                   <span>
                     <b>{mode === "plddt" ? "pLDDT confidence" : "N to C terminus"}</b>
                     {mode === "plddt" ? PLDDT_DOMAIN[0] : "N"}
@@ -294,7 +429,9 @@ export const CathStructures = () => {
                     </>
                   )}
                   <dt>Mechanism</dt>
-                  <dd>{s.mechanism}</dd>
+                  <dd>
+                    <Mechanism key={pick} summary={s.summary} full={s.mechanism} />
+                  </dd>
                   <dt>Substrate</dt>
                   <dd>
                     {s.ligand.name} ({s.ligand.formula}), docked · ligand ipTM{" "}
@@ -310,18 +447,7 @@ export const CathStructures = () => {
           </StructureLayout>
         )}
       </TableToggle>
-      {/* From petadex-manuscript.tex: Results on the forest (hand-written) and
-          Methods, Domain assignment of the plasticome (marked AI-GENERATED). */}
-      <Sub>
-        The plasticome spans several unrelated and unalignable folds. Each structure here represents
-        one catalytic fold, labelled with the CATH homologous superfamily of its catalytic domain.
-        Superfamilies were assigned by two independent routes, Foldseek searches of Merizo domains
-        against CATH S40 and the CATH-Gene3D HMM library, which agreed for all 643 domains matched
-        by both. The rubber oxygenases (Lcp) have no CATH superfamily in either CATH release and
-        were annotated from Pfam (PF09995). Colour runs from the N to the C terminus, or by
-        predicted confidence (pLDDT).
-      </Sub>
-    </Box>
+    </ForestBox>
   )
 }
 
@@ -810,7 +936,24 @@ export const CathFolds = () => {
 
 /* ---------- styles ---------- */
 
+/* The forest and the structure viewer under it: a tenth narrower than the
+   column, centred; full width on phones. */
+const ForestBox = styled(Box)`
+  &&& {
+    width: 90%;
+    margin-inline: auto;
+  }
+
+  @media (max-width: 760px) {
+    &&& {
+      width: auto;
+    }
+  }
+`
+
 const Forest = styled.div`
+  position: relative;
+
   /* The figure is drawn on white; multiplying drops the white into the panel. */
   img {
     display: block;
@@ -818,23 +961,40 @@ const Forest = styled.div`
     height: auto;
     mix-blend-mode: multiply;
   }
+
+  /* The structures drawn on it, over the expand button. */
+  > a {
+    position: absolute;
+    z-index: 2;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  /* No offset: the boxes are drawn tight round each structure and its labels,
+     and some sit within a pixel of the next. */
+  > a:hover,
+  > a:focus-visible {
+    outline: 2px solid ${INK_SOFT};
+    background: rgba(255, 255, 255, 0.25);
+  }
 `
 
 const StructureLayout = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
   gap: 1rem;
-  align-items: start;
 
   @media (max-width: 760px) {
     grid-template-columns: minmax(0, 1fr);
   }
 `
 
+/* As tall as the viewer column beside it, and scrolling within that: size
+   containment keeps the list's own length out of the row height. */
 const FoldList = styled.div`
   display: grid;
   align-content: start;
-  max-height: 26rem;
+  contain: size;
   overflow-y: auto;
   border: 1px solid ${LINE};
   border-radius: 8px;
@@ -852,13 +1012,18 @@ const FoldList = styled.div`
     cursor: pointer;
   }
 
+  /* Each fold in its colour from the forest. */
+  button {
+    box-shadow: inset 4px 0 0 var(--fold);
+  }
+
   button:hover,
   button[aria-selected="true"] {
-    background: ${SUNK};
+    background: var(--tint);
   }
 
   button[aria-selected="true"] {
-    box-shadow: inset 3px 0 0 ${INK};
+    box-shadow: inset 6px 0 0 var(--fold);
     font-weight: 600;
   }
 
@@ -868,6 +1033,7 @@ const FoldList = styled.div`
   }
 
   @media (max-width: 760px) {
+    contain: none;
     max-height: 11rem;
   }
 `
@@ -971,6 +1137,23 @@ const FoldDetails = styled.div`
   }
 `
 
+const MoreButton = styled.button`
+  padding: 0;
+  border: 0;
+  background: none;
+  color: ${INK_SOFT};
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${INK_SOFT};
+    outline-offset: 2px;
+  }
+`
+
 const DetailsHead = styled.div`
   span {
     display: block;
@@ -1002,6 +1185,7 @@ const FoldButtons = styled.nav`
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  margin: 0.4rem 0 0.6rem;
 
   a {
     display: inline-flex;

@@ -275,11 +275,37 @@ const ScaledFigure = ({ href, title, dark, logical, open, frameRef }) => {
   )
 }
 
+/**
+ * An HTML figure that lays itself out in percentages of its own box (the
+ * literature pipeline's crabs), so it needs no logical-size scaling: inline it
+ * is sized like an image <Figure> (at most `width` of the column and
+ * --figure-max-h tall), centred, at its own `aspect`; in the window it is as
+ * large as the window allows at that aspect.
+ */
+export const FrameFigure = ({ src, title, caption, width = "100%", aspect = "3 / 4" }) => {
+  const href = src.startsWith("/") ? withPrefix(src) : src
+  const frameRef = useRef(null)
+
+  return (
+    <FrameFigureWrap style={{ width: `min(${width}, calc(var(--figure-max-h) * ${aspect}))` }}>
+      <ExpandWindow title={title} inlineTitle={false} ground="var(--color-bg)" focusRef={frameRef}>
+        {open => (
+          <FrameFit $open={open} style={{ "--aspect": aspect }}>
+            <FitFrame ref={frameRef} src={href} title={title || "Interactive figure"} loading="lazy" style={{ aspectRatio: aspect }} />
+          </FrameFit>
+        )}
+      </ExpandWindow>
+      {caption && <EmbedCaption>{caption}</EmbedCaption>}
+    </FrameFigureWrap>
+  )
+}
+
 export const embedComponents = {
   Dropdown,
   ConferenceFlash,
   Photos,
   InteractiveEmbed,
+  FrameFigure,
   PdfEmbed,
   SheetEmbed,
   VideoEmbed,
@@ -484,6 +510,40 @@ const ScaledFrame = styled.iframe`
   height: 100%;
   border: 0;
   transform-origin: top left;
+`
+
+const FrameFigureWrap = styled.figure`
+  max-width: 100%;
+  margin: var(--space-lg) auto;
+`
+
+const FitFrame = styled.iframe`
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+`
+
+/* Open, the box is a size container, so the frame can take the largest size
+   of its aspect that fits both ways. */
+const FrameFit = styled.div`
+  ${({ $open }) =>
+    $open &&
+    css`
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      container-type: size;
+
+      ${FitFrame} {
+        width: min(100cqw, 100cqh * var(--aspect));
+      }
+    `}
 `
 
 const EmbedCaption = styled.figcaption`

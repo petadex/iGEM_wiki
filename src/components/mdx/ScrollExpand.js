@@ -9,7 +9,8 @@ import styled from "styled-components"
  * it then holds the page still until the reader presses Continue (bottom
  * right), which glides on to the next such block and holds there (or past
  * this one, if it is the last); Minimize (top right) shrinks it back into the
- * text and lets the page go; scrolling up lets go too. A jump (a link, the
+ * text for good, so it no longer grows or holds for the rest of the visit
+ * (a link or Continue still scrolls to it); scrolling up lets go too. A jump (a link, the
  * section menu) passes straight through without holding. Held, a firm
  * scroll either way lets go as well: PUSH px of it in one direction, after a
  * short settle, so the swipe that brought it up doesn't carry straight on.
@@ -167,8 +168,11 @@ export const ScrollExpand = ({
     let lastTop = Infinity
     // On the way here from a link to the anchor: hold on arrival.
     let arriving = false
-    // Shrunk by Minimize: it stays at rest until it is out of view.
+    // Shrinking by Minimize, since this time.
     let shrunkAt = 0
+    // Minimized: it stays at rest for good, and once shrunk its track gives
+    // back the scroll it held, so the page reads straight past it.
+    let minimized = false
     // Scroll toward letting go while held (see PUSH).
     let heldAt = 0
     let push = 0
@@ -216,8 +220,13 @@ export const ScrollExpand = ({
     // and hold there (update() catches the arrival).
     const arrive = () => {
       releaseHeld?.()
+      // A minimized block is only scrolled to, not grown again.
+      if (minimized) {
+        startJump()
+        window.scrollBy({ top: track.getBoundingClientRect().top - pinTopPx(), behavior: "smooth" })
+        return
+      }
       passed = false
-      shrunkAt = 0
       arriving = true
       startJump()
       const by = track.getBoundingClientRect().top - pinTopPx()
@@ -242,8 +251,22 @@ export const ScrollExpand = ({
     minimize.current = () => {
       if (holding) letGo()
       passed = true
+      arriving = false
+      minimized = true
       shrunkAt = performance.now()
       schedule()
+    }
+    // The track back to the block's own height, keeping what is on screen
+    // where it is: if the page was scrolled into the track, it scrolls up by
+    // as much as the block had been pinned past its place, and never by more
+    // than the track gave back.
+    const collapse = () => {
+      const was = track.offsetHeight
+      const by = track.getBoundingClientRect().top - pinTopPx()
+      track.style.height = ""
+      pin.style.height = ""
+      const gaveBack = was - track.offsetHeight
+      if (by < 0) window.scrollBy({ top: -Math.min(-by, gaveBack), behavior: "instant" })
     }
 
     const update = () => {
@@ -253,18 +276,19 @@ export const ScrollExpand = ({
       const pinTop = pinTopPx()
       const fullH = vh - pinTop - GUTTER
       // The pin is as tall as the grown block, and the track adds the overshoot.
-      track.style.height = `${fullH + HOLD}px`
-      pin.style.height = `${fullH}px`
+      if (!minimized || shrunkAt) {
+        track.style.height = `${fullH + HOLD}px`
+        pin.style.height = `${fullH}px`
+      }
 
-      const { top, bottom } = track.getBoundingClientRect()
+      const { top } = track.getBoundingClientRect()
       if (top >= vh * START_AT) passed = false
-      if (shrunkAt && (top >= vh * START_AT || bottom <= 0)) shrunkAt = 0
-      if (arriving && !holding && Math.abs(top - pinTop) < 2) {
+      if (arriving && !holding && !minimized && Math.abs(top - pinTop) < 2) {
         arriving = false
         hold(top)
       }
       // Crossing the hold point on the way down, by the reader's own scroll.
-      if (!holding && !passed && !jumping && lastTop > pinTop && top <= pinTop && top > pinTop - HOLD) {
+      if (!holding && !passed && !minimized && !jumping && lastTop > pinTop && top <= pinTop && top > pinTop - HOLD) {
         lastTop = pinTop
         hold(top)
         schedule()
@@ -277,7 +301,12 @@ export const ScrollExpand = ({
         const t = clamp((performance.now() - shrunkAt) / SHRINK_MS, 0, 1)
         p = Math.min(p, 1 - ease(t))
         if (t < 1) schedule()
+        else if (minimized) {
+          shrunkAt = 0
+          collapse()
+        }
       }
+      if (minimized && !shrunkAt) p = 0
       // At rest the block is its natural height; measure it there (not while
       // its expand window has lifted it out of the frame).
       if (p === 0 && !wasGrown && frame.offsetHeight) restH.current = frame.offsetHeight

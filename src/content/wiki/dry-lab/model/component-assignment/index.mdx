@@ -1,0 +1,253 @@
+---
+title: "Component Assignment: Methods"
+section: "Dry Lab"
+path: "/dry-lab/model/component-assignment/"
+navTitle: "Component assignment methods"
+order: 25
+description: "How the 411 plasticome centroids were aligned against each other and split into 46 components, why connected components and a 30% identity cutoff, and how little the result depends on the alignment engine."
+owners: ["Dry Lab"]
+updated: "2026-10-21"
+status: "draft"
+---
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Methods tier for the Component Assignment subsection of the Model page.
+  The overview, with <ComponentMap />, is on
+  /dry-lab/model/#component-assignment. This page is reached only from the
+  Methods link there; it is not in any menu. Owner: Dennis.
+
+  Ported from the draft in plasticome/wiki-reference-curation/03 Component
+  Assignment/ (template.html). Facts follow lib/03 alignment/README.md, the
+  run's summary.md and runs/2026-08-05.diamond/REPORT_diamond_vs_usearch.md.
+  Numbers come from runs/2026-08-06.final-usearch.3 through the draft's
+  extract_data.py, via src/data/componentAssignment.json; the tables below
+  were written from the same file.
+
+  Everything inside <Placeholder> is drafted for the wiki with no
+  manuscript text behind it. Team rule: rewrite in your own words, then
+  remove the wrapper.
+
+  Open checks:
+    - 411 or 412: see the note on the Model page.
+    - The identity histogram is recomputed from combined_pairs.tsv and
+      combined_rev_pairs.tsv with step23_graph.py's best-HSP rule; the bars
+      at 30% and up add to the run's 22,203 edges.
+    - The cutoff sweep is computed by extract_data.py on this run's
+      alignments. Its fold labels come from CATH Assignment, which used
+      these components to split catalytic from accessory domains, so the
+      purity column is a consistency check, not an independent one.
+    - The 2x2 ran on an earlier 610-row union (2026-08-05): 413 or 404
+      centroids and 47 to 48 components, against 411 and 46 in the final
+      run, which uses the USEARCH/USEARCH arm.
+    - The pipeline's default engine is now DIAMOND; the final run used
+      --engine usearch, so Reproducing names it. Step 0 (the 213-sequence
+      check) runs in lib/03 alignment/run.sh, not run_from_clusters.sh.
+      Add the GitHub link once the repo is public.
+*/}
+
+<Callout title="Methods for component assignment">
+This page is the full write-up behind the [Component Assignment](/dry-lab/model/#component-assignment) subsection of the Model page. It picks up where [Plasticome Reference Curation](/dry-lab/model/plasticome/) ends, with 609 enzymes clustered at 90% identity into 411 centroids.
+</Callout>
+
+## Why components
+
+<Placeholder>
+
+The next steps of PETadex search public sequence databases for relatives of the plasticome. Those searches, and the profile models that filter their results, are built per family. A component is our working definition of a family: a set of plasticome enzymes joined to each other by chains of clear sequence similarity.
+
+The plasticome cannot be treated as one family. It contains several unrelated folds (see [CATH Assignment](/dry-lab/model/#cath-assignment)), and sequences from different folds do not align in any meaningful way. Components split it into groups that can each be aligned and searched on their own.
+
+</Placeholder>
+
+<ComponentFlow />
+
+## Inputs
+
+<Placeholder>
+
+The input is the 411 cluster centroids from clustering the plasticome at 90% identity. Clustering first keeps near-identical enzymes from adding hundreds of redundant alignments. Cluster members are not aligned here; each joins the component of its centroid, which it matches at 90% identity or more.
+
+Each centroid becomes one node of the graph, identified by the MD5 hash of its sequence (letters only, upper case). Identical sequences from different records are therefore one node. All 411 centroid sequences are distinct, giving 411 nodes and 144,560 residues in total.
+
+</Placeholder>
+
+## All-against-all alignment
+
+<Placeholder>
+
+Every centroid was aligned to every other with USEARCH v11, using local alignment and keeping every hit, however weak:
+
+</Placeholder>
+
+```bash
+usearch -allpairs_local combined.fasta -acceptall -userout combined_pairs.tsv \
+    -userfields query+target+id+evalue+bits
+usearch -allpairs_local combined_rev.fasta -acceptall -userout combined_rev_pairs.tsv ...
+```
+
+<Placeholder>
+
+`-allpairs_local` aligns each sequence only against those after it in the file, so a pair can come out differently depending on which sequence is the query. The search is therefore run twice, once on the file reversed, and both outputs are pooled. This gave 62,223 alignments over 30,588 distinct pairs. Each pair keeps the alignment with the highest bit score (ties go to the lower E-value), so every pair is judged on one alignment.
+
+No threshold is applied during the search. All filtering happens afterwards, on the saved alignments, so the cutoff can be changed and the components recomputed without aligning again.
+
+</Placeholder>
+
+## When two centroids are linked
+
+<Placeholder>
+
+Two centroids are linked if their best alignment has both:
+
+- **at least 30% amino acid identity**, and
+- **E-value below 10<sup>−5</sup>**, as reported for this search (a database of 144,560 residues).
+
+The E-value rule removes short, chance alignments that reach 30% identity over a few dozen residues. The identity rule removes long alignments between distant relatives whose E-values are small only because the sequences are long. 22,203 of the 30,588 aligned pairs pass both.
+
+</Placeholder>
+
+<IdentityHistogram />
+
+## Connected components
+
+<Placeholder>
+
+The links form a graph, and each connected piece of it is one component: two centroids are in the same component if a chain of links joins them, even when they are not linked directly (single linkage). Components are numbered by size, largest first.
+
+We use connected components instead of assigning each centroid to its single best match. Best-hit assignment breaks up families that are continuous: a chain A–B–C, where A and C are too distant to align, can end up as two groups depending on which of B's matches scores higher. Families like the α/β-hydrolases are exactly such chains, with distant members joined through intermediates.
+
+</Placeholder>
+
+<ComponentSizes />
+
+## Choosing 30%
+
+<Placeholder>
+
+The cutoff decides how coarse the components are. We re-ran the partition at other identity cutoffs on the same alignments and scored each against the CATH superfamily of each centroid's catalytic domain. A component is "mixed" if it contains more than one catalytic superfamily.
+
+</Placeholder>
+
+| Identity cutoff | Components | Single centroids | Largest | Mixed components | Centroids in their component's majority fold |
+|---|---|---|---|---|---|
+| 20% | 29 | 14 | 270 | 1 | 98.8% |
+| 25% | 29 | 14 | 270 | 1 | 98.8% |
+| **30% (used)** | 46 | 25 | 232 | 0 | 100.0% |
+| 35% | 72 | 49 | 215 | 0 | 100.0% |
+| 40% | 97 | 65 | 202 | 0 | 100.0% |
+| 50% | 156 | 129 | 196 | 0 | 100.0% |
+| 60% | 199 | 163 | 134 | 0 | 100.0% |
+| 70% | 260 | 221 | 56 | 0 | 100.0% |
+
+<Placeholder>
+
+30% is the loosest cutoff at which no component mixes folds. Below it, the five subtilisin-family protease centroids join an α/β-hydrolase component. Above it, components only break into smaller pieces of the same fold: nothing is gained in purity, and each family is split into more, smaller searches.
+
+</Placeholder>
+
+## Components and folds
+
+<Placeholder>
+
+Components are finer than folds. Every component contains one catalytic fold, but one fold can be spread over many components. The α/β-hydrolase fold alone spans 27 components: its members are related by structure, but many are too distant in sequence to be linked at 30%. The fold groups of the [forest figure](/dry-lab/model/#cath-assignment) gather components back together by fold.
+
+</Placeholder>
+
+| Component | Centroids | Enzymes | Catalytic domain | Examples |
+|---|---|---|---|---|
+| [C001](/dry-lab/model/#comp=C001) | 232 | 337 | `3.40.50.1820` α/β hydrolase | ISPETase, PET5, PET6, PET12 |
+| [C005](/dry-lab/model/#comp=C005) | 45 | 53 | `3.60.70.12` L-amino peptidase D-ALA esterase/amidase | NylC, M-NylC, Nc-NylC, TvgC |
+| [C003](/dry-lab/model/#comp=C003) | 19 | 35 | `3.90.1300.10` Amidase signature (AS) domain | NylA, Arylacylamidase, UMG-SP-1, UMG-SP-2 |
+| [C002](/dry-lab/model/#comp=C002) | 16 | 29 | `3.40.50.1820` α/β hydrolase | HiC, CutL1, Cutinase, CmCut |
+| [C014](/dry-lab/model/#comp=C014) | 14 | 21 | `3.40.50.1820` α/β hydrolase | BsEstB, PudA, GEN0105, Chath_Est1 |
+| [C024](/dry-lab/model/#comp=C024) | 10 | 15 | none oxygenase MpaB family protein | Lcp1, Lcp2 |
+| [C026](/dry-lab/model/#comp=C026) | 5 | 12 | `3.40.50.200` Peptidase S8/S53 domain | Subtilisin BL, Subtilisin SubC, LP175, Proteinase K |
+| [C006](/dry-lab/model/#comp=C006) | 5 | 9 | `3.40.50.1820` α/β hydrolase | PhaZ1, PhaZ2, PhaZ3, PhaZ4 |
+| [C018](/dry-lab/model/#comp=C018) | 5 | 9 | `3.40.50.1820` α/β hydrolase | PlaM4, PFL1, Cbotu_EstA, Cbotu_EstB |
+| [C012](/dry-lab/model/#comp=C012) | 5 | 6 | `3.40.50.1820` α/β hydrolase | PhaZAfa, PhaZ5, PHB depolymerase |
+
+The ten largest components. All 46 are in the [plasticome explorer](/dry-lab/model/#plasticome-reference-curation).
+
+## USEARCH or DIAMOND
+
+<Placeholder>
+
+Two steps depend on an alignment engine: clustering at 90% (which sequences become centroids) and this all-against-all alignment (how centroids group into components). To see how much the components depend on that choice, we ran all four combinations of USEARCH and DIAMOND on the same input, with the same linking rule.
+
+</Placeholder>
+
+| Clustering | Alignment | Centroids | Aligned pairs | Links | Components | Single | Largest |
+|---|---|---|---|---|---|---|---|
+| DIAMOND | DIAMOND | 404 | 27,259 | 20,736 | 48 | 25 | 218 |
+| DIAMOND | USEARCH | 404 | 28,755 | 20,616 | 47 | 26 | 224 |
+| USEARCH | DIAMOND | 413 | 29,343 | 22,536 | 47 | 25 | 229 |
+| **USEARCH | USEARCH | 413 | 30,859 | 22,415 | 47 | 26 | 233** |
+
+<Placeholder>
+
+**The aligner barely matters.** With the clustering held fixed, 42 of 47 components are identical with either aligner, and six or seven centroids cross a component boundary on links close to the cutoff. DIAMOND reports fewer aligned pairs but passes about 120 more links.
+
+**The clusterer matters only through the centroids.** With the USEARCH aligner, the 295 centroids both clusterers chose keep exactly the same components; with DIAMOND, two move. The real difference is which and how many centroids there are (404 against 413).
+
+In every combination the second to fifth largest components have 45, 19, 16 and 14 centroids. Only the large α/β-hydrolase component changes size, from 218 to 233, as distant members join or leave it. The partition is therefore stable to the choice of engine, and we use USEARCH for both steps. This comparison ran on an earlier version of the union, so its counts differ slightly from the final run.
+
+</Placeholder>
+
+## Checks
+
+<Placeholder>
+
+- **Reproducing the original PETadex components.** The same code, applied to the 213 sequences of the original PETadex seed set, gives the published 42 components (3,178 links).
+- **Old component labels are respected.** 166 centroids carry a component label from the original set. The labels are compared afterwards and never used to build the partition. No old component is split across two new ones.
+- **Identical sequences cannot be separated.** Nodes are sequence hashes, so two records with the same sequence are always in the same component.
+
+</Placeholder>
+
+## Back to 609 enzymes
+
+<Placeholder>
+
+Each of the 609 plasticome enzymes takes the component of the centroid of its 90% cluster: 411 are centroids themselves and the rest are cluster members. The result is one table with a row per enzyme, giving its cluster, its centroid, its identity to that centroid and its component. This is the table [CATH Assignment](/dry-lab/model/cath-assignment/) uses to separate catalytic from accessory domains, and the component column is what later steps search by.
+
+</Placeholder>
+
+## About the component map
+
+<Placeholder>
+
+The component map on the Model page is drawn for readability, not as the assignment itself. It shows all 609 enzymes, not only the centroids, and uses DIAMOND with an extra rule that an alignment must cover at least half of the shorter sequence. That rule cuts some long-range links inside the α/β-hydrolase family, so the map shows 56 components instead of 46. Almost every component of the map lies inside one component of the assignment. The exceptions are three α/β-hydrolase enzymes that sit with a different α/β-hydrolase group on the map than in the assignment. Highlighting a component on the map uses the assignment, so one highlighted component can cover several halos.
+
+</Placeholder>
+
+## Limitations
+
+<Placeholder>
+
+- **One link is enough.** Single linkage joins two groups through one alignment. This is what keeps continuous families together, and also what would merge two families if a single spurious alignment passed both rules.
+- **No coverage rule.** A link can come from an alignment over part of each sequence, such as a shared accessory domain. The fold check above found no component that mixes catalytic folds at 30%.
+- **Components are not folds.** Distant members of one fold land in separate components. Fold-level grouping comes from CATH, not from this step.
+- **Single centroids.** 25 centroids have no link. Each is still searched on its own, but from a family of one.
+
+</Placeholder>
+
+## Reproducing
+
+<Placeholder>
+
+Component assignment is step 3 of the plasticome pipeline. One driver runs it with the steps around it:
+
+</Placeholder>
+
+```bash
+./pipeline_run.bash <run-name> --engine usearch --to 6
+# step 3 alone, on an existing cluster table
+ENGINE=usearch "lib/03 alignment/run_from_clusters.sh" runs/<run>/02-clusters.tsv
+```
+
+<Placeholder>
+
+USEARCH v11 is a Linux binary and runs in Docker. The step writes `03-alignment.tsv` (the cluster table with a `component_id` column), the per-enzyme table `05-union-with-components.tsv`, and every intermediate (alignments, links, component members, run statistics) under `03-alignment.intermediates/`.
+
+</Placeholder>
