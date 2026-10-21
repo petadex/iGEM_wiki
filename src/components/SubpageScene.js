@@ -2717,6 +2717,36 @@ export function SubpageScene({
     }
   }, [compact, sections, railDots, railTall, openSubs])
 
+  // Keep the section being read inside the rail's own scroll. The highlight
+  // moves with the page, but on a list taller than the rail it can move out
+  // of sight, leaving the menu looking stuck on a section already passed.
+  useEffect(() => {
+    const list = railListRef.current
+    if (!list) return undefined
+    const item = list.querySelector("[aria-current]")
+    if (!item) return undefined
+    const max = list.scrollHeight - list.clientHeight
+    if (max <= 1) return undefined
+
+    // Measured on screen, so it does not matter what the item is offset from.
+    const bounds = list.getBoundingClientRect()
+    const box = item.getBoundingClientRect()
+    const top = list.scrollTop + box.top - bounds.top
+    const margin = Math.min(28, list.clientHeight / 4)
+    let next = null
+    if (top < list.scrollTop + margin) next = top - margin
+    else if (top + box.height > list.scrollTop + list.clientHeight - margin)
+      next = top + box.height - list.clientHeight + margin
+    if (next === null) return undefined
+
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    list.scrollTo({
+      top: Math.max(0, Math.min(max, next)),
+      behavior: reduce ? "auto" : "smooth",
+    })
+    return undefined
+  }, [activeId, activeSubId, sections, railDots, railTall, railClipped, openSubs])
+
   useLayoutEffect(() => {
     const list = railListRef.current
     if (!list || !railDots) {
@@ -3086,7 +3116,12 @@ export function SubpageScene({
                             {icon && !railDots && (sectionOn || (subOn && !open)) ? (
                               <RailIcon aria-hidden style={railIconStyle} />
                             ) : (
-                              <RailDot aria-hidden $on={railDots && dotOn} />
+                              <RailDot
+                                aria-hidden
+                                $on={railDots && dotOn}
+                                $plain={!icon}
+                                data-plain={icon ? undefined : ""}
+                              />
                             )}
                             {!railDots && <RailLabel>{s.label}</RailLabel>}
                           </RailLink>
@@ -4899,7 +4934,17 @@ const RailDot = styled.span`
   opacity: ${({ $on }) => ($on ? 0 : 0.6)};
   transition:
     transform 0.2s ease,
-    opacity 0.2s ease;
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+
+  /* A page with no indicator icon has no traveller to cover the active dot,
+     so the dot stays and wears a ring of the page's highlight colour. */
+  ${({ $on, $plain }) =>
+    $on &&
+    $plain &&
+    css`
+      box-shadow: 0 0 0 5px var(--rail-active);
+    `}
 `
 
 /** Sits on the active title. Its left edge meets the pill's outside edge. */
@@ -4998,6 +5043,10 @@ const RailLink = styled.a`
       &[aria-current] ${RailDot} {
         opacity: 0;
         transform: none;
+      }
+      /* No icon to travel here, so the active dot stays (ringed, see RailDot). */
+      &[aria-current] ${RailDot}[data-plain] {
+        opacity: 1;
       }
     `}
 
