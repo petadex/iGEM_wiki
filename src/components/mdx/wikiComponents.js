@@ -17,6 +17,7 @@ import { HardwareNotebookSandbox } from "../hardwareNotebook/HardwareNotebookSan
 import { HardwareArchitectureDiagram } from "../hardwareArchitecture/HardwareArchitectureDiagram.js"
 import { PageTab, PageTabs } from "../PageTabs.js"
 import AtlasMap from "../AtlasMap.js"
+import EcosystemMapFigure from "../EcosystemMapFigure.js"
 import PetadexGame from "../PetadexGame.js"
 import { FeatureCard, FeatureCards } from "./FeatureCards.js"
 import { Expandable } from "./ExpandWindow.js"
@@ -316,6 +317,7 @@ export const mdxComponents = {
   PhotoGallery,
   Spreadsheet,
   AtlasMap,
+  EcosystemMapFigure,
   PetadexGame,
   FeatureCards,
   FeatureCard,

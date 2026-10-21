@@ -514,6 +514,23 @@ const haystack = (r) => {
  */
 const HASH_FILTER = /^#(fold|comp)=(g\d+|C\d+)$/
 
+/**
+ * `#enzymes=ISPETase,PHL-1` — the world map's PAZy pins link each site's
+ * enzymes here, so a pin carrying seven of them opens all seven.
+ */
+const HASH_ENZYMES = /^#enzymes=(.+)$/
+
+const nameKey = (r) => String(r.name).trim().toLowerCase()
+
+/** A hand-edited address can hold a stray `%`, which would throw on decode. */
+const decodeOrRaw = (s) => {
+  try {
+    return decodeURIComponent(s)
+  } catch {
+    return s
+  }
+}
+
 /** Every enzyme in a list to search, filter and scroll; the one picked is shown beside it. */
 export const PlasticomeExplorer = () => {
   const [query, setQuery] = useState("")
@@ -521,8 +538,9 @@ export const PlasticomeExplorer = () => {
   const [plastic, setPlastic] = useState("")
   const [fold, setFold] = useState("")
   const [comp, setComp] = useState("")
+  const [names, setNames] = useState(null)
   const [selected, setSelected] = useState(U[0].id)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const boxRef = useRef(null)
 
   const rows = useMemo(() => {
@@ -533,9 +551,10 @@ export const PlasticomeExplorer = () => {
         (!plastic || plasticsOf(r).includes(plastic)) &&
         (!fold || groupOf(r)?.g === fold) &&
         (!comp || cathOf(r).comp === comp) &&
+        (!names || names.includes(nameKey(r))) &&
         (!q || haystack(r).includes(q))
     )
-  }, [query, source, plastic, fold, comp])
+  }, [query, source, plastic, fold, comp, names])
   const current = rows.find((r) => r.id === selected) ?? rows[0]
   const filtered = rows.length < U.length
 
@@ -545,10 +564,27 @@ export const PlasticomeExplorer = () => {
     setPlastic("")
     setFold("")
     setComp("")
+    setNames(null)
   }
 
   useEffect(() => {
     const fromHash = () => {
+      const enzymes = window.location.hash.match(HASH_ENZYMES)
+      if (enzymes) {
+        const wanted = decodeOrRaw(enzymes[1])
+          .split(",")
+          .map((n) => n.trim().toLowerCase())
+          .filter(Boolean)
+        if (!wanted.length) return
+        clearFilters()
+        setNames(wanted)
+        // The card shows the first of them; the list holds the rest.
+        const first = U.find((r) => wanted.includes(nameKey(r)))
+        if (first) setSelected(first.id)
+        setOpen(true)
+        boxRef.current?.scrollIntoView({ block: "start" })
+        return
+      }
       const m = window.location.hash.match(HASH_FILTER)
       if (!m) return
       clearFilters()

@@ -7,10 +7,11 @@ import React, {
   useState,
 } from "react"
 import { createPortal } from "react-dom"
-import { Link } from "gatsby"
+import { Link, withPrefix } from "gatsby"
 import styled, { css, keyframes } from "styled-components"
 import data from "../data/homeMap.json"
 import { artFont, artPx, phone } from "./artScale.js"
+import { NEW_TAB } from "./mdx/linkTarget.js"
 import {
   PIN_CROP,
   PIN_FRAME,
@@ -60,6 +61,16 @@ const GROWTH = 4
 
 const PAZY_COLOR = "#c4561d"
 const PETADEX_COLOR = "#2f5d4a"
+/** The expansion dots, kept lighter than PAZY_COLOR so the two tiers read apart. */
+const PETADEX_DOT_COLOR = "#e08a3c"
+
+/**
+ * A pin opens its site's enzymes in the Model page's "Explore PETadex-PAZy"
+ * (PlasticomeExplorer reads this hash); a site with seven of them opens all
+ * seven, with the first one's card shown.
+ */
+const explorerHref = enzymes =>
+  `/dry-lab/model/#enzymes=${encodeURIComponent(enzymes.join(","))}`
 
 const GRATICULE = graticule()
 const fmt = n => n.toLocaleString("en-US")
@@ -337,7 +348,7 @@ function drawCells(canvas, p) {
   for (const dot of DOTS) {
     if (dot.order >= shown) continue
     const r = Math.min(8, 1.6 + Math.sqrt(dot.samples) * 0.55) * unit * 1.4
-    ctx.fillStyle = dot.pazy ? PAZY_COLOR : PETADEX_COLOR
+    ctx.fillStyle = dot.pazy ? PAZY_COLOR : PETADEX_DOT_COLOR
     ctx.beginPath()
     ctx.arc(
       (dot.pos.left / 100) * w,
@@ -443,7 +454,8 @@ export const HomeEcosystemMap = forwardRef(
         {PINS.filter(pin => pin.pos).map((pin, i) => (
           <Pin
             key={pin.label}
-            type="button"
+            href={withPrefix(explorerHref(pin.enzymes))}
+            {...NEW_TAB}
             $on={stage >= 1}
             $dim={stage === 3}
             aria-hidden={stage === 0}
@@ -453,7 +465,9 @@ export const HomeEcosystemMap = forwardRef(
               top: `${pin.pos.top}%`,
               transitionDelay: stage === 1 ? `${i * 110}ms` : "0ms",
             }}
-            aria-label={`${pin.enzymes.join(", ")}: ${pin.label}. ${pin.habitat}.`}
+            aria-label={`${pin.enzymes.join(", ")}: ${pin.label}. ${pin.habitat}. Opens ${
+              pin.enzymes.length > 1 ? "these enzymes" : "this enzyme"
+            } in the PETadex-PAZy explorer, in a new tab.`}
           >
             <PinImg src={PIN_SRC} alt="" draggable="false" />
             <PinCard role="tooltip">
@@ -727,7 +741,15 @@ const SiteLabel = styled.span`
   }
 `
 
-const Pin = styled.button`
+/* &&& outranks the wiki page template's a:not(.heading-anchor) colour and
+   underline (specificity 0,2,1), which the Model page's copy of the map is
+   inside; on the homepage there is nothing to outrank. */
+const Pin = styled.a`
+  &&& {
+    text-decoration: none;
+    color: inherit;
+  }
+
   position: absolute;
   width: ${artPx(18)};
   height: ${artPx((18 * PIN_CROP.h) / PIN_CROP.w)};

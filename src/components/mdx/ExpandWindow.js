@@ -23,7 +23,8 @@ import { ScrollExpand, holdFigureUp } from "./ScrollExpand.js"
  * to fill the screen as the reader scrolls down to it (ScrollExpand), laid out
  * as in the window meanwhile, holding the page there until the reader
  * presses Continue; `hint` is a line of how-to beside that button, and
- * `anchor` an id that links can jump to it by (see ScrollExpand).
+ * `anchor` an id that links can jump to it by, and `minimizeOnLeave` has it
+ * shrink back into the text once the reader moves on past it (see ScrollExpand).
  */
 /**
  * True inside an open window. A figure that sizes itself off the screen (the
@@ -43,6 +44,7 @@ export const ExpandWindow = ({
   continueButton = true,
   continueTo,
   anchor,
+  minimizeOnLeave = false,
   children,
 }) => {
   const [open, setOpen] = useState(false)
@@ -184,7 +186,7 @@ export const ExpandWindow = ({
   return (
     <>
       {open && <Backdrop onClick={() => setOpen(false)} aria-hidden="true" />}
-      <ScrollExpand off={!grow} ground={bg} dark={dark} hint={hint} continueButton={continueButton} continueTo={continueTo} anchor={anchor}>
+      <ScrollExpand off={!grow} ground={bg} dark={dark} hint={hint} continueButton={continueButton} continueTo={continueTo} anchor={anchor} minimizeOnLeave={minimizeOnLeave}>
         {stage}
       </ScrollExpand>
     </>
