@@ -5611,13 +5611,14 @@ const Section5RecyclingLine = styled.p`
  * then the same on phones.
  */
 const SECTION5_OCEAN_LINES = [
-  // Desktop: stepped down the open water, the turtle (57%) between the
-  // left-hand lines, the pink axolotl (61.5%) under the right-hand one.
-  { at: [51, 4, 40], phone: [48, 3, 43] },
-  { at: [55.5, 56, 41], phone: [51, 55, 42] },
+  // Desktop: zig-zag down the open water, clear of the foam (~52%), the turtle
+  // (57–60%) above the left line, the pink axolotl (61.5–68%) between the
+  // right ones, ending above the green axolotl (75.6%).
+  { at: [53.5, 56, 41], phone: [48, 3, 43] },
+  { at: [61.5, 4, 41], phone: [51, 55, 42] },
   // Phones: the long lines run ~16% of the plant tall, so each column
   // starts its next line only once the one above it has ended.
-  { at: [64, 4, 41], phone: [53, 3, 43] },
+  { at: [69.5, 56, 41], phone: [53, 3, 43] },
 ]
 
 const Section5OceanLine = styled.p`
