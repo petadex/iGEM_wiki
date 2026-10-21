@@ -137,13 +137,14 @@ We don't know yet why. The new Logan search seems to return a more fragmented se
 
 ## Domain composition
 
-α/β-hydrolases are about half of the dataset. Every large superfamily loses share as clusters get coarser, which is what clustering should do: a big, dense family collapses into relatively few clusters, while small, scattered families keep most of theirs.
+α/β-hydrolases are close to half of the clusters at every level, from 46.8% at 90% to 42.1% at 30%. The largest superfamilies lose share as clusters get coarser, which is what clustering should do: a big, dense family collapses into relatively few clusters, while small, scattered families keep most of theirs. Trypsin-like proteases are the exception. They are 3.2% of 90% clusters but 17.2% of 30% clusters, the second-largest group at that level.
 
-<Placeholder label="Placeholder figure">
-
-Share of each CATH superfamily among cores and among 90%, 60% and 30% centroids (domain_composition_dark.png in the Slack thread).
-
-</Placeholder>
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/figures/cluster-domain-composition.avif"
+  alt="Stacked bars of CATH superfamily share among PETadex V2 clusters at 90%, 60% and 30% identity. α/β hydrolases are 46.8%, 46.7% and 42.1%; trypsin-like proteases rise from 3.2% to 8.8% to 17.2%."
+  width="100%"
+  caption={<>CATH superfamily composition of PETadex V2 clusters at 90% (30,453,501 clusters), 60% (2,928,810) and 30% identity (77,524). Segments of at least 3% are labelled; the eight smallest superfamilies are grouped as Other.</>}
+/>
 
 ## Limitations
 
@@ -152,8 +153,8 @@ Share of each CATH superfamily among cores and among 90%, 60% and 30% centroids 
 - **Settings matter more than grouping.** The 30% count roughly halved when we changed settings, so these counts describe the dataset under one particular set of settings, not a fixed property of it.
 - **No clustering across superfamilies.** Two cores from different superfamilies never share a cluster, even in the rare case that they would pass the identity cutoff.
 
-## Reproducing
-
-{/* TODO: the clustering command per level, the tool version, the S3 path of the inputs and outputs, and the GitHub link once the repo is public. */}
-
-Placeholder: commands, tool version and output locations.
+{/*
+  A "Reproducing" section belongs here once these exist: the clustering
+  command per level, the tool version, the S3 path of the inputs and
+  outputs, and the GitHub link once the repo is public.
+*/}

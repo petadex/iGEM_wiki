@@ -24,8 +24,8 @@ bibliography: "../../dry-lab.bib"
   note is IGEM Wiki/05 Content/BioSample Metadata Profiles - Section.md.
   Owner: Dennis.
 
-  Everything inside <Placeholder> is an AI-written scaffold. Team rule:
-  rewrite it in your own words, then remove the wrapper.
+  The prose was an AI-written scaffold; Dennis accepted it as final
+  (Placeholder wrappers removed 2026-10-21).
 
   Sources for every number (add these rows to Numbers.md before publishing).
   All from ~/sra-proxy-data/pipelines/profiles/results/ on watson; profiles
@@ -69,29 +69,17 @@ This page is the full write-up behind the [Biosample Metadata Profiles](/dry-lab
 
 ## Why profile BioSamples
 
-<Placeholder>
-
 Most PETadex sequences come from metagenome runs, and the BioSample record [@barrett2012biosample] attached to each run is the only description of where it was collected. That record is free text and usually incomplete. To use it as a model feature we need it in a fixed vocabulary, and we need to know how much to trust each label. The profiles do both, and they never read the organism's species name, so a profile describes the sample's environment and not what grew in it.
-
-</Placeholder>
 
 ## How a profile is assigned
 
-<Placeholder>
-
 Seven steps take a BioSample from free-text metadata to a profile on every sequence cluster it contributes to. Pick a step to read it.
-
-</Placeholder>
 
 <ProfileSteps />
 
 ## Where the samples are vs where the sequences are
 
-<Placeholder>
-
 Counting BioSamples and counting sequence clusters give opposite pictures. Human-body profiles are 59.2% of the BioSamples that contribute a PETadex sequence but only 1.4% of the clusters, while natural environments go from 13.2% to 76.3%. Soil alone holds 11.5 times more clusters than its sample count suggests. As an independent check, the profiles also separate by an environmental temperature estimated from the microbes present rather than from the metadata: gut profiles sit near 37 °C and soil and freshwater near 31 °C. The effect is real but small.
-
-</Placeholder>
 
 <Figure
   id="biosample-profiles-figure"
@@ -101,27 +89,17 @@ Counting BioSamples and counting sequence clusters give opposite pictures. Human
   caption="Where the samples are vs where the sequences are. (a) For each of 21 metadata profiles, its share of profiled BioSamples that contribute at least one PETadex ORF (purple, n = 2,047,271) and its share of 90% identity sequence clusters, assigned by the majority profile of their ORFs (green, n = 14,455,359). Log scale; the column gives the ratio. (b) Environmental temperature for the same BioSamples: BacDive growth temperature propagated from the taxa present (abundance-weighted), independent of the metadata used to assign profiles. Points are medians, bars interquartile ranges. Kruskal–Wallis ε² = 0.044 (n = 1,964,187)."
 />
 
-<Placeholder>
-
 The chart below is the same data, interactive. Hover a ratio to see what it means, and pick a row to follow that profile through the pipeline: the words that matched, how strong the evidence was, real BioSamples at each evidence tier, and its temperature.
-
-</Placeholder>
 
 <ProfileShares example />
 
 ## BioSample viewer
 
-<Placeholder>
-
 One real BioSample from each ecosystem that appears elsewhere on the wiki, five sites and five landmarks of the Adjacency Landscape. Each was chosen so that most of its sequences sit in clusters dominated by its own profile. Per-sample temperature is not shown: the BacDive estimate only works across a population, and a single hot-spring sample came out at 30.7 °C.
-
-</Placeholder>
 
 <BiosampleViewer />
 
 ## Known rule defects
-
-<Placeholder>
 
 Building the interactive chart turned up four defects in the profile rules. They are not yet fixed. Together they affect about 1.5% of profiled BioSamples, and the samples-to-clusters flip does not depend on any of them. Fixing them means re-running the profile build and the propagation, after which every number shifts slightly.
 
@@ -130,14 +108,8 @@ Building the interactive chart turned up four defects in the profile rules. They
 3. **Body-site rules do not check the host.** At least 30,682 animal samples carry human labels, such as bovine faeces, dog urine and cattle respiratory samples.
 4. **A bare "metagenome" label wins.** A metagenome label of just "metagenome" hits the Other environmental catch-all before more specific fields, such as `env_medium = lake sediment`, are read. Lake Baikal sample SAMN17126602, which states 0 psu, is profiled Other environmental.
 
-</Placeholder>
-
 ## Other limitations
-
-<Placeholder>
 
 - **Half the samples are unprofiled.** 50.6% of BioSamples carry no environment signal, so profiled data leans toward well-described studies.
 - **The temperature check is small.** ε² = 0.044. The temperature estimate also tops out near 37 °C, because BacDive's recorded optimum is often an incubator setting, so host profiles pile up there.
 - **The popup's explanation is a reading, not a measurement.** That low-ratio profiles are isolates of the same few organisms sequenced again and again fits the one human stool isolate we inspected, whose 13 sequences all sit in clusters of about 33,000. We have not measured the isolate share per profile.
-
-</Placeholder>

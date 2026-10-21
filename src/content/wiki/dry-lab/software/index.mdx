@@ -37,6 +37,17 @@ bibliography: "../dry-lab.bib"
     - source mirrored to gitlab.igem.org/2026/software-tools/
     - team confirmed not in the Software & AI Village
 */}
+
+{/*
+  ~150 words. Short overview for a general audience, no heading.
+*/}
+
+Finding a plastic-degrading enzyme in a database of millions takes more than a good model. You have to search the database quickly, keep track of what is known about each sequence, and buy enough DNA to test the best candidates without spending the whole budget on synthesis. We built a tool for each of those jobs, and we built them so other teams can use them for their own enzymes.
+
+**LOBSTER** designs a small set of DNA fragments that assemble into many natural enzyme variants at once, so a lab can test a whole family for much less than the cost of ordering each gene. **Sharded DIAMOND search** lets anyone paste in an unknown protein and, within a minute, see its closest relatives across all of PETadex, with nothing to install. The **sequence record card** gathers everything we know about one enzyme on a single page: its structure, origin, relatives and lab results.
+
+Each tool comes with a small demo that runs on this page using real data. All of the code, data and models are open, and the last section of this page says where to find them.
+
 ## LOBSTER
 
 {/*
@@ -63,7 +74,7 @@ To maximize our Wet Lab activity validation efficiency, we developed the LOBSTER
 
 LOBSTER operates by isolating the PETase cores, identifying and selecting Golden Gate cut sites, then greedily adding cores to the solution using additional fragments and degenerate codons. Using this approach, the LOBSTER output designs reduce the purchased nucleotides by 55% to cover the LCC and IsPETase 90pid clusters. This expands our PETase activity validation search space across more clusters. Additional details on LOBSTER's implementation can be found on its own page.
 
-### Output:
+### Output
 As literature controls, we ran LOBSTER on two 90pid clusters, one containing IsPETase and the other containing LCC. Below is an interactive example of LOBSTER's output designs for the IsPETase and LCC clusters. Hovering over the different fragment positions shows the nucleotide sequences of each oligo at that position. Additionally, Golden Gate information including the overhangs between fragment positions and adapter sequences are displayed.
 
 <FrameFigure
@@ -73,7 +84,7 @@ As literature controls, we ran LOBSTER on two 90pid clusters, one containing IsP
   caption={<><strong>Figure 2.</strong> LOBSTER's output designs for the IsPETase and LCC 90pid clusters. Hover over a fragment position to see the nucleotide sequence of each oligo at that position, along with the Golden Gate overhangs between positions and the adapter sequences.</>}
 />
 
-### Savings:
+### Savings
 The following figures show the nucleotide savings of LOBSTER's output designs for the IsPETase and LCC clusters.
 
 <ImageGrid>
