@@ -193,7 +193,7 @@ const SUBTEAM_LABELS = true
 const POP_SCALE = 1.25
 /** Longest fly-in delay; every piece still lands by assemble = 1. */
 const FLY_DELAY_MAX = 0.15
-/** Burst plays (real time) once the hold is this far in; resets below BURST_RESET_AT. */
+/** Burst plays (real time) once `burst` is this far in; resets below BURST_RESET_AT. */
 const BURST_TRIGGER_AT = 0.04
 const BURST_RESET_AT = 0.01
 /** All petamons pop within this window (their `burst` delays scale to it). */
@@ -341,7 +341,7 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(
   const activePiece = PIECES.find(piece => piece.id === active)
 
   useImperativeHandle(ref, () => ({
-    update({ assemble, burst }) {
+    update({ assemble, burst, arrivalShift: shiftIn }) {
       const frame = frameRef.current
       if (!frame) return
       const rect = frame.getBoundingClientRect()
@@ -349,10 +349,13 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(
       const sy = rect.height / CROP.h
       const vw = window.innerWidth
       const vh = window.innerHeight
-      // Pieces aim at where they'll sit once the bottle reaches mid-view (the
-      // hold), so they fly across the screen instead of chasing the bottle
-      // while it's still below the fold. At assemble = 1 this is 0.
-      const arrivalShift = rect.top + rect.height / 2 - vh / 2
+      // Pieces aim at where they'll sit once the bottle is whole, so they fly
+      // across the screen instead of chasing the bottle while it's still
+      // below the fold. The page can say how far up it still has to move
+      // (`arrivalShift`, px); by default that's to mid-view. At assemble = 1
+      // this is 0.
+      const arrivalShift =
+        shiftIn ?? rect.top + rect.height / 2 - vh / 2
 
       PIECES.forEach((piece, i) => {
         const { pieceBox, pieceCenter } = LAYOUT[i]
@@ -393,8 +396,8 @@ const EndingPetamonBottle = forwardRef(function EndingPetamonBottle(
         }
       })
 
-      // Burst: one real-time show once the hold starts, so a fast scroll
-      // can't skim past it; scrolling back above the hold rewinds it.
+      // Burst: one real-time show once it starts, so a fast scroll can't skim
+      // past it; `burst` dropping back below BURST_RESET_AT rewinds it.
       if (!burstPlayingRef.current && assemble >= 1 && burst >= BURST_TRIGGER_AT) {
         burstPlayingRef.current = true
         playBurst(rect)

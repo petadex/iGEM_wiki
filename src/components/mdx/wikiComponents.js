@@ -44,6 +44,7 @@ import {
   PlasticomeExplorer,
   PlasticomeFlow,
   PlasticomeStats,
+  PlasticomeByPlastic,
 } from "./interactive/PlasticomeCuration.js"
 import {
   CathFlow,
@@ -194,6 +195,8 @@ export const SideFigure = ({
   figure,
   /** Let the text wrap under the figure instead of sitting in its own column. */
   flow,
+  /** Drop the paper and border, for a figure drawn with its own panels. */
+  plain,
   children,
 }) => {
   const viewer = useFigureViewer(expandable)
@@ -205,7 +208,7 @@ export const SideFigure = ({
     >
       {flow ? null : <SideFigureText>{children}</SideFigureText>}
       <SideFigureFrame>
-        <SideFigureImage>
+        <SideFigureImage $plain={plain}>
           {figure}
           {src &&
             (viewer ? (
@@ -280,6 +283,7 @@ export const mdxComponents = {
   ProfileStack,
   BiosampleViewer,
   PlasticomeStats,
+  PlasticomeByPlastic,
   PlasticomeCoverage,
   PlasticomeExplorer,
   PlasticomeFlow,
@@ -596,8 +600,8 @@ const SideFigureImage = styled.div`
     object-fit: contain;
     object-position: top center;
     /* The same paper Figure 1 sits on, so the figures share one surface. */
-    border: 1px solid var(--color-border);
-    background: #fbf8f2;
+    border: ${({ $plain }) => ($plain ? "0" : "1px solid var(--color-border)")};
+    background: ${({ $plain }) => ($plain ? "none" : "#fbf8f2")};
   }
 
   @media (max-width: 720px) {

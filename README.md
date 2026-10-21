@@ -82,6 +82,13 @@ Several studies support this claim [@austin2018; @anotherStudy].
 A specific passage can include a locator [@austin2018, p. 3].
 ```
 
+Pages that share a bibliography can point at it from frontmatter instead, with
+a path relative to the page. Dry Lab pages share `dry-lab/dry-lab.bib`:
+
+```yaml
+bibliography: "../../dry-lab.bib"
+```
+
 The site renders linked Vancouver-style numbers and automatically appends a
 References section containing only sources cited on that page. Clicking an
 in-text number scrolls to its bibliography entry.

@@ -54,7 +54,8 @@ const domOf = c => pretty((c.cath && D.names[c.cath]) || c.dom)
 /* ---------- component map ---------- */
 
 // Substrate colours and node shapes follow logan-plasticome-figure/ssn/build_ssn.py.
-const SUB = {
+// The CATH forest draws its tips in the same colours, and reuses these for its key.
+export const SUB = {
   PET: "#275ca0",
   PE: "#e8559e",
   PA: "#40b6c5",
@@ -67,7 +68,7 @@ const SUB = {
   NR: "#959595",
   "Combi.": "#262626",
 }
-const SUBNAME = { NR: "Not reported", "Combi.": "Several plastics" }
+export const SUBNAME = { NR: "Not reported", "Combi.": "Several plastics" }
 const ORIGIN = { D: "Bacterial", h: "Eukaryotic", o: "Metagenomic" }
 const HALO = "#e8ddd1"
 const HALO_ON = "#d6c4b1"
@@ -216,7 +217,8 @@ function fitView(ns, base = BOX, shift = {}) {
  * One group of the map, in its own layer so it can be dragged on its own. It
  * redraws only when the highlight changes or it moves.
  */
-const MapGroup = React.memo(function MapGroup({ g, dx, dy, on, comp }) {
+// `pin` is a node to ring: the enzyme a #map=PL<id> link asked for.
+const MapGroup = React.memo(function MapGroup({ g, dx, dy, on, comp, pin }) {
   const lit = i => comp && on.has(i)
   return (
     <g className="grp" data-m={g.m} transform={`translate(${dx} ${dy})`}>
@@ -289,6 +291,15 @@ const MapGroup = React.memo(function MapGroup({ g, dx, dy, on, comp }) {
             {MN[i].seed}
           </text>
         ))}
+      {pin != null && (
+        <circle
+          className="pin"
+          pointerEvents="none"
+          cx={MN[pin].x}
+          cy={fy(MN[pin].y)}
+          r={0.95}
+        />
+      )}
     </g>
   )
 })
@@ -299,7 +310,7 @@ const MapGroup = React.memo(function MapGroup({ g, dx, dy, on, comp }) {
  * put it, and dragging its heading moves the whole domain. A group dragged
  * on its own leaves its frame behind. No two frames overlap as laid out.
  */
-const MapLayers = ({ on, comp, shift, domains, domShift, rights }) => {
+const MapLayers = ({ on, comp, shift, domains, domShift, rights, pin }) => {
   const at = k => `translate(${domShift[k]?.dx || 0} ${domShift[k]?.dy || 0})`
   return (
     <>
@@ -330,6 +341,7 @@ const MapLayers = ({ on, comp, shift, domains, domShift, rights }) => {
           dy={shift[g.m]?.dy || 0}
           on={on}
           comp={comp}
+          pin={pin != null && MN[pin].m === g.m ? pin : null}
         />
       ))}
       {domains &&
@@ -365,6 +377,7 @@ export const ComponentMap = () => {
   const [query, setQuery] = useState("")
   const [view, setView] = useState(BOX)
   const [tip, setTip] = useState(null)
+  const [pin, setPin] = useState(null) // node index ringed by a #map=PL<id> link
   const [aspect, setAspect] = useState(null) // the map's width / height on screen
   const [shift, setShift] = useState({}) // m -> { dx, dy }, the groups dragged so far
   const [domains, setDomains] = useState(true) // frame and head each CATH domain
@@ -392,6 +405,7 @@ export const ComponentMap = () => {
   const hits = useMemo(() => (on ? [...on].map(i => MN[i]) : []), [on])
 
   const choose = (f, zoom) => {
+    setPin(null)
     const same = f && focus && f.kind === focus.kind && f.key === focus.key
     const next = same ? null : f
     setFocus(next)
@@ -491,6 +505,29 @@ export const ComponentMap = () => {
     })
     setRights(next)
   }, [domains])
+
+  // A link of the form #map=PL<id> (from an enzyme's card in the explorer)
+  // highlights that enzyme's component, zooms to its group and rings it.
+  const placeRef = useRef({ base, shift })
+  placeRef.current = { base, shift }
+  useEffect(() => {
+    const fromHash = () => {
+      const m = window.location.hash.match(/^#map=PL(\d+)$/i)
+      if (!m) return
+      const i = MN.findIndex(n => n.id === Number(m[1]))
+      if (i < 0) return
+      const n = MN[i]
+      const { base: b, shift: sh } = placeRef.current
+      setFocus({ kind: "comp", key: n.c })
+      setQuery("")
+      setPin(i)
+      setView(fitView(MN.filter(x => x.m === n.m), b, sh))
+      boxRef.current?.scrollIntoView({ block: "start" })
+    }
+    fromHash()
+    window.addEventListener("hashchange", fromHash)
+    return () => window.removeEventListener("hashchange", fromHash)
+  }, [])
 
   // ⌘/Ctrl-scroll and trackpad pinch zoom; a plain scroll still scrolls the page.
   useEffect(() => {
@@ -608,7 +645,7 @@ export const ComponentMap = () => {
           {groups > 1
             ? `, drawn as ${groups} separate groups on the map (the map also requires 50% coverage)`
             : ""}
-          . <a href={`#comp=${c.c}`}>List them in the plasticome explorer →</a>
+          . <a href={`#comp=${c.c}`}>List them in the PETadex-PAZy explorer →</a>
         </>
       )
     }
@@ -627,8 +664,8 @@ export const ComponentMap = () => {
 
   const comp = focus?.kind === "comp"
   return (
-    <Box ref={boxRef}>
-      <BoxTitle>The plasticome as a map of components</BoxTitle>
+    <Box ref={boxRef} id="component-map">
+      <BoxTitle>PETadex-PAZy as a map of components</BoxTitle>
       <Sub>
         Drag any component to move it around the map, or a domain's heading to
         move the whole domain.
@@ -678,6 +715,7 @@ export const ComponentMap = () => {
               setView(base)
               setShift({})
               setDomShift({})
+              setPin(null)
             }}
           >
             Reset
@@ -725,7 +763,7 @@ export const ComponentMap = () => {
         ref={svg}
         viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
         role="img"
-        aria-label="Sequence similarity network of the 609 plasticome enzymes, grouped into sections by catalytic family. Nodes are coloured by substrate and shaped by origin; grey halos outline components."
+        aria-label="Sequence similarity network of the 609 PETadex-PAZy enzymes, grouped into sections by catalytic family. Nodes are coloured by substrate and shaped by origin; grey halos outline components."
         $drag={!!drag.current?.moved}
         onPointerDown={onDown}
         onPointerMove={onMove}
@@ -740,6 +778,7 @@ export const ComponentMap = () => {
           domains={domains}
           domShift={domShift}
           rights={rights}
+          pin={pin}
         />
       </MapSvg>
       <Panel aria-live="polite">
@@ -821,7 +860,7 @@ export const ComponentFlow = () => (
           <NodeN>{fmt(S.n_nodes)}</NodeN>
           <NodeT>Centroids</NodeT>
           <NodeD>
-            Plasticome clustered at 90% identity; one node per distinct sequence
+            PETadex-PAZy clustered at 90% identity; one node per distinct sequence
           </NodeD>
         </Node>
       </Lane>
@@ -857,7 +896,7 @@ export const ComponentFlow = () => (
       <Lane>
         <Node $out>
           <NodeN>{fmt(D.union.n)}</NodeN>
-          <NodeT>Plasticome, one row per enzyme</NodeT>
+          <NodeT>PETadex-PAZy, one row per enzyme</NodeT>
           <NodeD>Each enzyme takes the component of its centroid</NodeD>
         </Node>
       </Lane>
@@ -1090,6 +1129,12 @@ const MapSvg = styled.svg`
 
   .grp {
     cursor: move;
+  }
+
+  .pin {
+    fill: none;
+    stroke: ${INK};
+    stroke-width: 0.16;
   }
 
   .domhead {

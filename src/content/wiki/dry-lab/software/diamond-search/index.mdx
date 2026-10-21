@@ -8,6 +8,7 @@ description: "Full methods for the PETadex sharded DIAMOND search: database shar
 owners: ["Dry Lab"]
 updated: "2026-10-17"
 status: "draft"
+bibliography: "../../dry-lab.bib"
 ---
 
 {/*
@@ -53,9 +54,9 @@ This page is the full write-up behind the [sharded DIAMOND search](/dry-lab/soft
 
 ## Purpose
 
-PETadex brings together over 300 million candidate plastic-degrading enzymes, most of them predicted from assembled public sequencing data through Logan. A list that size is only useful if people can ask it questions. The question researchers ask most often is a similarity search: given an enzyme they already study, which sequences in the corpus resemble it, and how closely?
+PETadex brings together over 300 million candidate plastic-degrading enzymes, most of them predicted from assembled public sequencing data through Logan [@chikhi2024logan]. A list that size is only useful if people can ask it questions. The question researchers ask most often is a similarity search: given an enzyme they already study, which sequences in the corpus resemble it, and how closely?
 
-Tools such as BLAST answer that question against public databases, but none of them hold our corpus. Researchers could download the data and search it themselves, but that means hundreds of gigabytes, a large machine and familiarity with command-line alignment tools. We wanted anyone with a protein sequence and a web browser to be able to search the whole corpus, get an answer in under a minute and share it with a colleague by sending a link.
+Tools such as BLAST [@camacho2009blast] answer that question against public databases, but none of them hold our corpus. Researchers could download the data and search it themselves, but that means hundreds of gigabytes, a large machine and familiarity with command-line alignment tools. We wanted anyone with a protein sequence and a web browser to be able to search the whole corpus, get an answer in under a minute and share it with a colleague by sending a link.
 
 ## Design constraints
 
@@ -93,7 +94,7 @@ The query sequence travels inside each worker's start request, which is far belo
   width="100%"
 />
 
-We chose DIAMOND as the search engine because the Logan sequences in PETadex were found with DIAMOND. Searching with the same tool keeps the search consistent with how the data was built. It also reads compressed FASTA directly, which turned out to be the most important performance decision (see [Performance](#performance)).
+We chose DIAMOND [@buchfink2021diamond] as the search engine because the Logan sequences in PETadex were found with DIAMOND. Searching with the same tool keeps the search consistent with how the data was built. It also reads compressed FASTA directly, which turned out to be the most important performance decision (see [Performance](#performance)).
 
 ## Building the sharded database
 
@@ -176,7 +177,7 @@ Search time is now the largest part of the total. More, smaller shards would cut
 ## Validation
 
 - **Compressed vs native shards.** All ten benchmark runs, five per setup, returned the same 50 hits for FAST-PETase, so the compressed shards and the cross-shard merge reproduce the original setup exactly.
-- **DIAMOND vs MMseqs2.** Before switching engines, we searched IsPETase, FAST-PETase and a Logan sequence from run SRR10663367 with both DIAMOND (`--very-sensitive`) and the MMseqs2 search we used before. Their top 10 hits overlapped by 90% to 100%, with near-identical percent identities.
+- **DIAMOND vs MMseqs2.** Before switching engines, we searched IsPETase, FAST-PETase and a Logan sequence from run SRR10663367 with both DIAMOND (`--very-sensitive`) and the MMseqs2 [@steinegger2017mmseqs2] search we used before. Their top 10 hits overlapped by 90% to 100%, with near-identical percent identities.
 - **Built-in checks.** The aggregator rejects any job with a missing shard, and checks that every percent identity lies between 0 and 100.
 
 ## Limitations

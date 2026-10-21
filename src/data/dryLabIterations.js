@@ -64,7 +64,7 @@ const ITERATIONS_RAW = [
     kind: "failure",
     criteria: ["engineering", "model"],
     title: "The curated seed set wasn't clean",
-    expected: "The Plasticome, our hand-curated set of known plastic-degrading enzymes, would be reliable ground truth for every search built on it.",
+    expected: "PETadex-PAZy, our hand-curated set of known plastic-degrading enzymes, would be reliable ground truth for every search built on it.",
     happened: "Re-checking it showed that homologs of enzymes that don't degrade plastic had leaked in through the earlier curation.",
     foundBy: "A sequence-by-sequence re-curation against the published sources during the PETadex rebuild.",
     learned: "Every downstream search inherits the seed set's errors, so the seed set needs the strictest QC of anything in the pipeline.",
@@ -73,7 +73,7 @@ const ITERATIONS_RAW = [
     status: "resolved",
     steps: [
       { date: "2026-07-21", stage: "test", text: "Re-curation finds non-plastic-degrading homologs in the seed set." },
-      { date: "2026-07-21", stage: "build", text: "Plasticome rebuilt: ~470 enzymes, ~40 sequences changed." },
+      { date: "2026-07-21", stage: "build", text: "PETadex-PAZy rebuilt: ~470 enzymes, ~40 sequences changed." },
       { date: "2026-08-09", stage: "design", text: "Full Logan search held until the corpus is QC'd." },
     ],
     see: [S.plasticome],

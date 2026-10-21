@@ -8,6 +8,7 @@ description: "Software tools and workflows built for computational PETase discov
 owners: ["Dry Lab"]
 updated: "2026-10-10"
 status: "draft"
+bibliography: "../dry-lab.bib"
 ---
 
 {/*
@@ -160,7 +161,7 @@ Researchers often come to our database and ask a simple question.
 
 > I have this novel enzyme here that I know nothing about. Can you tell me what it is?
 
-We can tell what it is by looking at the enzymes that are similar to it using the entirety of the PETadex corpus. We've built this into a lightweight tool in the web-browser, no installs and less than a minute runtime.
+We can tell what it is by looking at the enzymes that are similar to it, found with a DIAMOND search [@buchfink2021diamond] over the entirety of the PETadex corpus. We've built this into a lightweight tool in the web-browser, no installs and less than a minute runtime.
 
 <ArchitectureFigure
   variant="simple"
@@ -188,7 +189,7 @@ Below is what comes back. Each of these ten searches was really run on the live 
 
 <DiamondSearchDemo />
 
-MHETase is the one to try for a contrast: it is IsPETase's partner enzyme but has a different fold, and the search finds only 134 relatives, the closest about 34% identical, where every PETase here fills the 500-hit cap. SRR10663367 is the question we opened with — a sequence from Logan that nobody had identified, whose closest neighbours turn out to be *Nonomuraea* PET hydrolases at 71% identity.
+MHETase is the one to try for a contrast: it is IsPETase's partner enzyme [@yoshida2016] but has a different fold, and the search finds only 134 relatives, the closest about 34% identical, where every PETase here fills the 500-hit cap. SRR10663367 is the question we opened with — a sequence from Logan [@chikhi2024logan] that nobody had identified, whose closest neighbours turn out to be *Nonomuraea* PET hydrolases at 71% identity.
 
 <MethodsLink>How the database is split, why the merged ranking is exact, how results are versioned and cached, and how we measured all of this.</MethodsLink>
 

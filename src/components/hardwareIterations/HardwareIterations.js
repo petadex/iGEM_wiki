@@ -5,6 +5,7 @@ import { ENGINEERING_ART } from "../../data/engineeringCycles.js"
 import { HARDWARE_ITERATIONS, HARDWARE_SUBSYSTEMS } from "../../data/hardwareIterations.js"
 import { IterationTimeline } from "./IterationTimeline.js"
 import { SubsystemTabs } from "./SubsystemTabs.js"
+import { HardwareMap } from "./HardwareMap.js"
 import V1Cycle from "../../content/wiki/hardware/past-iterations/version-1/_cycle.mdx"
 import V2Cycle from "../../content/wiki/hardware/past-iterations/version-2/_cycle.mdx"
 import V1Rest from "../../content/wiki/hardware/past-iterations/version-1/_overview.mdx"
@@ -80,6 +81,7 @@ export function HardwareIterations() {
         selectedIndex={version}
         onChange={selectVersion}
       />
+      <HardwareMap version={iteration.id} />
       <Section>
         <SectionTitle id="iteration-overview">DBTL</SectionTitle>
         {Cycle ? (
@@ -98,6 +100,7 @@ export function HardwareIterations() {
       {Rest ? <Rest key={iteration.id} /> : null}
       <Section>
         <SectionTitle id="iteration-subsystems">Subsystems</SectionTitle>
+        <p>Select a subsystem to learn more about our development on it for this iteration</p>
         <SubsystemTabs iteration={iteration} selected={subsystem} onSelect={setSubsystem} />
       </Section>
     </div>

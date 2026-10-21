@@ -19,12 +19,23 @@ function frontmatterBibliography(file) {
   return null
 }
 
+// gatsby-plugin-mdx compiles the body with its frontmatter already stripped,
+// so file.data carries none; read the `bibliography:` line from disk instead.
+function frontmatterBibliographyOnDisk(sourcePath) {
+  if (!fs.existsSync(sourcePath)) return null
+
+  const block = fs.readFileSync(sourcePath, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  const line = block?.[1].match(/^bibliography:\s*(.+?)\s*$/m)
+  return line ? line[1].replace(/^(["'])(.*)\1$/, "$2") : null
+}
+
 function findBibliography(file) {
   const sourcePath = file?.path || file?.history?.[0]
   if (!sourcePath) return null
 
   const pageDirectory = path.dirname(sourcePath)
-  const configured = frontmatterBibliography(file)
+  const configured =
+    frontmatterBibliography(file) || frontmatterBibliographyOnDisk(sourcePath)
   if (configured) {
     return {
       bibliography: configured,

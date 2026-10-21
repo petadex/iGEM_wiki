@@ -438,29 +438,32 @@ export function HomePlaza({ hpAnchorRef }) {
       <Intro ref={introRef}>
         <IntroLead>
           <span className="wide-copy">
-            Welcome to PetaBite. We take a byte out of plastic.
+            Introducing iGEM Toronto’s 2026 project: PetaBite. We take a byte
+            out of plastic!
           </span>
         </IntroLead>
         <IntroBody>
           <span className="wide-copy">
-            We are iGEM Toronto, about 70 students at the University of Toronto
-            working in seven subteams to find, engineer and deploy better
-            plastic-degrading enzymes.
+            iGEM Toronto is a group of 70 students at the University of Toronto
+            working in seven subteams to identify, engineer, and deploy highly
+            efficient plastic-degrading enzymes.
           </span>
           <span className="phone-copy">
-            We are iGEM Toronto, working to find better plastic-degrading
-            enzymes.
+            iGEM Toronto: 70 students finding, engineering, and deploying
+            plastic-degrading enzymes.
           </span>
         </IntroBody>
       </Intro>
 
       <MeetLine>
-        <strong>Meet the PETamons.</strong>{" "}
+        <strong>Meet the PETamons!</strong>{" "}
         <span className="hover-copy">
-          Hover to hear what they’re up to and click to visit their page.
+          Hover over them to see what they’re up to, and click on them to learn
+          more about what they do.
         </span>
         <span className="touch-copy">
-          Click to hear what they’re up to and click again to visit their page.
+          Tap them to see what they’re up to, and tap again to learn more about
+          what they do.
         </span>
       </MeetLine>
 

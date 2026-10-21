@@ -71,7 +71,7 @@ const RESIZE_SETTLE_MS = 200
 const SPREAD_PAGES = DESIGN_SKETCHBOOK_PAGES.filter((p) => p.variant === "spread")
 /** The pages with text, which are measured so none ever has to scroll. */
 const TEXT_PAGES = DESIGN_SKETCHBOOK_PAGES.filter(
-  (p) => ["spread", "notes", "aside"].includes(p.variant) && typeof p.body === "string" && p.body
+  (p) => ["spread", "text", "notes", "aside"].includes(p.variant) && typeof p.body === "string" && p.body
 )
 /** Kept clear under a page's text when it's measured (px), for rounding. */
 const FIT_SLACK_PX = 6
@@ -334,22 +334,23 @@ function GalleryFigure({ page }) {
   const n = page.images.length
   const cols = page.cols || Math.min(n, 3)
   return (
-    <GalleryWrap>
+    <GalleryWrap style={page.galleryMaxHeight ? { maxHeight: page.galleryMaxHeight } : undefined}>
       <GalleryGrid
         style={{
+          gap: page.galleryGap,
           gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
           gridTemplateRows: page.rows
             ? page.rows.map((weight) => `minmax(0, ${weight}fr)`).join(" ")
             : `repeat(${Math.ceil(n / cols)}, minmax(0, 1fr))`,
         }}
       >
-        {page.images.map((image) =>
-          image.crop ? (
+        {page.images.map((image) => (
+          <GalleryCell key={`${image.src}:${image.crop || ""}`} style={cellStyle(image)}>
+          {image.crop ? (
             <GalleryCrop
               key={`${image.src}:${image.crop}`}
               viewBox={`${image.crop[0]} ${image.crop[1]} ${image.crop[2] - image.crop[0]} ${image.crop[3] - image.crop[1]}`}
-              preserveAspectRatio="xMidYMin meet"
-              style={cellStyle(image)}
+              preserveAspectRatio="xMidYMax meet"
               {...zoomProps(image.src, image.alt)}
             >
               {/* Its own viewport clips the picture to the crop (the
@@ -370,13 +371,14 @@ function GalleryFigure({ page }) {
               src={image.src}
               alt={image.alt || ""}
               loading="lazy"
-              style={cellStyle(image)}
               {...zoomProps(image.src, image.alt)}
             />
-          ),
-        )}
+          )}
+          {image.caption && <SketchCaption>{image.caption}</SketchCaption>}
+          </GalleryCell>
+        ))}
       </GalleryGrid>
-      {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+      {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
     </GalleryWrap>
   )
 }
@@ -458,9 +460,9 @@ function SketchPageContent({ page }) {
         {page.images ? (
           <GalleryFigure page={page} />
         ) : page.imageSrc ? (
-          <SketchFigure>
+          <SketchFigure style={page.imageMaxWidth ? { maxWidth: page.imageMaxWidth } : undefined}>
             <SketchImage src={page.imageSrc} alt={page.imageAlt || ""} {...zoomProps(page.imageSrc, page.imageAlt)} />
-            {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+            {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
           </SketchFigure>
         ) : (
           <SketchPlaceholder aria-hidden={false}>
@@ -479,7 +481,7 @@ function SketchPageContent({ page }) {
         ) : (
         <SketchFigure $alone>
           <SketchImage src={page.imageSrc} alt={page.imageAlt || ""} {...zoomProps(page.imageSrc, page.imageAlt)} />
-          {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+          {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
         </SketchFigure>
         )}
       </SketchPageInner>
@@ -494,9 +496,9 @@ function SketchPageContent({ page }) {
       {page.body && <SketchBody>{page.body}</SketchBody>}
       {showMedia && page.images && <GalleryFigure page={page} />}
       {showMedia && page.imageSrc && (
-        <SketchFigure>
+        <SketchFigure style={page.imageMaxWidth ? { maxWidth: page.imageMaxWidth } : undefined}>
           <SketchImage src={page.imageSrc} alt={page.imageAlt || ""} {...zoomProps(page.imageSrc, page.imageAlt)} />
-          {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+          {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
         </SketchFigure>
       )}
       {showMedia && !page.imageSrc && !page.images && (
@@ -860,7 +862,7 @@ export function DesignSketchbook() {
       const figureH = figure ? figure.getBoundingClientRect().bottom - bodyRect.bottom : 0
       const hasPhoto = Boolean(page.imageSrc || page.images?.length)
       if (hasPhoto) {
-        const photoW = Math.min(box.width, 28 * 16)
+        const photoW = Math.min(box.width, page.imageMaxWidth || 28 * 16)
         const ratio = page.variant === "spread" ? photoRatios[page.sectionId] ?? 1 : 1
         const left = box.height - headH - bodyRect.height - figureH
         if (left >= Math.min(photoW * ratio, MIN_PHOTO_SHARE * box.height)) return
@@ -1216,6 +1218,8 @@ export function DesignSketchbook() {
             title={section.progress}
             $color={section.color}
             $image={section.tabImage}
+            $backgroundSize={section.tabBackgroundSize}
+            $backgroundPosition={section.tabBackgroundPosition}
             $active={selected && mode === "open"}
             $mode={mode}
             $compact={false}
@@ -1252,6 +1256,8 @@ export function DesignSketchbook() {
             title={`${section.label}: ${section.progress}`}
             $color={section.color}
             $image={section.tabImage}
+            $backgroundSize={section.tabBackgroundSize}
+            $backgroundPosition={section.tabBackgroundPosition}
             $active={false}
             $mode="open"
             $compact
@@ -1338,19 +1344,22 @@ export function DesignSketchbook() {
               data-measure-page={page.id}
               style={{ width: pageBox.w, height: pageBox.h }}
             >
-              {page.variant === "spread" ? (
+              {["spread", "text"].includes(page.variant) ? (
                 <SketchPageInner $variant="spread">
                   <SketchTitle>{page.title}</SketchTitle>
                   {page.subtitle && <SketchSubtitle>{page.subtitle}</SketchSubtitle>}
                   <SketchBody data-measure-body>{page.body}</SketchBody>
                   {page.images ? (
                     <GalleryWrap style={{ flex: "none" }}>
-                      {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+                      {page.images.filter((image) => image.caption).map((image) => (
+                        <SketchCaption key={image.src}>{image.caption}</SketchCaption>
+                      ))}
+                      {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
                     </GalleryWrap>
                   ) : (
                     page.imageSrc && (
-                      <SketchFigure>
-                        {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+                      <SketchFigure style={page.imageMaxWidth ? { maxWidth: page.imageMaxWidth } : undefined}>
+                        {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
                       </SketchFigure>
                     )
                   )}
@@ -1361,12 +1370,15 @@ export function DesignSketchbook() {
                   <SketchBody data-measure-body>{page.body}</SketchBody>
                   {page.images ? (
                     <GalleryWrap style={{ flex: "none" }}>
-                      {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+                      {page.images.filter((image) => image.caption).map((image) => (
+                        <SketchCaption key={image.src}>{image.caption}</SketchCaption>
+                      ))}
+                      {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
                     </GalleryWrap>
                   ) : (
                     page.imageSrc && (
-                      <SketchFigure>
-                        {page.caption && <SketchCaption>{page.caption}</SketchCaption>}
+                      <SketchFigure style={page.imageMaxWidth ? { maxWidth: page.imageMaxWidth } : undefined}>
+                        {page.caption && <SketchCaption link={page.captionLink}>{page.caption}</SketchCaption>}
                       </SketchFigure>
                     )
                   )}
@@ -1460,6 +1472,7 @@ const SketchbookRoot = styled.div`
 
 /* How far closed tabs tuck under the outer hardcover rim. */
 const TAB_CLOSED_TUCK_PX = 10
+const TAB_EDGE_OVERLAP_PX = 14
 
 const TabRail = styled.div`
   /* Closed front (right) + back cover (left): tabs sit under the brown board */
@@ -1480,7 +1493,7 @@ const TabRail = styled.div`
     top: var(--sketch-tab-top, 18%);
     bottom: auto;
     left: calc(
-      var(--sketch-tab-left, 0px)
+      var(--sketch-tab-left, 0px) + ${TAB_EDGE_OVERLAP_PX}px
       ${
         $mode === "closed"
           ? ` + ${TAB_CLOSED_TUCK_PX}px`
@@ -1498,7 +1511,7 @@ const TabRail = styled.div`
     top: var(--sketch-tab-top, 12%);
     bottom: auto;
     left: calc(
-      var(--sketch-tab-left, 0px) + var(--sketch-tab-book-width, 0px)
+      var(--sketch-tab-left, 0px) + var(--sketch-tab-book-width, 0px) - ${TAB_EDGE_OVERLAP_PX}px
       ${
         $mode === "closed"
           ? ` + ${COVER_OVERHANG_PX - TAB_CLOSED_TUCK_PX}px`
@@ -1552,9 +1565,9 @@ const SectionTab = styled.button`
   background-color: transparent;
   background-image: url("${({ $image }) => $image}");
   background-repeat: no-repeat;
-  /* Each file is already one tab. Fill the button with the whole brush. */
-  background-size: 100% 100%;
-  background-position: center;
+  /* Crop one painted strip from the shared tab sheet. */
+  background-size: ${({ $backgroundSize }) => $backgroundSize || "100% 100%"};
+  background-position: ${({ $backgroundPosition }) => $backgroundPosition || "center"};
   color: #1a1a1a;
   cursor: pointer;
   text-align: left;
@@ -1905,6 +1918,7 @@ const SketchSubtitle = styled.p`
 `
 
 const SketchBodyText = styled.p`
+  white-space: pre-line;
   && {
     font-family: var(--font-body);
     font-size: clamp(0.75rem, 3.5cqw, 0.95rem);
@@ -2019,13 +2033,28 @@ const SketchPlaceholderLabel = styled.span`
 `
 
 /** Takes the room left under the text; a tall image shrinks to fit the page. */
-const GalleryWrap = styled.figure`
+const GalleryWrap = styled.div`
   margin: var(--space-sm) 0 0;
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
+`
+
+const GalleryCell = styled.figure`
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  > img, > svg {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 0;
+    object-position: center bottom;
+  }
 `
 
 const GalleryGrid = styled.div`
@@ -2092,6 +2121,7 @@ const SketchImage = styled.img`
 `
 
 const SketchCaptionText = styled.figcaption`
+  white-space: pre-line;
   flex-shrink: 0;
   margin-top: 0.4rem;
   font-family: var(--font-body);
@@ -2100,8 +2130,21 @@ const SketchCaptionText = styled.figcaption`
   color: var(--color-muted);
 `
 
-function SketchCaption({ children, ...props }) {
-  return <SketchCaptionText {...props}>{flashConferenceMentions(children)}</SketchCaptionText>
+function SketchCaption({ children, link, ...props }) {
+  return (
+    <SketchCaptionText {...props}>
+      {flashConferenceMentions(children)}
+      {link && (
+        <>
+          {" "}
+          <a href={link.href} target="_blank" rel="noopener noreferrer"
+            onClick={(event) => event.stopPropagation()}>
+            {link.label}
+          </a>
+        </>
+      )}
+    </SketchCaptionText>
+  )
 }
 
 /** Off-screen copies of the pages, laid out only to be measured. */

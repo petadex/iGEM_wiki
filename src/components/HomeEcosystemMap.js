@@ -500,7 +500,7 @@ export const HomeEcosystemMap = forwardRef(
               <>From {fmt(PAZY_TOTAL)} known plastic-degrading enzymes</>
             ) : (
               <>
-                to <Count ref={countRef} /> BioSamples in PETadex
+                to <Count ref={countRef} /> BioSamples
               </>
             )}
           </StageTitle>

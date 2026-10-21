@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import DATA from "../../../data/plasticomeCuration.json"
-import { COMPONENTS, DomainCalls, FOLD_GROUPS, cathOf, groupOf } from "./plasticomeCath.js"
+import PETADEX_PAGES from "../../../data/petadexPages.json"
+import { CATH_STRUCTURES } from "../../../data/cathStructures.js"
+import { COMPONENTS, FOLD_GROUPS, blank, cathOf, groupOf, nameOf } from "./plasticomeCath.js"
 import {
   Arrow,
   Box,
@@ -33,9 +35,6 @@ import {
   Sub,
   Swatch,
   TableToggle,
-  Trail,
-  TrailStep,
-  TrailTitle,
   Tip,
   ext,
   fieldStyle,
@@ -48,10 +47,12 @@ import {
  * section and its Methods page (/dry-lab/model/plasticome/).
  *
  * Ported from the draft in plasticome/wiki-reference-curation/ (template.html):
- *   PlasticomeStats     the three numbers the overview leads with
+ *   PlasticomeStats     the two numbers the overview leads with
+ *   PlasticomeByPlastic enzymes per plastic, a bar each
  *   PlasticomeCoverage  a donut of enzymes per plastic, with a menu for
  *                       superkingdom and for PDB structure
- *   PlasticomeExplorer  every record, with the decisions behind it
+ *   PlasticomeExplorer  every record to search, filter and scroll, with its accession, organism,
+ *                       plastics, structure and paper
  *   PlasticomeFlow      the two PAZy snapshots, merged (Methods)
  *   EricksonSequences   the 21 sequences reset to the paper (Methods)
  *
@@ -133,8 +134,16 @@ const plasticsOf = (r) =>
 
 const has = (v) => v && v !== "NA"
 
-/** The 21 Erickson et al. (2022) records in pazy-240826, by name. */
-const ERICKSON = new Set(DATA.v1.erickson.map((e) => e.name))
+/**
+ * Each record's curated page on petadex.net, at /sequence/{accession}, by
+ * PETadex-PAZy ID. src/data/petadexPages.json says how records were matched
+ * to petadex.net's list; a record without an entry gets no link. Re-pull it
+ * when petadex.net adds pages.
+ */
+const petadexPage = (r) => {
+  const acc = PETADEX_PAGES.pages[String(r.id)]
+  return acc && `https://petadex.net/sequence/${encodeURIComponent(acc)}/`
+}
 
 const countBySource = (rows) =>
   SOURCES.map((s) => ({ ...s, n: rows.filter((r) => r.src === s.key).length }))
@@ -148,21 +157,65 @@ const PLASTICS = Object.keys(PLASTIC_NAME)
 /* ---------- stats ---------- */
 
 export const PlasticomeStats = () => (
-  <Stats>
+  <TwoStats>
     <Stat $hero>
       <StatValue>{fmt(U.length)}</StatValue>
-      <StatLabel>curated, experimentally validated enzymes: the plasticome</StatLabel>
-    </Stat>
-    <Stat>
-      <StatValue>{fmt(DATA.pull.n)}</StatValue>
-      <StatLabel>functionally verified enzymes in PAZy, each curated by hand</StatLabel>
+      <StatLabel>curated, experimentally validated enzymes: PETadex-PAZy</StatLabel>
     </Stat>
     <Stat>
       <StatValue>{PLASTICS.length}</StatValue>
       <StatLabel>plastic types with a known enzyme</StatLabel>
     </Stat>
-  </Stats>
+  </TwoStats>
 )
+
+/* ---------- enzymes per plastic ---------- */
+
+/** One colour: the bars show how many, and each is named on its own row. */
+const BAR = "#4f5aa0"
+
+/**
+ * Enzymes per plastic as a bar each, most first. An enzyme active on several
+ * plastics counts once for each, so the bars add up to more than 609.
+ */
+export const PlasticomeByPlastic = () => {
+  const [tip, setTip] = useState(null)
+  const max = PLASTICS[0].rows.length
+  return (
+    <Box>
+      <BoxTitle>Which plastics do the enzymes act on?</BoxTitle>
+      <Bars role="list" aria-label="Enzymes per plastic">
+        {PLASTICS.map((p) => (
+          <BarRow
+            key={p.code}
+            role="listitem"
+            aria-label={`${PLASTIC_FULL[p.code]}: ${fmt(p.rows.length)} enzymes`}
+            onPointerMove={(e) => setTip({ x: e.clientX, y: e.clientY, p })}
+            onPointerLeave={() => setTip(null)}
+          >
+            <BarLabel>{PLASTIC_NAME[p.code]}</BarLabel>
+            <BarTrack>
+              <BarFill style={{ width: `${(100 * p.rows.length) / max}%`, background: BAR }} />
+            </BarTrack>
+            <BarValue>{fmt(p.rows.length)}</BarValue>
+          </BarRow>
+        ))}
+      </Bars>
+      <Sub>
+        An enzyme active on several plastics is counted once for each, so the bars add up to more
+        than {fmt(U.length)}.
+      </Sub>
+      {tip && (
+        <Tip style={{ transform: tipTransform(tip) }}>
+          <b>{PLASTIC_FULL[tip.p.code]}</b>
+          <span>
+            {fmt(tip.p.rows.length)} of {fmt(U.length)} enzymes
+          </span>
+        </Tip>
+      )}
+    </Box>
+  )
+}
 
 /* ---------- coverage ---------- */
 
@@ -174,7 +227,7 @@ const yesNo = (key, yes, no, test) => [
 const VIEWS = {
   plastic: {
     label: "Plastic type",
-    title: ["Plasticome", "Plastics"],
+    title: ["PETadex-PAZy", "Plastics"],
     sub: ["Inner ring: plastic type.", "Outer ring: which PAZy snapshot each enzyme came from."],
     head: "Plastic",
     rows: () =>
@@ -213,7 +266,7 @@ const VIEWS = {
       "Outer ring: PAZy snapshot.",
     ],
     caption:
-      "Every plasticome enzyme also has a predicted ESMFold2 structure; this view counts only experimental structures.",
+      "Every PETadex-PAZy enzyme also has a predicted ESMFold2 structure; this view counts only experimental structures.",
     head: "Structure",
     rows: () => yesNo("PDB", "In the PDB", "No experimental structure", (r) => has(r.pdb)),
   },
@@ -291,7 +344,7 @@ export const PlasticomeCoverage = () => {
   return (
     <Box>
       <Head>
-        <BoxTitle>What is the Plasticome?</BoxTitle>
+        <BoxTitle>What is PETadex-PAZy?</BoxTitle>
         <Picker>
           <span>Show enzymes by</span>
           <select value={view} onChange={changeView}>
@@ -446,25 +499,6 @@ const Legend = () => (
 
 /* ---------- explorer ---------- */
 
-/** Each example also picks the card tab that tells its story. */
-const EXAMPLES = [
-  ["IsPETase", (r) => r.name === "ISPETase", "curation"],
-  ["Cut190 (two records)", (r) => r.name === "Cut190", "curation"],
-  [
-    "An Erickson enzyme",
-    (r) => ERICKSON.has(r.name) && r.seqsrc.startsWith("Taken from the paper"),
-    "curation",
-  ],
-  ["A hand-recovered sequence", (r) => r.seqnote && /primers/i.test(r.seqnote), "curation"],
-  ["Indirect activity", (r) => r.act === "Indirect", "curation"],
-  ["An inserted domain", (r) => r.id === 52, "domains"],
-  ["Not in CATH (Lcp)", (r) => cathOf(r).comp === "C024", "domains"],
-  ["Old label corrected", (r) => [78, 65, 66, 68, 574].includes(r.id), "domains"],
-  ["Routes disagree", (r) => cathOf(r).agree === "conflict", "domains"],
-]
-
-const LIST_LIMIT = 300
-
 /** The text a search matches: identifiers, organism, and the CATH and Pfam calls. */
 const haystack = (r) => {
   const c = cathOf(r)
@@ -475,37 +509,34 @@ const haystack = (r) => {
 
 /**
  * Links of the form #fold=g00 or #comp=C001, from the CATH forest's fold
- * buttons or a record card, open the explorer filtered to that set.
+ * buttons or the component map, open the explorer filtered to that set.
  */
 const HASH_FILTER = /^#(fold|comp)=(g\d+|C\d+)$/
 
+/** Every enzyme in a list to search, filter and scroll; the one picked is shown beside it. */
 export const PlasticomeExplorer = () => {
   const [query, setQuery] = useState("")
   const [source, setSource] = useState("")
   const [plastic, setPlastic] = useState("")
   const [fold, setFold] = useState("")
   const [comp, setComp] = useState("")
-  const [example, setExample] = useState(null)
   const [selected, setSelected] = useState(U[0].id)
-  const [tab, setTab] = useState("curation")
   const [open, setOpen] = useState(false)
   const boxRef = useRef(null)
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const test = example === null ? null : EXAMPLES[example][1]
     return U.filter(
       (r) =>
-        (!test || test(r)) &&
         (!source || r.src === source) &&
         (!plastic || plasticsOf(r).includes(plastic)) &&
         (!fold || groupOf(r)?.g === fold) &&
         (!comp || cathOf(r).comp === comp) &&
         (!q || haystack(r).includes(q))
     )
-  }, [query, source, plastic, fold, comp, example])
-
+  }, [query, source, plastic, fold, comp])
   const current = rows.find((r) => r.id === selected) ?? rows[0]
+  const filtered = rows.length < U.length
 
   const clearFilters = () => {
     setQuery("")
@@ -514,44 +545,14 @@ export const PlasticomeExplorer = () => {
     setFold("")
     setComp("")
   }
-  /** Change one filter; any example chip gives way to it. */
-  const filter = (set) => (e) => {
-    setExample(null)
-    set(e.target.value)
-  }
-  const pickExample = (i) => {
-    // A second click on the pressed chip turns it off and shows every record again.
-    if (example === i) {
-      setExample(null)
-      return
-    }
-    clearFilters()
-    setExample(i)
-    setTab(EXAMPLES[i][2])
-    const hit = U.find(EXAMPLES[i][1])
-    if (hit) setSelected(hit.id)
-  }
-  const goTo = (id) => {
-    clearFilters()
-    setExample(null)
-    setSelected(id)
-  }
-  const showComponent = (key) => {
-    clearFilters()
-    setExample(null)
-    setComp(key)
-  }
 
   useEffect(() => {
     const fromHash = () => {
       const m = window.location.hash.match(HASH_FILTER)
       if (!m) return
-      setQuery("")
-      setSource("")
-      setPlastic("")
-      setExample(null)
-      setFold(m[1] === "fold" ? m[2] : "")
-      setComp(m[1] === "comp" ? m[2] : "")
+      clearFilters()
+      if (m[1] === "fold") setFold(m[2])
+      else setComp(m[2])
       setOpen(true)
       boxRef.current?.scrollIntoView({ block: "start" })
     }
@@ -562,12 +563,7 @@ export const PlasticomeExplorer = () => {
 
   return (
     <Box ref={boxRef} id="plasticome-explorer">
-      <BoxTitle>Explore the plasticome</BoxTitle>
-      <Sub>
-        Every one of the {fmt(U.length)} enzymes, with the trail of curation decisions behind it and
-        its domain calls from CATH Assignment. Pick an example or search by name, accession,
-        organism, CATH code or Pfam family.
-      </Sub>
+      <BoxTitle>Explore PETadex-PAZy</BoxTitle>
       <TableToggle open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
         <summary>Open the explorer</summary>
         <Explorer>
@@ -576,11 +572,11 @@ export const PlasticomeExplorer = () => {
               <input
                 type="search"
                 placeholder="Search name, accession, organism, CATH, Pfam"
-                aria-label="Search records"
+                aria-label="Search enzymes"
                 value={query}
-                onChange={filter(setQuery)}
+                onChange={(e) => setQuery(e.target.value)}
               />
-              <select aria-label="Source" value={source} onChange={filter(setSource)}>
+              <select aria-label="Source" value={source} onChange={(e) => setSource(e.target.value)}>
                 <option value="">All sources</option>
                 {SOURCES.map((s) => (
                   <option key={s.key} value={s.key}>
@@ -588,7 +584,7 @@ export const PlasticomeExplorer = () => {
                   </option>
                 ))}
               </select>
-              <select aria-label="Plastic" value={plastic} onChange={filter(setPlastic)}>
+              <select aria-label="Plastic" value={plastic} onChange={(e) => setPlastic(e.target.value)}>
                 <option value="">All plastics</option>
                 {PLASTICS.map((p) => (
                   <option key={p.code} value={p.code}>
@@ -596,7 +592,7 @@ export const PlasticomeExplorer = () => {
                   </option>
                 ))}
               </select>
-              <select aria-label="Fold group" value={fold} onChange={filter(setFold)}>
+              <select aria-label="Fold group" value={fold} onChange={(e) => setFold(e.target.value)}>
                 <option value="">All fold groups</option>
                 {FOLD_GROUPS.map((g) => (
                   <option key={g.g} value={g.g}>
@@ -604,7 +600,7 @@ export const PlasticomeExplorer = () => {
                   </option>
                 ))}
               </select>
-              <select aria-label="Component" value={comp} onChange={filter(setComp)}>
+              <select aria-label="Component" value={comp} onChange={(e) => setComp(e.target.value)}>
                 <option value="">All components</option>
                 {COMPONENTS.map((c) => (
                   <option key={c.key} value={c.key}>
@@ -613,20 +609,8 @@ export const PlasticomeExplorer = () => {
                 ))}
               </select>
             </Controls>
-            <Chips>
-              {EXAMPLES.map(([label], i) => (
-                <Chip
-                  key={label}
-                  type="button"
-                  aria-pressed={example === i}
-                  onClick={() => pickExample(i)}
-                >
-                  {label}
-                </Chip>
-              ))}
-            </Chips>
-            <List role="listbox" aria-label="Records">
-              {rows.slice(0, LIST_LIMIT).map((r) => (
+            <List role="listbox" aria-label="Enzymes">
+              {rows.map((r) => (
                 <ListItem
                   key={r.id}
                   type="button"
@@ -636,27 +620,23 @@ export const PlasticomeExplorer = () => {
                 >
                   <Mono>PL{r.id}</Mono>
                   <ItemName>{r.name}</ItemName>
-                  <SourceTag $color={SOURCE[r.src].color}>{SOURCE[r.src].label}</SourceTag>
                 </ListItem>
               ))}
             </List>
             <Count>
-              {fmt(rows.length)} of {fmt(U.length)} records
-              {rows.length > LIST_LIMIT ? `, first ${LIST_LIMIT} shown` : ""}
+              {fmt(rows.length)} of {fmt(U.length)} enzymes
+              {filtered && (
+                <>
+                  {" · "}
+                  <LinkButton type="button" onClick={clearFilters}>
+                    Clear
+                  </LinkButton>
+                </>
+              )}
             </Count>
           </div>
           <Card aria-live="polite">
-            {current ? (
-              <RecordCard
-                record={current}
-                goTo={goTo}
-                showComponent={showComponent}
-                tab={tab}
-                setTab={setTab}
-              />
-            ) : (
-              <Sub>No records match.</Sub>
-            )}
+            {current ? <RecordCard record={current} /> : <Sub>No enzymes match.</Sub>}
           </Card>
         </Explorer>
       </TableToggle>
@@ -664,8 +644,41 @@ export const PlasticomeExplorer = () => {
   )
 }
 
-const RecordCard = ({ record: r, goTo, showComponent, tab, setTab }) => {
-  const twins = U.filter((o) => o.id !== r.id && o.name.toLowerCase() === r.name.toLowerCase())
+/** Fold groups the structure viewer has a structure for (its #structure=g00 links). */
+const VIEWABLE_FOLDS = new Set(
+  CATH_STRUCTURES.map((st) => FOLD_GROUPS.find((g) => g.cath === (st.cath ?? "none"))?.g)
+)
+const COMPONENT_DOMAIN = Object.fromEntries(COMPONENTS.map((c) => [c.key, c.dom]))
+
+/** A link to a figure on this page, followed even when the address already ends in it. */
+const figureLink = (href, text) => (
+  <a
+    href={href}
+    onClick={() => {
+      if (window.location.hash === href) window.dispatchEvent(new HashChangeEvent("hashchange"))
+    }}
+  >
+    {text}
+  </a>
+)
+
+/** "3.40.50.1820;2.60.40.10" -> each code with its CATH name. */
+const cathList = (codes) =>
+  String(codes)
+    .split(";")
+    .map((c) => c.trim())
+    .filter((c) => !blank(c))
+    .map((c, i) => (
+      <React.Fragment key={c}>
+        {i > 0 && ", "}
+        <Mono>{c}</Mono>
+        {nameOf(c) && ` ${nameOf(c)}`}
+      </React.Fragment>
+    ))
+
+const RecordCard = ({ record: r }) => {
+  const c = cathOf(r)
+  const fold = groupOf(r)
   const dois = has(r.doi)
     ? r.doi
         .split(";")
@@ -678,113 +691,53 @@ const RecordCard = ({ record: r, goTo, showComponent, tab, setTab }) => {
       ? ext(`https://www.rcsb.org/structure/${r.acc.slice(0, 4)}`, r.acc)
       : ext(`https://www.ncbi.nlm.nih.gov/protein/${r.acc}`, r.acc)
 
-  const steps = []
-  if (r.src !== "v1.1") {
-    steps.push({
-      title: "In pazy-260701",
-      body: `PAZy ID ${r.pazy}, retrieved 30 June 2026`,
-    })
-  }
-  if (r.src !== "v260701") {
-    steps.push({
-      title: r.src === "both" ? "Also in pazy-240826" : "From pazy-240826",
-      body: ERICKSON.has(r.name)
-        ? "Erickson et al. (2022) metagenomic enzyme, reset to the paper's sequence when the seed set was cleaned"
-        : "Seed set of the original PETadex build",
-    })
-  }
-  if (r.src !== "v1.1") {
-    const bits = []
-    if (r.act) bits.push(`${r.act} evidence of activity`)
-    if (r.accfix) bits.push("accession added or corrected by the curator")
-    if (r.renamed) bits.push("name changed to the one in the paper")
-    steps.push({
-      title: "Checked against the paper",
-      body: bits.join("; ") || "Kept as pulled",
-      quote: r.note,
-    })
-  } else {
-    steps.push({
-      title: "Not curated in 2026",
-      body: "Not in pazy-260701",
-      skip: true,
-    })
-  }
-  steps.push({
-    title: "Sequence",
-    body: `${r.len} aa · ${r.seqsrc}`,
-    quote: r.seqnote,
-  })
-  steps.push({
-    title: "Merged into the plasticome",
-    body: (
-      <>
-        {SOURCE[r.src].label}
-        {twins.length > 0 && (
-          <>
-            <br />
-            Also recorded as{" "}
-            {twins.map((t, i) => (
-              <React.Fragment key={t.id}>
-                {i > 0 && ", "}
-                <LinkButton type="button" onClick={() => goTo(t.id)}>
-                  PL{t.id}
-                </LinkButton>{" "}
-                ({t.acc || "no accession"})
-              </React.Fragment>
-            ))}
-            : kept as separate records, collapsed by clustering
-          </>
-        )}
-      </>
-    ),
-  })
-  steps.push({
-    title: "Clustered at 90%",
-    body: r.cent ? (
-      "Centroid of its cluster"
-    ) : (
-      <>
-        Member of the cluster led by{" "}
-        <LinkButton type="button" onClick={() => goTo(Number(r.cid))}>
-          PL{r.cid}
-        </LinkButton>
-      </>
-    ),
-  })
-
   return (
     <>
       <Mono>PL{r.id}</Mono>
       <CardName>{r.name}</CardName>
-      <Sub>
-        {has(r.org) ? r.org : "Organism not recorded"}
-        {r.meta ? " · metagenomic" : ""}
-      </Sub>
       <Fields>
-        <dt>Accession</dt>
+        <dt>Protein Accession</dt>
         <dd>{accession}</dd>
-        <dt>Plastics</dt>
+        {petadexPage(r) && (
+          <>
+            <dt>PETadex</dt>
+            <dd>{ext(petadexPage(r), "View this enzyme on petadex.net")}</dd>
+          </>
+        )}
+        <dt>Organism</dt>
+        <dd>
+          {has(r.org) ? r.org : "Not recorded"}
+          {r.meta ? " (metagenomic)" : ""}
+        </dd>
+        <dt>Active on</dt>
         <dd>
           {plasticsOf(r)
             .map((s) => PLASTIC_NAME[s] || s)
             .join(", ") || "Not recorded"}
         </dd>
-        <dt>Component</dt>
+        <dt>CATH domain</dt>
         <dd>
-          {cathOf(r).comp ? (
-            <LinkButton type="button" onClick={() => showComponent(cathOf(r).comp)}>
-              {cathOf(r).comp}
-            </LinkButton>
-          ) : (
-            "None"
+          {blank(c.cat) ? "Not classified in CATH" : cathList(c.cat)}
+          {!blank(c.acc_cath) && (
+            <>
+              <br />
+              <small>Accessory: {cathList(c.acc_cath)}</small>
+            </>
           )}
         </dd>
         <dt>Fold group</dt>
         <dd>
-          {groupOf(r) ? (
+          {fold ? fold.fold : "None"}
+          {fold && VIEWABLE_FOLDS.has(fold.g) && (
+            <> · {figureLink(`#structure=${fold.g}`, "view its structure")}</>
+          )}
+        </dd>
+        <dt>Component</dt>
+        <dd>
+          {c.comp ? (
             <>
-              {groupOf(r).fold} <Mono>{groupOf(r).g}</Mono>
+              <Mono>{c.comp}</Mono> {COMPONENT_DOMAIN[c.comp]} ·{" "}
+              {figureLink(`#map=PL${r.id}`, "show it on the map")}
             </>
           ) : (
             "None"
@@ -813,37 +766,6 @@ const RecordCard = ({ record: r, goTo, showComponent, tab, setTab }) => {
             : "None recorded"}
         </dd>
       </Fields>
-      <Tabs role="tablist">
-        {[
-          ["curation", "Curation"],
-          ["domains", "Domain calls"],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-          >
-            {label}
-          </button>
-        ))}
-      </Tabs>
-      <div role="tabpanel">
-        {tab === "curation" ? (
-          <Trail>
-            {steps.map((s) => (
-              <TrailStep key={s.title} $skip={s.skip}>
-                <TrailTitle>{s.title}</TrailTitle>
-                {s.body}
-                {s.quote && <Quote>“{s.quote}”</Quote>}
-              </TrailStep>
-            ))}
-          </Trail>
-        ) : (
-          <DomainCalls record={r} goTo={goTo} />
-        )}
-      </div>
     </>
   )
 }
@@ -923,7 +845,7 @@ export const PlasticomeFlow = () => {
         <Lane>
           <Node $out>
             <NodeN>{fmt(U.length)}</NodeN>
-            <NodeT>Plasticome, merged on accession</NodeT>
+            <NodeT>PETadex-PAZy, merged on accession</NodeT>
             <NodeD>
               {fmt(src.v260701)} pazy-260701 only · {fmt(src.both)} in both · {fmt(src["v1.1"])}{" "}
               pazy-240826 only
@@ -1027,10 +949,10 @@ export const EricksonSequences = () => {
       </ChartScroll>
       <Sub>
         These enzymes were found by functional metagenomics, and their database records differ from
-        the constructs reported in the paper. Several database sequences were nearly twice as long
+        the constructs reported in the paper. Several database sequences were almost twice as long
         as the reported construct, so all {rows.length} were replaced with the sequences printed in
-        the paper. The paper's sequence is kept in the plasticome only where there is no accession
-        to retrieve one from; elsewhere the retrieved sequence wins (see Sequences, below).
+        the paper. The paper's sequence is kept in PETadex-PAZy only where there is no accession
+        to retrieve one from; elsewhere, the retrieved sequence wins (see Sequences, below).
       </Sub>
     </Box>
   )
@@ -1190,6 +1112,54 @@ const DonutRow = styled.tr`
   background: ${({ $hl }) => ($hl ? SUNK : "transparent")};
 `
 
+const TwoStats = styled(Stats)`
+  grid-template-columns: 1.4fr 1fr;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`
+
+const Bars = styled.div`
+  display: grid;
+  gap: 0.3rem;
+`
+
+const BarRow = styled.div`
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) 2.5rem;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.1rem 0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+
+  &:hover {
+    background: ${SUNK};
+  }
+`
+
+const BarLabel = styled.span`
+  color: ${INK};
+  text-align: right;
+`
+
+const BarTrack = styled.div`
+  height: 0.85rem;
+`
+
+/* Square at the baseline, rounded at the data end. */
+const BarFill = styled.div`
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+`
+
+const BarValue = styled.span`
+  color: ${INK_SOFT};
+  font-variant-numeric: tabular-nums;
+`
+
 const Explorer = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
@@ -1201,10 +1171,14 @@ const Explorer = styled.div`
   }
 `
 
+
+
+
 const Controls = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.4rem;
+  margin-bottom: 0.5rem;
 
   input {
     grid-column: 1 / -1;
@@ -1214,33 +1188,13 @@ const Controls = styled.div`
   select {
     ${fieldStyle}
   }
-`
 
-const Chips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0.6rem 0;
-`
-
-const Chip = styled.button`
-  padding: 0.2rem 0.6rem;
-  border: 1px solid ${FRAME};
-  border-radius: 999px;
-  background: transparent;
-  color: ${INK};
-  font: inherit;
-  font-size: 0.78rem;
-  cursor: pointer;
-
-  &:hover {
-    background: ${SUNK};
-  }
-
-  &[aria-pressed="true"] {
-    border-color: ${INK};
-    background: ${INK};
-    color: ${PANEL};
+  /* A select sizes itself to its longest option ("C001 · alpha/beta hydrolase
+     (232)"), which pushes it and its arrow past its column; held to the
+     column, a long choice is cut off instead. */
+  select {
+    width: 100%;
+    text-overflow: ellipsis;
   }
 `
 
@@ -1288,15 +1242,6 @@ const ItemName = styled.span`
   white-space: nowrap;
 `
 
-const SourceTag = styled.span`
-  padding: 0.05rem 0.4rem;
-  border-radius: 4px;
-  background: ${({ $color }) => $color};
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 600;
-  white-space: nowrap;
-`
 
 const Count = styled.p`
   && {
@@ -1345,37 +1290,4 @@ const Fields = styled.dl`
   }
 `
 
-const Tabs = styled.div`
-  display: flex;
-  gap: 0.25rem;
-  margin-top: 0.4rem;
-  border-bottom: 1px solid ${LINE};
 
-  button {
-    all: unset;
-    padding: 0.35rem 0.7rem;
-    border-bottom: 2px solid transparent;
-    color: ${INK_SOFT};
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  button[aria-selected="true"] {
-    border-bottom-color: ${INK};
-    color: ${INK};
-  }
-
-  button:focus-visible {
-    outline: 2px solid ${INK_SOFT};
-    outline-offset: -2px;
-  }
-`
-
-const Quote = styled.q`
-  display: block;
-  margin-top: 0.2rem;
-  color: ${INK_SOFT};
-  font-style: italic;
-  quotes: none;
-`

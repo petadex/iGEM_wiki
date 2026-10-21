@@ -23,11 +23,15 @@ const NB_IMG = (name) =>
 /** Images from the web design team's sketchbook write-up. */
 const SK_IMG = (name) =>
   `https://static.igem.wiki/teams/6187/wiki/outreach/sketchbook/content/${name}.avif`
-/** One cut tab per section. The book draws the label in HTML. */
-const SK_TAB = (name) =>
-  `https://static.igem.wiki/teams/6187/wiki/outreach/sketchbook/tabs/${name}.avif`
+/** Seven painted strips in one CDN image; crop in CSS without local assets. */
+const TAB_SHEET = "https://static.igem.wiki/teams/6187/wiki/outreach/sketchbook/new-tabs.avif"
+const SK_TAB = (top, height) => ({
+  tabImage: TAB_SHEET,
+  tabBackgroundSize: `${2360 / 390 * 100}% ${1640 / height * 100}%`,
+  tabBackgroundPosition: `${1472 / (2360 - 390) * 100}% ${top / (1640 - height) * 100}%`,
+})
 /** A gallery's images: [file name, alt text] pairs. */
-const gallery = (...images) => images.map(([name, alt]) => ({ src: SK_IMG(name), alt }))
+const gallery = (...images) => images.map(([name, alt, caption]) => ({ src: SK_IMG(name), alt, caption }))
 /**
  * A tall, thin picture as gallery pieces side by side: columns [x0, x1] of it
  * (its `size` [w, h]) cut at `rows` [[y0, y1], …], so it shows bigger.
@@ -48,57 +52,66 @@ const sectionPage = (sectionId, id, title, fields) => ({
 export const DESIGN_SKETCHBOOK_SECTIONS = [
   {
     id: "web-design",
-    tabImage: SK_TAB("web-design"),
+    ...SK_TAB(478, 116),
     label: "Web Design",
     color: "#3B82A0",
     tabColor: "#bb5952",
-    progress: "Concepts, storyboards, drafts and the finished pages.",
+    progress: "",
     startPageId: "web-design",
   },
   {
     id: "animation",
-    tabImage: SK_TAB("animation"),
+    ...SK_TAB(594, 113),
     label: "Animation",
     color: "#E07A3A",
     tabColor: "#da6b5c",
-    progress: "The logo animation and the promo video's animated part.",
+    progress: "",
     startPageId: "animation",
   },
   {
     id: "character-design",
-    tabImage: SK_TAB("character-design"),
+    ...SK_TAB(707, 113),
     label: "Character Design",
     color: "#5A9E4B",
     tabColor: "#e89469",
-    progress: "Every subteam's PETamon, from sketch to mascot and crochet.",
+    progress: "",
     startPageId: "character-design",
   },
   {
     id: "social",
-    tabImage: SK_TAB("social"),
+    ...SK_TAB(822, 113),
     label: "Social",
     color: "#C45B8C",
     tabColor: "#f0b376",
-    progress: "Intro post, reels and The Waterfront.",
+    progress: "",
     startPageId: "social",
   },
   {
     id: "branding",
-    tabImage: SK_TAB("branding"),
+    ...SK_TAB(935, 113),
     label: "Branding",
     color: "#7B5EA7",
     tabColor: "#ebd188",
-    progress: "A hand-drawn brand, trading cards and merch.",
+    progress: "",
     startPageId: "branding",
   },
   {
-    id: "other",
-    tabImage: SK_TAB("other"),
-    label: "Other",
-    color: "#8A8680",
+    id: "merchandise",
+    ...SK_TAB(1048, 113),
+    label: "Merchandise",
+    color: "#98623D",
     tabColor: "#acbc8a",
-    progress: "The promo and presentation videos.",
-    startPageId: "other",
+    progress: "",
+    startPageId: "merchandise-cards",
+  },
+  {
+    id: "video",
+    ...SK_TAB(1164, 115),
+    label: "Video",
+    color: "#8A8680",
+    tabColor: "#6e9fb0",
+    progress: "",
+    startPageId: "video",
   },
 ]
 
@@ -149,7 +162,7 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     title: "Web Design",
     sectionId: "web-design",
     body:
-      "At the very start, the team pooled together everyone's own ideas for what aesthetic the wiki should have. A lot of our early concepts featured a pixel art style, playing into the Pokémon-like, gamey side of the project, but we also tried a hand-drawn style.",
+      "For wiki concepts, at the very start the team pooled together all their personal ideas on what aesthetic the wiki should have,\n\nA lot of our early concepts featured a pixel artstyle as we wanted to play into the ‘pokemon’-like and gamey aspects of the project. However, we entertained the idea of a hand-drawn style as well,",
     density: "soft",
     variant: "spread",
     // Cut in two side by side, between the PETadex screen and the projects.
@@ -164,7 +177,7 @@ export const DESIGN_SKETCHBOOK_PAGES = [
       ],
     ),
     cols: 2,
-    caption: "An early hand-drawn concept with concept-art-style graphics, by Kathleen.",
+    caption: "An early hand drawn concept with concept art style graphics by Kathleen",
   },
   sectionPage("web-design", "pixel", "Early concepts", {
     // The two wide ones across the page, one over the other, then the two
@@ -181,25 +194,25 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     ],
     cols: 2,
     rows: [1, 1, 1.5],
-    caption: "Early pixel-style concepts for the wiki, by Ibi, Wineta, Hillary and Sara P respectively.",
+    caption: "Early pixel style concepts for the wiki by Hillary, Ibi, Wineta and Sara P respectively",
   }),
   sectionPage("web-design", "biomes", "Biomes", {
     body:
-      "Another idea was to build the design around biomes, since microplastics reach so many parts of our environments and lives. It also fit our Pokémon-inspired idea of different gyms and regions, like in the games. This is where the PETases became PETamon: the reader is invited to collect them from the PETadex.",
+      "Another concept we also thought about was integrating biomes into our design as the effects of microplastics reaches many aspects of our environments and lives. It is also related to our pokemon inspired concept of different gyms and regions, similar to the games. This is where we decided to depict the different petases as pokemon, similar to collecting pokemon from a pokedex, the concept was that we invite the user to collect different petases from the petadex.",
     imageSrc: SK_IMG("web-environment-petamon-concept"),
     imageAlt: "A pixel forest scene with a PETamon, a speech bubble and an info box",
-    caption: "An early proposal for an environment and PETamon concept, by Cindy.",
+    caption: "An early proposal for an environment + petamon concept by Cindy",
   }),
   sectionPage("web-design", "vote", "The vote", {
     body:
-      "The team voted, and the winners were both the hand-drawn concept and the environment concept, so a proof of concept merging the two set our style going forward.",
+      "The team put a vote on the ideas and the winner was both the hand drawn concept and the environmental concept, so a proof of concept merging the two styles was made which pushed our wiki style going forward,",
     imageSrc: SK_IMG("web-first-environment-concept-kathleen"),
     imageAlt: "A hand-drawn teal wave over a beach, with the words Why plastic is bad and PETases",
-    caption: "The first environment and hand-drawn concept, by Kathleen.",
+    caption: "The first concept of the environment + hand drawn style by Kathleen",
   }),
   sectionPage("web-design", "storyboard", "Storyboard", {
     body:
-      "Kathleen made the first storyboard of the homepage's flow, which the homepage is still built on. It was split into sections for the different artists on the web design team.",
+      "Kathleen produced the first storyboard of the compositional flow of the wiki homepage, which is the basis of the current homepage!",
     // Trimmed to the drawing and cut in two between sections 3 and 4.
     images: splitImage(
       "wiki-concept",
@@ -213,84 +226,68 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     ),
     cols: 2,
     caption:
-      "The first outline of the homepage, separated into sections for different artists on the web design team.",
+      "The first outline for the homepage separated into sections for different artists on the web design team to work on",
   }),
   sectionPage("web-design", "story", "A story to scroll", {
     body:
-      "Every subteam was going to be a PETamon gym, with a trainer and a PETamon partner, but we scrapped the trainers along the way because not enough people on the team were comfortable drawing humans. The wiki would tell a story you can follow: a bottle's journey through Toronto as it breaks down into microplastics by the end of the page.",
+      "Originally the main concept was to have every subteam represent a PETamon gym, each subteam would have a trainer and a petamon partner, however along the way we scrapped the trainer concept as not enough people on the team was comfortable drawing humans.\n\nThe idea was our wiki would have a story flowing through where you can follow the journey of  a bottle breaking down into microplastics by the end of the page. We wanted to take the users  on a journey through toronto while still communicating the idea of our project .",
     imageSrc: SK_IMG("web-section-1-draft-kathleen"),
     imageAlt: "A painted draft of the homepage's top: the PetaBite title over a plaza and waterfall",
     caption:
-      "First draft of section 1 of the homepage, by Kathleen. She also made a video concept of the animations for this section.",
+      "First draft of section 1 of the homepage by Kathleen",
+    captionLink: {
+      href: "https://drive.google.com/file/d/128VEt_m71F73DCxGbCPZX32m_PKXF5xI/view?usp=drive_link",
+      label: "Video concept of animations for section 1 by Kathleen",
+    },
   }),
   sectionPage("web-design", "drafts", "First drafts", {
     images: gallery(
-      ["web-section-2-draft-noorine", "A tall painted draft of the waterfall and river, with three condition cards"],
-      ["web-section-4-draft-cindy", "A red battle screen sketch reading This PETase is ready for battle, and a sketch of a cat at a tablet"],
+      ["web-section-2-draft-noorine", "A tall painted draft of the waterfall and river, with three condition cards", "First draft of section 2 of the homepage"],
+      ["web-section-4-draft-cindy", "A red battle screen sketch reading This PETase is ready for battle, and a sketch of a cat at a tablet", "First draft of section 4 (that used to be for homepage but was moved to dry lab) by Cindy"],
     ),
-    caption:
-      "First draft of section 2 of the homepage, by Noorine, and the first draft of section 4, which used to be on the homepage but was moved to Dry Lab, by Cindy.",
   }),
   sectionPage("web-design", "iteration", "Next iteration", {
     images: gallery(
-      ["web-sections-1-3-iteration", "The homepage's first three sections painted top to bottom"],
-      ["web-section-3-4-noorine", "The lab wall with its night-sky window, shelves and a blue tube"],
+      ["web-sections-1-3-iteration", "The homepage's first three sections painted top to bottom", "Next iteration of section 1-3 of the wiki by Kathleen"],
+      ["web-section-3-4-noorine", "The lab wall with its night-sky window, shelves and a blue tube", "Section between 3 and 4, representing the technical subteams"],
     ),
-    caption:
-      "The next iteration of sections 1 to 3, by Kathleen and Noorine, rendered over by Kathleen, and the section between 3 and 4, representing the technical subteams, by Noorine.",
   }),
   sectionPage("web-design", "petamon", "PETamon at work", {
     body:
-      "Once every subteam's PETamon was designed (see Character Design), we first planned a normal menu at the bottom with an icon for each team. Those icons were going to be the trainers, but the trainers were scrapped along the way. Then came the idea of each PETamon breaking down a piece of the bottle, since breaking down plastic is what they do best: now they fill the wiki, breaking down microplastics as they go.",
+      "We finally finalized  all  the petamon designs for each team, for more information on the designs refer to the character concepts tab. We originally wanted to do a normal navigation menu at the bottom of the page with an icon for each team (originally it was the trainers but the trainers got scrapped somewhere along the process. But then  we had the  idea to  have each petamon breaking down a section  of a bottle since  petamons main abilities are to break down plastics! Now the petamons populate our wiki breaking down microplastics as they go.",
     images: gallery(
       ["web-sections-4-5-plant", "The treatment plant's tanks and pipe pouring into the sea"],
       ["web-sections-4-5-ocean", "The deep ocean with coral and the PETamon around a broken bottle"],
     ),
-    caption: "Sections 4 and 5 of the wiki's homepage, by Noorine.",
+    caption: "Sections 4 and 5 of the wiki’s homepage.",
   }),
   sectionPage("web-design", "subpages", "Subteam pages", {
     body:
-      "The web team worked hard to make sure the animations brought each page to life and kept everything interactive. Each subpage was illustrated with a theme to match it. Wet Lab's axolotl-catfish got an ocean, Dry Lab's spider-crab-scorpion a desert dig, Hardware's steel turtle deep caves, Outreach's squirrel a beret (very French and artistique!), Venture's kangaroo a pouch of gold, Web's fire dragon its volcano and Human Practices' dove the sky.",
+      "The web team worked hard to make sure all  the animations brought the page to life and kept everything interactive . Each subpage was illustrated  with a different  theme matching  the  sub page!\n\nFor the subteam pages, wet lab who had an axolotl-catfish had an ocean theme, dry lab with a spider-crab-scorpion petamon had a desert/archeology theme, Hardware  has a steel turtle in deep caves, Outreach has a squirrel with a beret (very french and artistique!), venture with its kangaroo and a pouch of gold, web has a fire dragon with its volcano, and  human practices has a dove flying in the sky",
+    variant: "aside",
+  }),
+  sectionPage("web-design", "subpages-images", "Subteam pages", {
+    variant: "image",
     // The two drafts one over the other, the tall Wet Lab page down the right.
     images: [
-      ...gallery(["web-outreach-page-draft-meghan", "A draft of the Outreach page: an autumn forest around a white text box"]),
-      ...gallery(["web-wet-lab-page-cindy", "The finished Wet Lab page: a sunset sea around a white text box"]).map(
+      ...gallery(["web-outreach-page-draft-meghan", "A draft of the Outreach page: an autumn forest around a white text box", "Draft of outreach subteam page by Meghan"]),
+      ...gallery(["web-wet-lab-page-cindy", "The finished Wet Lab page: a sunset sea around a white text box", "Finished  Wet lab subteam page by Cindy"]).map(
         (image) => ({ ...image, rowSpan: 2 }),
       ),
-      ...gallery(["web-entrepreneurship-page-draft-noorine", "A draft of the Entrepreneurship page"]),
+      ...gallery(["web-entrepreneurship-page-draft-noorine", "A draft of the Entrepreneurship page", "draft of entrepreneurship page"]),
     ],
     cols: 2,
-    caption:
-      "Draft of the Outreach page by Meghan, a draft of the Entrepreneurship page by Noorine, and the finished Wet Lab page by Cindy.",
   }),
   sectionPage("web-design", "other-pages", "Other pages", {
     body:
-      "The pages that aren't a subteam's were a chance to invent new environments, and there's a Gemy easter egg on the Project Description page.",
+      "As for the non subteam pages, the web design team had a lot of fun thinking of different environments! Theres also a Gemy easter egg in the project description page",
     images: gallery(
-      ["web-project-page-kathleen", "The finished Project Description page: a night sky with a rocket over a planet"],
-      ["web-contribution-page-draft-noorine", "A draft of the Contribution page: sunlit stone steps in a greenhouse"],
+      ["web-project-page-kathleen", "The finished Project Description page: a night sky with a rocket over a planet", "Finished Project description page by Kathleen"],
+      ["web-contribution-page-draft-noorine", "A draft of the Contribution page: sunlit stone steps in a greenhouse", "Draft of contribution page"],
     ),
-    caption:
-      "The finished Project Description page by Kathleen, and a draft of the Contribution page by Noorine.",
   }),
-  {
-    id: "web-design-build",
-    title: "Building it",
-    sectionId: "web-design",
-    density: "soft",
-    variant: "aside",
-    body:
-      "Sara turned the paintings into the site. The homepage became one scrolling story: from a bottle prototype in May, the bottle follows you down the waterfall and river, through the forest (where a bird steals it) and the lab, down the treatment plant, until the PETamon pull its pieces apart at the end. Along the way came the flapping birds, splashes and bubbles, the map pins, the lab's constellation, the logo's hand-off from the loading screen and auto-scroll.",
-  },
-  {
-    id: "web-design-build-2",
-    title: "Bringing it to life",
-    sectionId: "web-design",
-    density: "soft",
-    variant: "aside",
-    body:
-      "Sara then built one scene for every subpage, so each painting scrolls with its text and its creatures react when you hover: Dry Lab's cactus and crabs, Venture's coin-throwing kangaroos, the Human Practices birds, Hardware's lightning turtles, Wet Lab's axolotls and fish, the Wiki's fire dragons, the Project page's comets and rocket, and Outreach's squirrels. She also built the contribution calendar, the Hardware notebook, Meet the Team and this sketchbook.",
-  },
+
+
   {
     id: "web-design-end",
     title: "The result",
@@ -298,23 +295,23 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     density: "soft",
     variant: "aside",
     body:
-      "The final result is the wiki you're on! We hope our passion and storytelling is visible through it. The web design team had a lot of fun drawing everything, and we hope you have fun exploring our pages.",
+      "The final resulting product is the current website! We hope that our passion and storytelling is visible  through the wiki, the web design team had a lot of fun drawing  everything and we hope  our users have fun exploring our pages.",
   },
   {
     id: "animation",
     title: "Animation",
     sectionId: "animation",
     body:
-      "Cindy animated our logo being cut, on the homepage and the loading screens, so our branding would be more interactive!",
+      "The animation of our logo being cut on the  front home page and loading screens  were made by  Cindy so our branding would be more interactive!",
     density: "soft",
     variant: "spread",
     imageSrc: SK_IMG("animation-logo-cindy"),
     imageAlt: "The PetaBite logo: the letters P, e, t, a, B, i, t, e in a chain of molecule rings",
-    caption: "The PetaBite logo, animated by Cindy.",
+    caption: "Animation of the Petabite logo by Cindy",
   },
   sectionPage("animation", "storyboard", "Storyboard", {
     body:
-      "For the promo video, the team wanted a 30-second animated segment with a voiceover. To save time, we drew the assets as static images and animated them in After Effects rather than frame by frame. Ibi, in charge of the script, wanted a TED-Ed-inspired style, so Kathleen drafted a storyboard to match it.",
+      "For the promo video, the team wanted a 30 second animated segment with a  voice over in the background. After much discussion we opted  for drawing the assets as static images before animating them in after effects rather than frame by frame as we wanted to save time as much as we can. Ibi who was in charge of scripting wanted to maintain a Ted-ed inspired style for  the animation segment, with this in mind a storyboard was drafted up by Kathleen according to the script,",
     // Two side by side, the third under them.
     images: gallery(
       ["animation-storyboard-1", "Storyboard frames: a hand, the word Everywhere and fish"],
@@ -322,129 +319,138 @@ export const DESIGN_SKETCHBOOK_PAGES = [
       ["animation-storyboard-3", "Storyboard frames of a person eating, ending on a red heart"],
     ).map((image, i) => (i === 2 ? { ...image, span: 2 } : image)),
     cols: 2,
-    caption: "Storyboard for the promo video's animation, by Kathleen.",
+    caption: "Storyboard for the animation portion of the promo video by Kathleen",
   }),
   sectionPage("animation", "assets", "Assets", {
     body:
-      "Once the storyboard was final, every asset was broken down into components so different members could draw them.",
+      "After the storyboard was finalized, all assets needed were broken down into different components so  different members can work on drawing them.",
     // One over the other; the anemones trimmed to where they're painted.
     images: [
-      ...gallery(["animation-asset-anemone-angirmaa", "A row of painted anemones and coral"]).map((image) => ({
+      ...gallery(["animation-asset-anemone-angirmaa", "A row of painted anemones and coral", "One of the assets : Anemone by Angirmaa"]).map((image) => ({
         ...image,
         crop: [0, 380, 1280, 720],
         size: [1280, 720],
       })),
-      ...gallery(["animation-asset-water-sara", "A painted underwater background with bubbles"]),
+      ...gallery(["animation-asset-water-sara", "A painted underwater background with bubbles", "One of the assets : background water by Sara P"]),
     ],
     cols: 1,
     rows: [1, 3.2],
-    caption: "Two of the assets: an anemone by Angirmaa and the background water by Sara P.",
   }),
   sectionPage("animation", "wip", "In progress", {
     body:
-      "When every asset was finished, they were animated in After Effects into the animated segment of the final promo video.",
+      "Once all  assets were finished, they were all animated in after effects to produce the animation segment in the final promo video.",
     images: gallery(
-      ["animation-wip-1", "After Effects with the word Everywhere on screen"],
-      ["animation-wip-2", "After Effects with an animated person eating"],
+      ["animation-wip-1", "After Effects with the word Everywhere on screen", "Work in progress shot of the promo video animation by Kathleen"],
+      ["animation-wip-2", "After Effects with an animated person eating", "Another Work in progress shot of the promo video by Kathleen"],
     ),
     cols: 1,
-    caption: "Work-in-progress shots of the promo video's animation, by Kathleen.",
   }),
   {
     id: "character-design",
     title: "Character Design",
     sectionId: "character-design",
-    body:
-      "Once we decided each subteam would have its own PETamon and trainer mascot (the trainers were later dropped), we agreed no AI would be used in any artwork, character designs included. Our first PETamon and trainer were made for Wet Lab, as a proof of concept to get the ball rolling.",
+    body: "Once we established that we wanted each subteam to have their own petamon and trainer mascots (trainers are now scrapped). We iterated that there would be no AI used in any artwork, including character designs. Our first petamon and trainer design was made for wet lab as a proof of concept and to get the ball rolling.\n\nFor the petamon, we played into the structure of a PET molecule, which is why the axolotl catfish has oxygen ball molecules on its fins and tail (plus hydrogen). We thought to make it a water type (because ‘wet’ lab) but also electric like how enzymes speed up reactions! After this design, all our future petamon designs also play into their petase aspects and consume plastics for sustenance. Its mustache was a reference to a catfish but also ended up making it look French (said by the petabite team).",
     density: "soft",
-    variant: "spread",
-    imageSrc: SK_IMG("character-wet-lab-mascot-kathleen"),
-    imageAlt: "The Wet Lab mascot: a pink and yellow axolotl with its mouth open",
-    caption: "The Wet Lab mascot, by Kathleen.",
+    variant: "text",
   },
   sectionPage("character-design", "wet-lab", "Wet Lab", {
-    body:
-      "The axolotl-catfish plays on the structure of a PET molecule: the balls on its fins and tail are oxygen (plus hydrogen). It's a water type (for 'wet' lab) but also electric, like enzymes speeding up reactions. Every PETamon after it plays on its PETase side and eats plastic. Its mustache nods to catfish, but also made it look French (said the PetaBite team).",
+    variant: "image",
     imageSrc: SK_IMG("character-wet-lab-draft-kathleen"),
     imageAlt: "Sketches of an axolotl mascot with notes",
-    caption: "A draft of the Wet Lab mascot, by Kathleen.",
+    caption: "Draft of Wet Lab mascot by Kathleen",
   }),
   sectionPage("character-design", "trainer", "Trainers", {
-    body:
-      "The Wet Lab trainer was designed to communicate a scientist character archetype. She was drawn to have a sense of fashion, as seen by her dress-like lab coat and earrings, while still maintaining proper PPE of goggles, gloves and pants, as well as covered shoes and always tying her hair up in the lab. Sadly the trainer mascots were scrapped, but we had initial ideas of drawing Hardware as an engineer with either a mechanical wheelchair or prosthetics, Dry Lab as an archeologist explorer who uncovers new PETamons (PETases), and much more. The Dry Lab trainer is still on our homepage: he is the explorer in the forest section. He was not removed because we liked the animation of that section and thought it would be a shame to remove him.",
-    imageSrc: SK_IMG("character-wet-lab-trainer-kathleen"),
-    imageAlt: "Turnaround of a Wet Lab trainer in a lab coat",
-    caption: "The Wet Lab trainer mascot (before the trainer concepts got scrapped), by Kathleen.",
+    variant: "aside",
+    body: "The wet lab trainer was designed to communicate a scientist character archetype, she  was drawn to have a sense of fashion as seen by her dress like lab coat and earrings while still maintaining proper PPE of goggles, gloves and pants as well as covered shoes and always tying her hair up in the lab. Sadly the trainer mascots were scrapped but we had initial ideas of drawing Hardware as an engineer with either a mechanical wheelchair or prosthetics,  dry lab being an archeologist explorer who uncovers new petamons (petases),  and much more. Dry lab trainer is still on our homepage, he is the explorer in the forest section, he was not removed because we liked the animation of that section and thought it would be a shame to remove him.",
   }),
-  sectionPage("character-design", "mascots", "Mascots", {
+  sectionPage("character-design", "trainer-images", "Trainers", {
+    variant: "image",
+    images: gallery(
+      ["character-wet-lab-trainer-kathleen", "Turnaround of a Wet Lab trainer in a lab coat", "Wet Lab trainer mascot (before the trainer concepts got scrapped) by Kathleen"],
+      ["character-wet-lab-mascot-kathleen", "The Wet Lab mascot: a pink and yellow axolotl with its mouth open", "Wet  lab mascot by Kathleen"],
+    ),
+    cols: 1,
+  }),
+  sectionPage("character-design", "mascots", "Human Practices", {
     body:
-      "Human Practices is a dove for the nature of their work, in a light, muted palette with molecules all around. Venture's kangaroo, Venturoo, carries a pouch of gold coins, with hydrogen and oxygen details. Outreach's squirrel got an acorn beret, for artists (and to be more French). Hover the PETamon on each subteam page: Venturoo spits out coins and the squirrel gets hit by a stray acorn!",
-    // The dove across the page, then the squirrel and kangaroo side by side.
-    images: [
-      ...gallery(["character-hp-mascot-ibi", "The Human Practices mascot: a dove, front and side"]).map(
-        (image) => ({ ...image, span: 2 }),
-      ),
-      ...gallery(
-        ["character-outreach-mascot-anastasia", "The Outreach mascot: a pink squirrel with a purple tail"],
-        ["character-venture-mascot-noorine", "The Venture mascot: a kangaroo with a colour palette"],
-      ),
-    ],
-    cols: 2,
-    rows: [1.2, 1],
-    caption:
-      "The Human Practices mascot by Ibi, the Outreach mascot by Anastasia and the Venture mascot by Noorine.",
+      "The human practices mascot was designed as a dove to reference the nature of their work. We thought their mascot would do nicely with a light and muted palette as well as molecule details all around it.",
+    imageSrc: SK_IMG("character-hp-mascot-ibi"),
+    imageAlt: "The Human Practices dove mascot, front and side views",
+    caption: "Human Practices mascot by Ibi",
+  }),
+  sectionPage("character-design", "outreach-venture", "Outreach and Venture", {
+    body:
+      "The following are the mascot designs for outreach and venture, venture is a kangaroo with a pouch of gold coins which is pretty self explanatory! Venturoo also has hydrogen and oxygen details around it. Funfact if you hover on the petamons on each subteam page they all have unique animation, venturoo spits out a bunch of coins while outreach gets hit by a stray acorn. For outreach we updated the design so it had an acorn beret to reference artists as well as to make it more french (said the Petabite team).  This updated design can be seen at the bottom of this subteam page!",
+    images: gallery(
+      ["character-outreach-mascot-anastasia", "The Outreach mascot: a pink squirrel with a purple tail", "Outreach Mascot by Anastasia"],
+      ["character-venture-mascot-noorine", "A draft of the Venture kangaroo mascot with a colour palette", "Draft of venture mascot"],
+    ),
+    cols: 1,
   }),
   sectionPage("character-design", "dry-lab", "Dry Lab", {
     body:
-      "Dry Lab asked for a web and bug theme, so their PETamon is a spider crab and scorpion fusion. Outreach thought it'd be cute to give it a bottle-cap hat, like a hermit crab's shell: it breaks down plastic to get at the caps it wears, recycling style!",
+      "The dry lab mascot is  a spider crab scorpion fusion as dry lab requested they wanted a web and bug like theme. Outreach thought it would be cute if they carried around a bottle cap hat on their heads similar to hermit crabs with its  shell. It would break down plastics to  get access to the caps that they’ll use as a shell, recycling style!",
     imageSrc: SK_IMG("character-dry-lab-mascot-kathleen"),
     imageAlt: "The Dry Lab mascot: a dark spider crab wearing a teal bottle cap",
-    caption: "The Dry Lab mascot, by Kathleen.",
+    caption: "Dry  lab mascot by Kathleen",
   }),
   sectionPage("character-design", "rebecca", "Mascots", {
     body:
-      "Web got a fire snake, and Hardware a steel turtle we named Gary. Its steel and electric typing suits Hardware's work!",
+      "A fire snake was designed for Web and a steel turtle (whom we named Gary) was made for hardware. We thought the steel electric typing for Gary was quite accurate to the nature of Hardware’s work!",
     images: gallery(
-      ["character-web-mascot-rebecca", "The Web mascot: a fire snake"],
-      ["character-hardware-mascot-rebecca", "The Hardware mascot: a steel turtle crackling with lightning"],
+      ["character-web-mascot-rebecca", "The Web mascot: a fire snake", "Web mascot by Rebecca"],
+      ["character-hardware-mascot-rebecca", "The Hardware mascot: a steel turtle crackling with lightning", "Hardware mascot by Rebecca"],
     ),
     cols: 1,
-    caption: "The Web and Hardware mascots, by Rebecca.",
   }),
   sectionPage("character-design", "crochet", "Crochet", {
-    variant: "aside",
+    imageSrc: SK_IMG("crochet"),
+    imageAlt: "Isabella creating a crochet pattern for our Wet Lab PETamon",
+    caption: "Isabella creating a crochet pattern for our Wet Lab PETamon.",
     body:
-      "Isabella is designing crochet patterns so the PETamon can leave the screen. The Wet Lab axolotl is first in line to become a plush, and the plan is a pattern for every PETamon, so anyone can make one at home.",
+      "Crochet Character Designs: Bringing our Petamon to life beyond the digital world, we are working on designing crochet patterns. While the Wet Lab Axolotl is first on our list to become a precious plushie, we plan on creating patterns for all of our Petamon so that anyone can make one for their own home.",
   }),
   {
     id: "social",
     title: "Social",
     sectionId: "social",
     body:
-      "Our social media team launched PetaBite with our first Instagram post, Project Intro, on May 21. It has since drawn more than 11.4K views, 300 engagements and more than 15 comments. To match the earthy colours the web design team laid down, it used a pastel palette around Wet Lab's axolotl PETamon, the very first one designed. Through the summer, the Road to Jamboree reels followed the subteams at work, and from late May our monthly newsletter, The Waterfront, went out to general members with PetaBite's progress, current and upcoming events, and a snapshot of the microplastics and PETase landscape. A special edition for subscribers introduced the speakers at the Microplastics Conference in August.",
+      "Our social media team launched the PetaBite initiative with our first Instagram post; our project introduction post. It garnered more than 11.4K views, 300 engagements, and more than 15 comments since it was first posted on May 21st.",
     density: "soft",
     variant: "spread",
     imageSrc: NB_IMG("social-project-intro-may"),
     imageAlt: "Instagram slide titled Plastic pollution on the rise, with an axolotl and facts about microplastics in the body",
-    caption: "The first slide of Project Intro (May).",
+    caption: "",
   },
   sectionSnapshotPage(
     "social",
     "social-petadex-post-may",
-    "Another Project Intro slide, introducing the PETadex.",
+    "",
     "Instagram slide titled Our project: the PETadex, with an axolotl holding a bottle"
   ),
+  sectionPage("social", "visuals-reels", "Our visual identity and reels", {
+    variant: "aside",
+    body:
+      "To adhere to the earthy colour narrative laid down by our wiki’s design team, a pastel palette was built with visual elements showcasing Wet Lab’s axolotl PETamon, the very first PETamon designed in this project cycle. Throughout the summer, the Road to Jamboree reel series documented various subteams at work, following their contributions towards the final PetaBite project.",
+  }),
+  sectionPage("social", "waterfront", "The Waterfront", {
+    imageSrc: SK_IMG("newsletter"),
+    imageAlt: "The Waterfront newsletter",
+    body:
+      "Monthly editions of the iGEM Toronto newsletter, The Waterfront, were sent out to our general members beginning late May, featuring progress on the PetaBite project, current and prospective events, and a snapshot of the current microplastics and PETase landscape. A special edition was sent out to our subscribers showcasing the speakers invited to the Microplastics Conference in August.",
+  }),
   {
     id: "branding",
     title: "Branding",
     sectionId: "branding",
     body:
-      "Our vision for the PetaBite brand was earthy tones, textured brushes and an entirely hand-drawn visual style. Absolutely no generative AI was used to create anything that became part of PetaBite's brand. In May, we held a logo design competition: members inside and outside Outreach could submit designs inspired by our Pokémon x synthetic biology direction.",
+      "Our vision for the PetaBite brand featured designs made of earthy tones, textured brushes, and an entirely hand-drawn visual style. No generative AI was used to create elements that were incorporated into PetaBite’s brand image since the beginning of the project cycle. During May, iGEM Toronto hosted a logo design competition where members (both inside and outside of the outreach team) could submit designs inspired by our visual direction for PetaBite, which was inspired by a Pokémon x synthetic biology theme.",
     density: "soft",
     variant: "spread",
-    imageSrc: NB_IMG("branding-final-logo"),
-    imageAlt: "The PetaBite logo: the letters P, e, t, a, B, i, t, e set in a chain of molecule rings",
-    caption: "The final PetaBite logo, recoloured for merch (September 13).",
+    imageSrc: SK_IMG("branding-logo-submission-3"),
+    imageMaxWidth: 192,
+    imageAlt: "A magnifying glass over a red PET molecule",
+    caption: "",
   },
   sectionPage("branding", "submissions", "Logo competition", {
     // The two round ones side by side, then the other two across the page,
@@ -455,37 +461,36 @@ export const DESIGN_SKETCHBOOK_PAGES = [
         ["branding-logo-submission-2", "A red round logo with a PET molecule inside"],
       ),
       ...gallery(
-        ["branding-logo-submission-3", "A magnifying glass over a red PET molecule"],
         ["branding-logo-submission-petadex", "The word PETadex in blue between two circuit-board icons"],
+        ["branding-logo-winner-chinmay", "The word PETadex framing a PET molecule, with scissors cutting a bond"]
       ).map((image) => ({ ...image, span: 2 })),
     ],
     cols: 2,
-    rows: [1, 1.6, 0.45],
-    caption: "Some of the submissions to the PetaBite logo design competition.",
+    rows: [1, 0.4, 0.6],
+    galleryMaxHeight: "min(36rem, 120cqw)",
+    galleryGap: "1rem",
+    caption: "Various submissions for the PetaBite logo design competition.",
   }),
   sectionPage("branding", "winner", "The winning design", {
     body:
-      "The winning design, by Chinmay, had “PETadex” framing the molecular structure of PET. Cindy reworked it to fit the wiki's developing visual direction, and in September it was recoloured for the CMYK palette of our merch.",
+      "The winning design featured “PETadex” framing the molecular structure of PET (prepared by Chinmay), and was stylistically reworked by Cindy to better capture the wiki’s developing visual direction. To accommodate the CMYK colour palette that was used to design the team’s merchandise, it was recoloured in September.",
     images: gallery(
-      ["branding-logo-winner-chinmay", "The word PETadex framing a PET molecule, with scissors cutting a bond"],
-      ["branding-logo-rework-cindy", "The PetaBite logo: pastel letters in a chain of molecule rings"],
+     ["branding-logo-rework-cindy", "The PetaBite logo: pastel letters in a chain of molecule rings", "Winning design reworked to suit the wiki’s narrative theme by Cindy."],
     ),
     cols: 1,
-    caption: "Chinmay's winning design, and Cindy's rework to suit the wiki's narrative theme.",
+    galleryMaxHeight: "min(16rem, 60cqw)",
   }),
   sectionPage("branding", "earth-tones", "Everywhere", {
     body:
-      "Earth tones carried through every part of PetaBite's branding, including event promotions and the slide decks the Entrepreneurship and Human Practices subteams made for competitions.",
+      "The prevalence of earth-tone colours remained consistent in every facet of PetaBite’s branding — including promotional materials for events and slide decks developed for competitions by the entrepreneurship and human practices subteams.",
     images: gallery(
-      ["branding-conference-logo-cindy", "A bottle-shaped logo reading UofT Microplastics Conference 2026 around the CN Tower"],
-      ["branding-petascale-deck", "A title slide reading PetaScale: PET-microplastic degradation at scale"],
+      ["branding-conference-logo-cindy", "A bottle-shaped logo reading UofT Microplastics Conference 2026 around the CN Tower", "Logo of the UofT Microplastics Conference designed by Cindy."],
+      ["branding-petascale-deck", "A title slide reading PetaScale: PET-microplastic degradation at scale", "A comprehensive pitch deck showcasing the business development arm of PetaBite, PetaScale, created by members of our entrepreneurship team."],
     ),
     // One over the other.
     cols: 1,
-    caption:
-      "The UofT Microplastics Conference logo, by Cindy, and the pitch deck for PetaScale, PetaBite's business arm, by members of our Entrepreneurship team.",
   }),
-  sectionPage("branding", "cards", "Trading cards", {
+  sectionPage("merchandise", "cards", "Petabite Trading Cards", {
     images: gallery(
       ["merch-card-1", "A PETase item card"],
       ["merch-card-2", "An Incinerator item card"],
@@ -496,28 +501,28 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     ),
     // In pairs, so each shows bigger.
     cols: 2,
-    caption: "PetaBite trading card designs, by various members of iGEM Toronto.",
+    caption: "Petabite trading card designs designed by various members of iGEM Toronto.",
   }),
-  sectionPage("branding", "printed", "Trading cards", {
+  sectionPage("merchandise", "printed", "Petabite Trading Cards", {
     imageSrc: SK_IMG("merch-cards-printed"),
     imageAlt: "A row of printed PetaBite trading cards",
-    caption: "The printed trading cards, displayed at the UofT Microplastics Conference.",
+    caption: "Printed PetaBite trading cards, displayed at the UofT Microplastics Conference.",
   }),
-  sectionPage("branding", "merch", "Merch", {
+  sectionPage("merchandise", "merch", "PetaBite Apparel", {
     body:
-      "Outreach made merch that captures the scale of the microplastics problem and ties it to PetaBite's north star: plastic-degrading enzymes that work in many environments. The first designs put an enlarged PetaBite logo on the back and the iGEM Toronto logo on the front. They were revised to show our solution: a stonewashed t-shirt, an iGEM Toronto quarter zip, and a forest-green hoodie with our sponsors. The t-shirt and the hoodie carry the PetaBite designs.",
+      "Outreach created merchandise that encapsulates the scale of the microplastics problem, and integrates it with PetaBite’s north star goal: delivering plastic-degrading enzymes that are capable of functioning in a variety of environments. Initial designs featured an enlarged version of the PetaBite logo present on the back of apparel, with iGEM Toronto’s own logo printed on the front. These initial designs were revised to incorporate stylistic depictions of our solution. Upon revision, three articles of clothing were redesigned and ultimately finalized for merchandise production; a stonewashed t-shirt, a generic iGEM Toronto quarter zip, and a forest-green hoodie with sponsors displayed in the design. The t-shirt and the hoodie both featured PetaBite-specific designs.",
     imageSrc: SK_IMG("merch-catalogue-initial"),
     imageAlt: "The first merch catalogue: black t-shirts, hoodies and quarter zips",
-    caption: "The first iGEM Toronto merch catalogue: a t-shirt, hoodie and quarter zip.",
+    caption: "Initial iGEM Toronto merch catalogue — a t-shirt, hoodie, and quarter zip design.",
   }),
-  sectionPage("branding", "redesign", "Merch", {
+  sectionPage("merchandise", "redesign", "PetaBite Apparel", {
     body:
-      "We wanted merch that looked more like the homepage's art and could be worn outside iGEM, so the web design team redesigned it. Sponsors were going to sit on the hoodie's sleeve; they moved, and the colours were evened out, so they frame the design on the back. The tee is a streetwear print on a stonewashed base, picked from a poll of four designs.",
+      "The team envisioned merch designs that were more representative of the art direction that shaped the homepage of the PetaBite wiki. After the first design iteration, members of the web design team were appointed to create apparel that could be worn beyond the Jamboree and iGEM-specific environments. Sponsors were initially going to be included on the sleeve of the hoodie, though the placement was adjusted and colours were homogenized to frame the rear design of the hoodie as seen in the finalized hoodie draft. The t-shirt redesign followed the same principle: emphasizing a modern, streetwear-style design. The base design is printed on top of a stonewash t-shirt base, and the finalized t-shirt design was selected out of a poll of four proposed designs.",
     imageSrc: SK_IMG("merch-tee-final"),
     imageAlt: "The final stonewashed tee, front and back",
-    caption: "The final stonewashed tee, by Kathleen (with inspiration from Abby).",
+    caption: "Finalized stonewashed tee designed by Kathleen (with inspiration from Abby).",
   }),
-  sectionPage("branding", "tees", "Merch", {
+  sectionPage("merchandise", "tees", "PetaBite Apparel", {
     images: gallery(
       ["merch-tee-iteration-1", "A t-shirt design, front and back"],
       ["merch-tee-iteration-2", "A t-shirt design, front and back"],
@@ -526,43 +531,80 @@ export const DESIGN_SKETCHBOOK_PAGES = [
     ),
     // One over the other: each is a wide front-and-back pair.
     cols: 1,
-    caption: "Iterations of the t-shirt design on a plain tee, by Kathleen (with inspiration from Abby).",
+    caption: "Various iterations of the t-shirt design on a plain tee, designed by Kathleen (with inspiration from Abby).",
   }),
-  sectionPage("branding", "final", "Merch", {
+  sectionPage("merchandise", "final", "PetaBite Apparel", {
     images: gallery(
-      ["merch-quarter-zip-final", "The final black quarter zip"],
-      ["merch-hoodie-final", "The final forest-green hoodie, with sponsors framing the back design"],
+      ["merch-quarter-zip-final", "The final black quarter zip", "Finalized quarter zip design."],
+      ["merch-hoodie-final", "The final forest-green hoodie, with sponsors framing the back design", "Finalized hoodie design."],
     ),
     cols: 1,
-    caption: "The final quarter zip and hoodie.",
+  }),
+  sectionPage("merchandise", "making-petamon", "Crochet PETamon", {
+    variant: "image",
+    imageSrc: SK_IMG("makingpatemon"),
+    imageAlt: "Isabella creating a crochet pattern for our Wet Lab PETamon",
+    caption: "Isabella creating a crochet pattern for our Wet Lab PETamon.",
+  }),
+  sectionPage("merchandise", "crochet", "Crochet PETamon", {
+    variant: "aside",
+    body:
+      "Bringing our Petamon to life beyond the digital world, we are working on designing crochet patterns. While the Wet Lab Axolotl is first on our list to become a precious plushie, we plan on creating patterns for all of our Petamon so that anyone can make one for their own home.",
   }),
   {
-    id: "other",
-    title: "Other",
-    sectionId: "other",
+    id: "video",
+    title: "iGEM Promotional video",
+    sectionId: "video",
     body:
-      "Scripting for our two-minute promo video began in June. It gives a short introduction to the microplastics problem and a summary of the experimental workflow that validates PetaBite's technical pipeline, while staying accessible to an audience with little scientific background. We filmed across the University of Toronto campus and the city, especially the Toronto Islands, and with voiceovers, animated scenes, external audio and editing, it was released publicly on August 11.",
+      "Scripting for iGEM’s two-minute promotional video began in June. The promo video aimed to provide a concise introduction to the microplastics problem, as well as a comprehensive summary of the experimental workflow that validates PetaBite’s technical pipeline, whilst remaining accessible to an audience with limited scientific knowledge. Filming took place at various locations across the University of Toronto campus and the City of Toronto, with an emphasis on the Toronto Islands. Edited to include voiceovers, animated scenes, external audio, the final promotional video was released publicly on August 11th.",
     density: "soft",
     variant: "spread",
     imageSrc: NB_IMG("other-promo-filming-jul26"),
     imageAlt: "A team member in a red shirt fishing off Centre Island with the Toronto skyline behind",
-    caption: "Filming the promo video on Centre Island (July 26).",
+    caption: "",
   },
   {
-    id: "other-presentation",
-    title: "Presentation video",
-    sectionId: "other",
+    id: "video-presentation",
+    title: "iGEM Presentation video",
+    sectionId: "video",
     density: "soft",
     variant: "aside",
-    body:
-      "Planning for the 15-minute presentation video began in early September, with filming from mid-October, including sessions with Wet Lab, Hardware, Entrepreneurship and Human Practices. Unlike the promo video, it goes into the science and rationale behind the project's technical side, for an audience that already knows synthetic biology and computational systems, and documents PetaBite's real-world impact through our stakeholder discussions, entrepreneurial analysis and outreach. It was scripted, shot and edited in late October.",
+    body: "Preliminary planning for the 15-minute presentation video began in early September, with filming beginning mid-October.",
   },
+  sectionPage("video", "still-wet", "iGEM Presentation video", {
+    variant: "image",
+    imageSrc: SK_IMG("still-wet"),
+    imageAlt: "Still shots from the Wet Lab shooting session.",
+    caption: "Still shots from the Wet Lab shooting session.",
+  }),
+  sectionPage("video", "still-hardw", "iGEM Presentation video", {
+    variant: "image",
+    imageSrc: SK_IMG("still-hardw"),
+    imageAlt: "Still shots from the Hardware shooting session.",
+    caption: "Still shots from the Hardware shooting session.",
+  }),
+  sectionPage("video", "still-ent", "iGEM Presentation video", {
+    variant: "image",
+    imageSrc: SK_IMG("still-ent"),
+    imageAlt: "Still shots from the Entrepreneurship shooting session.",
+    caption: "Still shots from the Entrepreneurship shooting session.",
+  }),
+  sectionPage("video", "still-hp", "iGEM Presentation video", {
+    variant: "image",
+    imageSrc: SK_IMG("still-hp"),
+    imageAlt: "Still shots from the Human Practices shooting session.",
+    caption: "Still shots from the Human Practices shooting session.",
+  }),
+  sectionPage("video", "presentation-context", "iGEM Presentation video", {
+    variant: "aside",
+    body: "Unlike the promotional video, the presentation video expanded on the scientific validity and rationale supporting PetaBite’s technical side, intended for an audience with an elevated understanding of synthetic biology and computational systems. Furthermore, validation of PetaBite’s real-world impact through stakeholder discussions, entrepreneurial analysis, and outreach efforts are documented in the presentation video. Scripting, shooting, and editing of the video took place during late October.",
+  }),
   {
     id: "back",
     title: "That's the season",
     subtitle: "Flip back or tap a tab",
     body:
-      "Each tab covers one part of outreach design from March to October 2026, with images from the team's Discord.",
+      "",
     density: "hard",
     variant: "back",
     coverImage: "https://static.igem.wiki/teams/6187/wiki/outreach/sketchbook/back-cover.avif",
@@ -596,8 +638,8 @@ export function buildSketchbookPages({ split = [], breaks = {}, pairs = false } 
       if (pairs && count % 2 === 1 && section) {
         pages.push({
           id: `${section.id}-progress`,
-          title: "Where it stands",
-          body: section.progress,
+          title: "",
+          body: "",
           sectionId: section.id,
           density: "soft",
           variant: "aside",
@@ -612,7 +654,7 @@ export function buildSketchbookPages({ split = [], breaks = {}, pairs = false } 
 /** One page as it's laid out: its text over as many pages as it needs, then its picture if split. */
 function pageRun(page, isSplit, cuts) {
   if (!isSplit && !cuts.length) return [page]
-  const { imageSrc, imageAlt, images, cols, rows, caption, body, ...text } = page
+  const { imageSrc, imageAlt, images, cols, rows, caption, captionLink, body, ...text } = page
   const words = String(body || "").split(/\s+/).filter(Boolean)
   const ends = [...cuts, words.length]
   const chunk = (k) => words.slice(k ? ends[k - 1] : 0, ends[k]).join(" ")
@@ -643,6 +685,7 @@ function pageRun(page, isSplit, cuts) {
       cols,
       rows,
       caption,
+      captionLink,
     })
   }
   return run
