@@ -1,10 +1,11 @@
-import React, { useId, useRef, useState } from "react"
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import { navigate, withPrefix } from "gatsby"
 import styled from "styled-components"
 import { HARDWARE_SUBSYSTEMS } from "../../data/hardwareIterations.js"
 import { HARDWARE_MAPS, HARDWARE_MAP_COLOURS } from "../../data/hardwareMap.js"
 
 const ITERATIONS_PATH = "/hardware/past-iterations/"
+const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect
 
 /**
  * The prototype photo with each part outlined in its subsystem's colour and
@@ -19,7 +20,23 @@ export function HardwareMap({ version = "version-1" }) {
   const id = useId()
   // The part shown: its subsystem's parts all light up, its label says more.
   const [active, setActive] = useState(null)
+  const [activeVersion, setActiveVersion] = useState(version)
+  // The photo currently decoded. Highlights stay hidden until it matches `src`,
+  // so a slow swap never draws the new outlines on the previous picture.
+  const [readySrc, setReadySrc] = useState("")
+  const imgRef = useRef(null)
   const touched = useRef(false)
+  if (version !== activeVersion) {
+    setActiveVersion(version)
+    setActive(null)
+  }
+  const shown = readySrc === src
+  useIsoLayoutEffect(() => {
+    const img = imgRef.current
+    if (img && img.complete && img.naturalWidth > 0) {
+      setReadySrc(img.currentSrc || img.src)
+    }
+  }, [src])
   const labelOf = sub => HARDWARE_SUBSYSTEMS.find(s => s.id === sub)?.label || sub
   const path = sub => `${ITERATIONS_PATH}#${version ? `${version}-` : ""}${sub}`
 
@@ -60,9 +77,28 @@ export function HardwareMap({ version = "version-1" }) {
   })
 
   return (
-    <Figure>
+    <Figure id={`hardware-map-${version}`} aria-busy={!shown}>
       <Stage style={{ aspectRatio: `${W} / ${H}` }}>
-        <img src={src} alt={alt} loading="lazy" decoding="async" />
+        <Photo
+          ref={imgRef}
+          src={src}
+          alt={alt}
+          $shown={shown}
+          decoding="async"
+          onLoad={event => {
+            const img = event.currentTarget
+            setReadySrc(img.currentSrc || img.src)
+          }}
+          onError={event => {
+            const img = event.currentTarget
+            setReadySrc(img.currentSrc || img.src)
+          }}
+        />
+        <Loader $hide={shown} role={shown ? undefined : "status"} aria-hidden={shown || undefined}>
+          <Spinner aria-hidden />
+          <Hold>Loading photo</Hold>
+        </Loader>
+        <Overlay $shown={shown} aria-hidden={shown ? undefined : true}>
         <svg viewBox={`0 0 ${W} ${H}`} aria-label="Bioreactor parts">
           <defs>
             <filter id={`${id}-aura`} x="-20%" y="-20%" width="140%" height="140%">
@@ -111,7 +147,7 @@ export function HardwareMap({ version = "version-1" }) {
               }}
             >
               <Pill>{labelOf(part.subsystem)}</Pill>
-              {active?.i === i && (
+              {active?.i === i && !part.tipPlace && (
                 // Away from its part, and kept inside the photo.
                 <Tip $up={part.tip === "up" || y > H * 0.6} $right={right || x > W * 0.45}>
                   {about}
@@ -121,6 +157,26 @@ export function HardwareMap({ version = "version-1" }) {
             </Label>
           )
         })}
+        {parts.map((part, i) => {
+          if (active?.i !== i || !part.tipPlace) return null
+          const colour = HARDWARE_MAP_COLOURS[part.subsystem]
+          const about = summaries[part.subsystem]
+          return (
+            <Tip
+              key={`tip-${i}`}
+              as="a"
+              {...handlers(part.subsystem, i)}
+              tabIndex={-1}
+              aria-hidden
+              $place={part.tipPlace}
+              style={{ "--part": colour }}
+            >
+              {about}
+              <More>{touched.current ? "Tap again" : "Click"} to read more</More>
+            </Tip>
+          )
+        })}
+        </Overlay>
       </Stage>
       <figcaption>
         Hover over (or tap) a part to see what it does, and click it to open
@@ -134,6 +190,7 @@ const Figure = styled.figure`
   width: 100%;
   max-width: 40rem;
   margin: var(--space-lg) auto;
+  scroll-margin-top: 6rem;
 
   figcaption {
     margin-top: var(--space-sm);
@@ -161,6 +218,76 @@ const Stage = styled.div`
     object-fit: cover;
     border-radius: 0.6rem;
   }
+`
+
+const Photo = styled.img`
+  opacity: ${({ $shown }) => ($shown ? 1 : 0)};
+  transition: ${({ $shown }) => ($shown ? "opacity 180ms ease" : "none")};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  opacity: ${({ $shown }) => ($shown ? 1 : 0)};
+  visibility: ${({ $shown }) => ($shown ? "visible" : "hidden")};
+  pointer-events: ${({ $shown }) => ($shown ? "auto" : "none")};
+  transition: ${({ $shown }) => ($shown ? "opacity 180ms ease" : "none")};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`
+
+const Loader = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  border-radius: 0.6rem;
+  background: var(--color-bg);
+  opacity: ${({ $hide }) => ($hide ? 0 : 1)};
+  pointer-events: none;
+  transition: ${({ $hide }) => ($hide ? "opacity 180ms ease" : "none")};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`
+
+const Spinner = styled.span`
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  animation: hardware-map-spin 0.7s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+
+  @keyframes hardware-map-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`
+
+const Hold = styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 `
 
 /** A part's outline: a soft aura in its colour, brighter while it's shown. */
@@ -223,8 +350,7 @@ const Pill = styled.span`
 
 const Tip = styled.span`
   position: absolute;
-  ${({ $up }) => ($up ? "bottom: calc(100% + 0.4em);" : "top: calc(100% + 0.4em);")}
-  ${({ $right }) => ($right ? "right: 0;" : "left: 0;")}
+  z-index: 3;
   width: min(15rem, 55cqw);
   padding: 0.55em 0.7em;
   border-left: 4px solid var(--part);
@@ -234,6 +360,43 @@ const Tip = styled.span`
   font-size: clamp(0.66rem, 2.3cqw, 0.82rem);
   line-height: 1.4;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  ${({ $place, $up, $right }) =>
+    $place === "top-left"
+      ? `
+    top: 0.5rem;
+    left: 0.5rem;
+    /* Stay in the upper part of the photo at every width, including when
+       the summary wraps on a narrow stage. Version 2's OD hotspot sits
+       below this band. */
+    width: min(15rem, 50cqw);
+    max-height: calc(44% - 0.5rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+  `
+      : $place === "above-stand"
+        ? `
+    /* Just above the final stand, mid-photo. The band stays left of the
+       vial probe and above stirring, pumps, and the OD labels. */
+    left: 34%;
+    top: 44%;
+    width: min(13rem, 22cqw);
+    max-height: 17%;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 0.45em 0.6em;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  `
+        : `
+    ${$up ? "bottom: calc(100% + 0.4em);" : "top: calc(100% + 0.4em);"}
+    ${$right ? "right: 0;" : "left: 0;"}
+  `}
+
+  &&& {
+    border-bottom: 0;
+    text-decoration: none;
+    color: #1d2a33;
+  }
 `
 
 const More = styled.span`

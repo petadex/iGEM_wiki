@@ -5,9 +5,12 @@ import WikiLayout from "../../components/layout.js"
 
 /*
  * Members come from src/data/team/team.csv (from the team roster). The
- * `level` column groups the cards, in the order of LEVELS; within a level
- * they keep the roster's order. `subteams` lists a member's subteams ("Wet
- * Lab; Outreach"), each shown as its symbol on the card.
+ * `level` column groups the unfiltered page, in the order of LEVELS; within
+ * a level they keep the roster's order. `subteams` lists membership ("Wet
+ * Lab; Outreach"), each shown as its symbol on the card. `role` says which
+ * of those they lead ("Venture Lead · Dry Lab" leads Venture only). A
+ * subteam filter groups by that, so a lead of another subteam shows as a
+ * member.
  */
 
 const LEVELS = [
@@ -76,17 +79,53 @@ const subteamIn = (text = "") => {
 const subteamsOf = (m) =>
   (m.subteams || "").split(";").map(subteamIn).filter(Boolean)
 
+/** "Venture Lead · Dry Lab" → ["Venture Lead", "Dry Lab"]. */
+const roleParts = (role = "") =>
+  String(role)
+    .split("·")
+    .map((part) => part.trim())
+    .filter(Boolean)
+
+/**
+ * Subteams this person leads. A role part counts only when it names the
+ * subteam and says Lead, so "Dry Lab" is membership and "Dry Lab Lead" is not.
+ */
+const ledSubteams = (m) => {
+  const memberOf = new Set(subteamsOf(m).map((type) => type.slug))
+  const seen = new Set()
+  return roleParts(m.role).flatMap((part) => {
+    if (!/\blead\b/i.test(part)) return []
+    const type = subteamIn(part)
+    if (!type || !memberOf.has(type.slug) || seen.has(type.slug)) return []
+    seen.add(type.slug)
+    return [type]
+  })
+}
+
+/**
+ * No filter keeps the roster level. A filter promotes someone only for a
+ * selected subteam they lead; on any other selected subteam they are a member.
+ * Advisors stay advisors. A president who leads the selected subteam stays a
+ * president (Anthony on Entrepreneurship).
+ */
+const levelInFilter = (m, filter) => {
+  if (!filter.size || m.level === "Advisor") return m.level
+  const leadsHere = ledSubteams(m).some((type) => filter.has(type.slug))
+  if (!leadsHere) return "Member"
+  return m.level === "President" ? "President" : "Lead"
+}
+
 /**
  * The line under a name. Subteams already have icons, so this is only a
  * title: President, Advisor, or the team someone leads. Anthony is both
  * president and Entrepreneurship lead, so those join with a comma.
  */
-const cardLabel = (m) => {
+const cardLabel = (m, level = m.level) => {
   const parts = []
-  if (m.level === "President") parts.push("President")
-  if (m.level === "Advisor") parts.push("Advisor")
-  if (m.level === "President" || m.level === "Lead") {
-    for (const type of subteamsOf(m)) parts.push(type.label)
+  if (level === "President") parts.push("President")
+  if (level === "Advisor") parts.push("Advisor")
+  if (level === "President" || level === "Lead") {
+    for (const type of ledSubteams(m)) parts.push(type.label)
   }
   return parts.join(", ")
 }
@@ -113,7 +152,7 @@ const groupByLevel = (members) =>
   LEVELS.map(([level, title]) => [
     level,
     title,
-    members.filter((m) => m.level === level),
+    members.filter((m) => m.displayLevel === level),
   ]).filter(([, , group]) => group.length)
 
 const LinkedInIcon = () => (
@@ -319,11 +358,12 @@ const TeamPage = ({ data }) => {
       return next
     })
 
-  const shown = filter.size
+  const shown = (filter.size
     ? members.filter((m) =>
         subteamsOf(m).some((type) => filter.has(type.slug))
       )
     : members
+  ).map((m) => ({ ...m, displayLevel: levelInFilter(m, filter) }))
   const sections = groupByLevel(shown)
 
   return (
@@ -350,9 +390,9 @@ const TeamPage = ({ data }) => {
               <SectionTitle id={`team-${level}`}>{title}</SectionTitle>
               <Cards>
                 {group.map((m) => {
-                  const frame = LEAD_LEVELS.has(level) ? LEAD_FRAME : TEAM_FRAME
+                  const frame = LEAD_LEVELS.has(m.displayLevel) ? LEAD_FRAME : TEAM_FRAME
                   const types = subteamsOf(m)
-                  const label = cardLabel(m)
+                  const label = cardLabel(m, m.displayLevel)
                   return (
                     <Card key={m.id} style={{ "--frame": frame }}>
                       <Photo>
@@ -405,6 +445,7 @@ export const query = graphql`
         id
         Name
         level
+        role
         subteams
         linkedIn
         email

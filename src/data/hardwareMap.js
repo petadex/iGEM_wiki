@@ -3,7 +3,10 @@
  * pixels and belongs to a subsystem (ids from HARDWARE_SUBSYSTEMS). Its
  * label sits at `label`, at the left edge, or at the right edge with
  * `align: "right"`. The summary opens under the label, or over it with
- * `tip: "up"` (low on the photo, it always does).
+ * `tip: "up"` (low on the photo, it always does). `tipPlace: "top-left"`
+ * pins that summary to the top-left of the photo. `tipPlace: "above-stand"`
+ * pins it just above the final stand, in the middle of the photo, clear of
+ * the probe, stirring, pumps, and the other popouts.
  *
  * The visible file is the clean photo. Polygons follow the highlighted
  * regions on the matching *ref* image.
@@ -67,7 +70,46 @@ export const HARDWARE_MAPS = {
       },
       {
         subsystem: "pumps",
-        points: [[710, 755], [790, 728], [852, 755], [845, 855], [770, 875], [715, 820]],
+        points: [
+          [783, 740],
+          [792, 746],
+          [801, 760],
+          [814, 766],
+          [838, 772],
+          [853, 774],
+          [856, 778],
+          [856, 860],
+          [842, 868],
+          [832, 876],
+          [830, 888],
+          [828, 896],
+          [822, 901],
+          [816, 899],
+          [806, 886],
+          [798, 872],
+          [790, 862],
+          [784, 862],
+          [762, 862],
+          [744, 861],
+          [726, 856],
+          [710, 850],
+          [696, 846],
+          [680, 844],
+          [666, 845],
+          [658, 841],
+          [655, 833],
+          [658, 826],
+          [670, 823],
+          [682, 815],
+          [690, 803],
+          [694, 794],
+          [708, 791],
+          [728, 789],
+          [748, 787],
+          [768, 784],
+          [776, 772],
+          [777, 744],
+        ],
         label: [845, 700],
         align: "right",
         tip: "up",
@@ -92,7 +134,7 @@ export const HARDWARE_MAPS = {
         subsystem: "cad",
         points: [[51, 504], [90, 426], [161, 365], [288, 348], [399, 393], [455, 479], [417, 609], [324, 685], [178, 704], [63, 617]],
         label: [40, 730],
-        tip: "up",
+        tipPlace: "top-left",
       },
       {
         subsystem: "od",
@@ -101,7 +143,7 @@ export const HARDWARE_MAPS = {
       },
       {
         subsystem: "data",
-        points: [[712, 331], [822, 33], [1066, 27], [1149, 305]],
+        points: [[820, 198], [820, 31], [1078, 34], [1078, 200]],
         label: [900, 360],
       },
       {
@@ -154,11 +196,11 @@ export const HARDWARE_MAPS = {
         subsystem: "cad",
         points: [[253, 546], [293, 459], [457, 477], [489, 559], [490, 682], [253, 687]],
         label: [160, 640],
-        tip: "up",
+        tipPlace: "above-stand",
       },
       {
         subsystem: "data",
-        points: [[466, 62], [560, 37], [626, 120], [636, 257], [466, 254]],
+        points: [[522, 18], [636, 140], [498, 298], [428, 155]],
         label: [660, 40],
         align: "right",
       },
@@ -174,8 +216,29 @@ export const HARDWARE_MAPS = {
       },
       {
         subsystem: "temperature",
-        points: [[370, 300], [455, 295], [460, 420], [375, 425]],
-        label: [300, 310],
+        points: [
+          [422, 254],
+          [450, 250],
+          [446, 268],
+          [434, 280],
+          [428, 296],
+          [424, 312],
+          [420, 328],
+          [416, 344],
+          [411, 360],
+          [407, 376],
+          [403, 390],
+          [391, 392],
+          [395, 376],
+          [399, 360],
+          [404, 344],
+          [408, 328],
+          [412, 312],
+          [417, 296],
+          [421, 280],
+          [424, 268],
+        ],
+        label: [262, 288],
       },
       {
         subsystem: "od",
