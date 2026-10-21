@@ -215,13 +215,14 @@ function Photo({ src, alt }) {
  */
 const LOGICAL = [1600, 900]
 
-export const InteractiveEmbed = ({ src, title, caption, dark = false, logical = LOGICAL, grow = false, hint }) => {
+// `anchor` is an id links can jump to: with `grow`, they glide to the figure grown and held.
+export const InteractiveEmbed = ({ src, title, caption, dark = false, logical = LOGICAL, grow = false, hint, anchor }) => {
   const href = src.startsWith("/") ? withPrefix(src) : src
   const frameRef = useRef(null)
 
   return (
     <EmbedFigure>
-      <ExpandWindow title={title} dark={dark} focusRef={frameRef} grow={grow} hint={hint}>
+      <ExpandWindow title={title} dark={dark} focusRef={frameRef} grow={grow} hint={hint} anchor={anchor}>
         {open => (
           <ScaledFigure
             href={href}
@@ -290,12 +291,15 @@ export const FrameFigure = ({ src, title, caption, width = "100%", aspect = "3 /
     <FrameFigureWrap style={{ width: `min(${width}, calc(var(--figure-max-h) * ${aspect}))` }}>
       <ExpandWindow title={title} inlineTitle={false} ground="var(--color-bg)" focusRef={frameRef}>
         {open => (
-          <FrameFit $open={open} style={{ "--aspect": aspect }}>
-            <FitFrame ref={frameRef} src={href} title={title || "Interactive figure"} loading="lazy" style={{ aspectRatio: aspect }} />
-          </FrameFit>
+          <>
+            <FrameFit $open={open} style={{ "--aspect": aspect }}>
+              <FitFrame ref={frameRef} src={href} title={title || "Interactive figure"} loading="lazy" style={{ aspectRatio: aspect }} />
+            </FrameFit>
+            {/* Inside the window, so the caption goes with the figure when it opens. */}
+            {caption && <FrameCaption $open={open}>{caption}</FrameCaption>}
+          </>
         )}
       </ExpandWindow>
-      {caption && <EmbedCaption>{caption}</EmbedCaption>}
     </FrameFigureWrap>
   )
 }
@@ -542,6 +546,31 @@ const FrameFit = styled.div`
 
       ${FitFrame} {
         width: min(100cqw, 100cqh * var(--aspect));
+      }
+    `}
+`
+
+/* Under the figure inline; along the bottom of the window, at a readable
+   width, when open. A <p>, not a <figcaption>: the window's wrapper sits
+   between it and the <figure>. */
+const FrameCaption = styled.p`
+  && {
+    margin: var(--space-sm) 0 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  ${({ $open }) =>
+    $open &&
+    css`
+      && {
+        flex: none;
+        width: 100%;
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 0 1rem 1rem;
+        text-align: center;
       }
     `}
 `

@@ -1027,10 +1027,10 @@ export const EricksonSequences = () => {
       </ChartScroll>
       <Sub>
         These enzymes were found by functional metagenomics, and their database records differ from
-        the constructs reported in the paper. Several database sequences were nearly twice as long
+        the constructs reported in the paper. Several database sequences were almost twice as long
         as the reported construct, so all {rows.length} were replaced with the sequences printed in
         the paper. The paper's sequence is kept in the plasticome only where there is no accession
-        to retrieve one from; elsewhere the retrieved sequence wins (see Sequences, below).
+        to retrieve one from; elsewhere, the retrieved sequence wins (see Sequences, below).
       </Sub>
     </Box>
   )

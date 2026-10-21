@@ -4,9 +4,9 @@ section: "Dry Lab"
 path: "/dry-lab/model/plasticome/"
 navTitle: "Plasticome curation methods"
 order: 23
-description: "How two snapshots of the PAZy database were curated against their papers and merged into the plasticome, the 609 experimentally validated plastic-degrading enzymes every PETadex search starts from."
+description: "How two snapshots of the PAZy database were curated against their papers, and merged into the plasticome: the 609 experimentally validated plastic-degrading enzymes that serve as the start of every PETadex search."
 owners: ["Dry Lab"]
-updated: "2026-10-20"
+updated: "2026-10-21"
 status: "draft"
 ---
 
@@ -54,12 +54,12 @@ status: "draft"
 */}
 
 <Callout title="Methods for the plasticome">
-This page is the full write-up behind the [Plasticome Reference Curation](/dry-lab/model/#plasticome-reference-curation) subsection of the Model page.
+This page is the full write-up behind the [Plasticome Reference Curation](/dry-lab/model/#plasticome-reference-curation) subsection of the Model page. The code and data are on GitHub at [Pixeldom4/plasticome](https://github.com/Pixeldom4/plasticome).
 </Callout>
 
-## Why curate
+## Why curate?
 
-Existing databases of PDEs are limited in scope and diversity. The plastics-active enzymes database (PAZy) contains 495 functionally verified plastic-active enzymes, most of them homologs of leaf-branch compost cutinase (LCC) or IsPETase. Following established workflows for the homology-based retrieval and expansion of a given set of enzymes of interest, we built a workflow for the retrieval of PDEs from NCBI-nr and the SRA, using the Logan assembly.
+The breadth and diversity of existing plastic-degrading enzyme databases is very constrained. The plastics-active enzymes database (PAZy) contains 495 experimentally verified plastic-active enzymes, most of them being homologs of leaf-branch compost cutinase (LCC) or IsPETase. Using established homology-based retrieval and expansion pipelines, we built a workflow for the retrieval of plastic-degrading enzymes from the SRA as well as the NCBI-nr by leveraging the Logan assembly.
 
 <Placeholder>
 
@@ -71,7 +71,7 @@ Because every downstream search starts from these sequences, an enzyme wrongly i
 
 ## Building the plasticome
 
-To generate this updated PETadex-260701 dataset, we created a starting search query from combining two versions of the PAZy database: the first from the original PETadex generation (pazy-240826; *n* = 212; 26 August 2024), and a recently updated version (pazy-260701; *n* = 473; retrieved 30 June 2026). Sourcing 136 enzymes from pazy-240826, 397 enzymes from pazy-260701 and 76 merged between both generates a 609-enzyme union set, the plasticome. The plasticome was then clustered at 90% amino acid identity to 411 cluster centroids.
+To generate this updated PETadex-260701 dataset, a starting search query was created by combining two versions of the PAZy database: the first from the original PETadex generation (pazy-240826; *n* = 212; 26 August 2024), and a recently updated version (pazy-260701; *n* = 473; retrieved 30 June 2026). Sourcing 136 enzymes from pazy-240826, 397 enzymes from pazy-260701, and 76 merged between both generates a 609-enzyme union set: the plasticome. The plasticome was then clustered at 90% amino acid identity to 411 cluster centroids.
 
 <PlasticomeFlow />
 
@@ -89,9 +89,9 @@ To generate this updated PETadex-260701 dataset, we created a starting search qu
 
 <Placeholder>
 
-pazy-260701 was retrieved on 30 June 2026; 260701 is the version label of the dataset, not the retrieval date. The 495 records in the 2026 snapshot were curated manually against their source publications: 26 records without experimentally reported activity were removed and 4 sequences were added (one reported in the literature but absent from PAZy, one replacing an inactive PAZy record, and two that PAZy aggregates under a single identifier), leaving 473 enzymes.
+pazy-260701 was retrieved on 30 June 2026; 260701 is the version label of the dataset, not the retrieval date. The 495 records in the 2026 snapshot were curated manually against their source publications: 26 records without experimentally reported activity were removed, and 4 sequences were added (one reported in the literature but absent from PAZy, one replacing an inactive PAZy record, and two that PAZy aggregates under a single identifier), leaving 473 enzymes.
 
-Of the 495 records, 175 were already in the original PETadex seed set, 287 were new and 33 came with no sequence. The curator checked that the paper reports the enzyme, that the accession points to the protein the paper tested, and whether the paper shows activity on a plastic directly or only indirectly. Each decision is recorded in sheet `pazy-260701_manual-curation` by cell colour.
+Of the 495 records, 175 were already in the original PETadex seed set, 287 were new, and 33 came with no associated sequence. The curator checked that the paper reports the enzyme, that the accession points to the protein the paper tested, and whether the paper shows any direct activity on plastic rather than only indirect. Each decision is recorded in sheet `pazy-260701_manual-curation` by cell colour.
 
 </Placeholder>
 
@@ -124,7 +124,7 @@ Curators left free-text notes on 53 records explaining a change, and on 21 expla
 
 <Placeholder>
 
-The first snapshot, pazy-240826 (26 August 2024; *n* = 212), is the seed set of the original PETadex build. In the workbook it appears as plasticome v1 (213 records) and, after cleaning, plasticome v1.1 (212 records), the version merged here. Cleaning involved four changes.
+The first snapshot, pazy-240826 (26 August 2024; *n* = 212), is the seed set of the original PETadex build. It appears as plasticome v1 (213 records) in the workbook, and, after cleaning, plasticome v1.1 (212 records), the version merged here. Cleaning involved four changes:
 
 1. **Accessions.** 13 records had their accession corrected to the one that matches the reported protein.
 2. **Erickson sequences.** The 21 metagenomic enzymes from Erickson et al. (2022) were reset to the sequences in the paper's supplementary table D1 (below).
@@ -152,7 +152,7 @@ The two snapshots were joined on accession, ignoring accession version, giving a
 
 <Placeholder>
 
-**Duplicates are kept on purpose.** When the two snapshots cite the same enzyme under different accessions, nothing joins them and the enzyme appears twice. Cut190, for example, is in pazy-240826 as `BAO42836.1` and in pazy-260701 as `WP_015787089.1`. These are not resolved by hand: identical and near-identical sequences are collapsed by clustering (see [Outputs](#outputs)), which is a rule rather than a judgement call.
+**Duplicates are kept on purpose.** When the two snapshots cite the same enzyme under different accessions, nothing joins them and the enzyme is documented twice. Cut190, for example, is in pazy-240826 as `BAO42836.1` and in pazy-260701 as `WP_015787089.1`. These are not resolved by hand: identical and near-identical sequences are collapsed by clustering (see [Outputs](#outputs)).
 
 </Placeholder>
 
@@ -198,7 +198,7 @@ Structures were predicted with ESMFold2. For the 609 plasticome enzymes the mean
 
 <Placeholder>
 
-The 609 sequences were clustered at 90% amino acid identity with USEARCH v11.0.667 in a reference-seeded scheme. Thirteen well-characterized enzymes were fixed as cluster centroids, the remaining sequences were first recruited to these centroids, and those left unassigned were clustered *de novo* with centroids chosen by decreasing length. This produced 411 clusters (13 reference-seeded and 398 *de novo*). The 411 centroids are the query set for the NCBI-nr search. Separately, collapsing the plasticome at 100% identity gives 493 non-redundant proteins, which were used to seed the profile HMMs.
+The 609 sequences were clustered at 90% amino acid identity with USEARCH v11.0.667 in a reference-seeded scheme. Thirteen well-characterized enzymes were fixed as cluster centroids, and the remaining sequences were first recruited to these centroids. Those left unassigned were clustered *de novo* with centroids chosen by decreasing length. This produced 411 clusters (13 reference-seeded, and 398 *de novo*). The 411 centroids are the query set for the NCBI-nr search. Separately, collapsing the plasticome at 100% identity gives 493 non-redundant proteins, which were used to seed the profile HMMs.
 
 </Placeholder>
 
