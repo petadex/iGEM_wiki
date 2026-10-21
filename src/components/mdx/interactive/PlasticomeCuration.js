@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import DATA from "../../../data/plasticomeCuration.json"
 import PETADEX_PAGES from "../../../data/petadexPages.json"
-import { COMPONENTS, FOLD_GROUPS, cathOf, groupOf } from "./plasticomeCath.js"
+import { CATH_STRUCTURES } from "../../../data/cathStructures.js"
+import { COMPONENTS, FOLD_GROUPS, blank, cathOf, groupOf, nameOf } from "./plasticomeCath.js"
 import {
   Arrow,
   Box,
@@ -643,7 +644,41 @@ export const PlasticomeExplorer = () => {
   )
 }
 
+/** Fold groups the structure viewer has a structure for (its #structure=g00 links). */
+const VIEWABLE_FOLDS = new Set(
+  CATH_STRUCTURES.map((st) => FOLD_GROUPS.find((g) => g.cath === (st.cath ?? "none"))?.g)
+)
+const COMPONENT_DOMAIN = Object.fromEntries(COMPONENTS.map((c) => [c.key, c.dom]))
+
+/** A link to a figure on this page, followed even when the address already ends in it. */
+const figureLink = (href, text) => (
+  <a
+    href={href}
+    onClick={() => {
+      if (window.location.hash === href) window.dispatchEvent(new HashChangeEvent("hashchange"))
+    }}
+  >
+    {text}
+  </a>
+)
+
+/** "3.40.50.1820;2.60.40.10" -> each code with its CATH name. */
+const cathList = (codes) =>
+  String(codes)
+    .split(";")
+    .map((c) => c.trim())
+    .filter((c) => !blank(c))
+    .map((c, i) => (
+      <React.Fragment key={c}>
+        {i > 0 && ", "}
+        <Mono>{c}</Mono>
+        {nameOf(c) && ` ${nameOf(c)}`}
+      </React.Fragment>
+    ))
+
 const RecordCard = ({ record: r }) => {
+  const c = cathOf(r)
+  const fold = groupOf(r)
   const dois = has(r.doi)
     ? r.doi
         .split(";")
@@ -679,6 +714,34 @@ const RecordCard = ({ record: r }) => {
           {plasticsOf(r)
             .map((s) => PLASTIC_NAME[s] || s)
             .join(", ") || "Not recorded"}
+        </dd>
+        <dt>CATH domain</dt>
+        <dd>
+          {blank(c.cat) ? "Not classified in CATH" : cathList(c.cat)}
+          {!blank(c.acc_cath) && (
+            <>
+              <br />
+              <small>Accessory: {cathList(c.acc_cath)}</small>
+            </>
+          )}
+        </dd>
+        <dt>Fold group</dt>
+        <dd>
+          {fold ? fold.fold : "None"}
+          {fold && VIEWABLE_FOLDS.has(fold.g) && (
+            <> · {figureLink(`#structure=${fold.g}`, "view its structure")}</>
+          )}
+        </dd>
+        <dt>Component</dt>
+        <dd>
+          {c.comp ? (
+            <>
+              <Mono>{c.comp}</Mono> {COMPONENT_DOMAIN[c.comp]} ·{" "}
+              {figureLink(`#map=PL${r.id}`, "show it on the map")}
+            </>
+          ) : (
+            "None"
+          )}
         </dd>
         <dt>Structure</dt>
         <dd>
