@@ -22,6 +22,8 @@ const SPEED_VH_PER_S = 0.19
 const TERM_HOLD_MS = 4500
 /** How long each petamon's description stays open at the ending. */
 const PETAMON_HOLD_MS = 2600
+/** Longest it waits at the bottom for a stop on screen to get ready. */
+const END_WAIT_MS = 6000
 /** A popup opens once its middle reaches this far down the screen. */
 const STOP_AT_VIEW_Y = 0.55
 /** Faster while the forest walk holds the page (it's long to sit through). */
@@ -285,6 +287,7 @@ export function HomeAutoplay() {
 
     let pos = window.scrollY
     let last = performance.now()
+    let endWaitFrom = null
     const tick = now => {
       if (cancelled) return
       const stop = stops.find(s => !s.done && due(s))
@@ -300,8 +303,8 @@ export function HomeAutoplay() {
         })
         return
       }
-      // The page can move the scroll itself (the forest walk and the ending
-      // give back their scroll length once played): carry on from there.
+      // The page can move the scroll itself (the forest walk gives back its
+      // scroll length once played): carry on from there.
       if (Math.abs(window.scrollY - pos) > 2) pos = window.scrollY
       const dt = Math.min(64, now - last)
       last = now
@@ -318,8 +321,14 @@ export function HomeAutoplay() {
       )
       window.scrollTo({ top: pos, left: 0, behavior: "instant" })
       if (pos >= maxScroll() - 1) {
-        setPlaying(false)
-        return
+        // A stop on screen that isn't ready yet (the ending's petamons still
+        // bursting out) gets a moment before the tour ends.
+        endWaitFrom ??= now
+        const pending = stops.some(s => !s.done && inView(s.el))
+        if (!pending || now - endWaitFrom > END_WAIT_MS) {
+          setPlaying(false)
+          return
+        }
       }
       raf = requestAnimationFrame(tick)
     }
