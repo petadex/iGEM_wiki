@@ -78,7 +78,7 @@ The model learns from two datasets that we publish separately and join on sequen
 
 The corpus is the output of [Dataset Generation](/dry-lab/model/#dataset-generation) on the Model page, which gives the methods for each step. In outline:
 
-1. **Known enzymes.** We gathered the plastic-degrading enzymes already reported in PAZy and the literature into a curated reference set, the [plasticome](/dry-lab/model/#plasticome-reference-curation), and grouped them by [fold](/dry-lab/model/#cath-assignment) and by [homology component](/dry-lab/model/#component-assignment).
+1. **Known enzymes.** We gathered the plastic-degrading enzymes already reported in PAZy and the literature into a curated reference set, [PETadex-PAZy](/dry-lab/model/#petadex-pazy-reference-curation), and grouped them by [fold](/dry-lab/model/#cath-assignment) and by [homology component](/dry-lab/model/#component-assignment).
 2. **Catalytic profiles.** For each component we built a [seed alignment and a profile HMM](/dry-lab/model/#seed-msas-and-catalytic-hmms) of its catalytic domain, with the positions of its catalytic residues.
 3. **NCBI nr.** We searched NCBI's non-redundant protein database for [homologs of the references](/dry-lab/model/#ncbi-nr-homology-expansion) and kept a hit only if a profile HMM found its catalytic domain.
 4. **Logan.** We clustered those proteins and used them as queries against [Logan](/dry-lab/model/#logan-query-extraction), which assembles the public sequencing runs in the Sequence Read Archive, with the same HMM filter.
@@ -101,7 +101,7 @@ Every ORF comes with each annotation we could key to it. The [Sequence Annotatio
 | [Sample metadata](/dry-lab/model/#biosample-metadata-annotations) | The sequencing run and BioSample a Logan ORF was assembled from: environment, [metadata profile](/dry-lab/model/#biosample-metadata-profiles), location, and temperature and pH where recorded | Logan ORFs, through 6.2 million runs and 6.8 million BioSamples |
 | Taxonomy | Organism and lineage | NCBI nr ORFs (0.9% of the corpus) |
 | [Structures](/dry-lab/model/#predicted-structures) | Links to AlphaFold DB models | ORFs whose nr accession matches an AlphaFold entry (0.1%) |
-| [Reference membership](/dry-lab/model/#plasticome-reference-curation) | Whether the ORF is a plasticome enzyme, and the fold of each homology component | 522 ORFs |
+| [Reference membership](/dry-lab/model/#petadex-pazy-reference-curation) | Whether the ORF is a PETadex-PAZy enzyme, and the fold of each homology component | 522 ORFs |
 | [Families](/dry-lab/software/#esm-atlas) | Membership in the 64,730 enzyme families of the atlas, with InterProScan domains for each family representative | Family representatives |
 
 Two layers need care. Logan ORFs are read from one stop codon to the next, so only about 3% begin with a methionine, and annotations that depend on the protein's start (signal peptides and mature-protein properties) are unreliable for them. And few BioSamples record a temperature (0.7%) or a pH (0.15%), so environmental values exist for only part of the corpus; [Closing the loop](#closing-the-loop) describes how we use them.

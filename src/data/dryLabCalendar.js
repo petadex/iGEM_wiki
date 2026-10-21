@@ -28,7 +28,7 @@ const SW = "/dry-lab/software/"
 /** Wiki sections the calendar links to, as [label, href]. */
 export const S = {
   whatModel: ["What our model does", `${MODEL}#what-our-model-does`],
-  plasticome: ["Plasticome curation", `${MODEL}#plasticome-reference-curation`],
+  plasticome: ["PETadex-PAZy curation", `${MODEL}#petadex-pazy-reference-curation`],
   cath: ["CATH assignment", `${MODEL}#cath-assignment`],
   components: ["Component assignment", `${MODEL}#component-assignment`],
   nr: ["NCBI-nr expansion", `${MODEL}#ncbi-nr-homology-expansion`],
@@ -595,10 +595,10 @@ const WEEKS = {
     milestones: [{ date: "2026-07-21", label: "Plasticome re-curated (~470)", subteamId: "dataset", see: S.plasticome }],
     tracks: {
       dataset: {
-        summary: "Plasticome re-curated; Logan set QC'd.",
+        summary: "PETadex-PAZy re-curated; Logan set QC'd.",
         see: [S.plasticome, S.logan],
         detail:
-          "The Plasticome, the hand-curated ground truth, is now ~470 validated enzymes; about 40 sequences changed, which would have skewed much of the database. Pipeline: Plasticome → NCBI-nr → catalytic check with the PETadex HMMs → Logan (~10B sequences) → QC with the same HMMs.",
+          "PETadex-PAZy, the hand-curated ground truth, is now ~470 validated enzymes; about 40 sequences changed, which would have skewed much of the database. Pipeline: Plasticome → NCBI-nr → catalytic check with the PETadex HMMs → Logan (~10B sequences) → QC with the same HMMs.",
       },
       annotation: {
         summary: "Folding benchmark and the strand bottleneck.",
@@ -674,7 +674,7 @@ const WEEKS = {
   "week-2026-08-09": {
     see: [S.plasticome, S.hmms, S.logan],
     overview:
-      "The Plasticome was finalized and HMM curation added 8 million sequences and new domains before the full Logan DIAMOND search ran. The database was held back until it was QC'd, so a search that size wasn't spent on an unfinished corpus.",
+      "PETadex-PAZy was finalized and HMM curation added 8 million sequences and new domains before the full Logan DIAMOND search ran. The database was held back until it was QC'd, so a search that size wasn't spent on an unfinished corpus.",
     source: RECONSTRUCTED,
   },
   "week-2026-08-16": {

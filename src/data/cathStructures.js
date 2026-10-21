@@ -1031,9 +1031,9 @@ export const CATH_STRUCTURES = [
       },
     ],
     summary:
-      "The T2/T3 copper cluster oxidises the substrate, sometimes passing electrons through the T1 copper. Only the N-terminal copper sites are shared by both plasticome enzymes.",
+      "The T2/T3 copper cluster oxidises the substrate, sometimes passing electrons through the T1 copper. Only the N-terminal copper sites are shared by both PETadex-PAZy enzymes.",
     mechanism:
-      "The catalysis site of these proteins is in the copper cluster of the T2/T3 copper binding sites. The copper cluster oxidizes and in some cases will transfer electrons to the T1 copper, which shuttles the electrons to the substrate. With the two proteins in Plasticome, only the 4 N-terminal copper binding sites are present in both, with one protein missing half of T2/T3 and all of T1. Therefore the conserved residues are the N-terminal T2/T3 cluster histidines.",
+      "The catalysis site of these proteins is in the copper cluster of the T2/T3 copper binding sites. The copper cluster oxidizes and in some cases will transfer electrons to the T1 copper, which shuttles the electrons to the substrate. With the two proteins in PETadex-PAZy, only the 4 N-terminal copper binding sites are present in both, with one protein missing half of T2/T3 and all of T1. Therefore the conserved residues are the N-terminal T2/T3 cluster histidines.",
     features: "Monomer; 4 x Cu (CCD CU; chains B, C, D, E)",
     processing:
       "N-terminal Tat/lipoprotein signal + disordered linker (UniProt res 1-41) removed - zero contacts, pLDDT 24-53 rising to >92 at res 43; 475 of 516 aa folded. Also removes free lipobox Cys32",

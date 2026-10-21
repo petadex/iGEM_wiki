@@ -11,15 +11,15 @@ export const FLOWCHART_SVG = `
   </marker>
 </defs>
 <g class="fc-row-labels">
-  <text x="0.00" y="4.90" font-size="3.1" font-weight="bold" fill="#5f3928" text-anchor="start">Plasticome</text>
+  <text x="0.00" y="4.90" font-size="3.1" font-weight="bold" fill="#5f3928" text-anchor="start">PETadex-PAZy</text>
   <text x="0.00" y="8.60" font-size="2.6" font-weight="normal" fill="#805340" text-anchor="start" font-style="italic">existing data</text>
   <text x="0.00" y="24.90" font-size="3.1" font-weight="bold" fill="#5f3928" text-anchor="start">Expansion</text>
   <text x="0.00" y="28.60" font-size="2.6" font-weight="normal" fill="#805340" text-anchor="start" font-style="italic">nr + Logan</text>
 </g>
-<a class="fc-stage" data-stage="plasticome-reference-curation" href="#plasticome-reference-curation" aria-label="Plasticome Reference Curation">
+<a class="fc-stage" data-stage="petadex-pazy-reference-curation" href="#petadex-pazy-reference-curation" aria-label="PETadex-PAZy Reference Curation">
   <g class="fc-node"><rect x="24.00" y="0.00" width="40.0" height="11.0" rx="2.2" fill="#d2cdd5" stroke="#5e689e" stroke-width="0.8"/>
-  <text x="44.00" y="5.10" font-size="3.1" font-weight="bold" fill="#5f3928">Plasticome Reference</text>
-  <text x="44.00" y="8.80" font-size="3.1" font-weight="bold" fill="#5f3928">Curation</text>
+  <text x="44.00" y="5.10" font-size="3.1" font-weight="bold" fill="#5f3928">PETadex-PAZy</text>
+  <text x="44.00" y="8.80" font-size="3.1" font-weight="bold" fill="#5f3928">Reference Curation</text>
   </g>
 </a>
 <a class="fc-stage" data-stage="cath-assignment" href="#cath-assignment" aria-label="CATH Assignment">
