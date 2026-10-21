@@ -76,6 +76,10 @@ const PAPER = 0xf3e9e5
 /** A Mol* colour as CSS, so a legend can be drawn from the same numbers. */
 export const cssColor = (value) => `#${value.toString(16).padStart(6, "0")}`
 
+/** "#rrggbb" (or a number) to the integer Mol* wants. */
+const hexValue = (value) =>
+  typeof value === "string" ? parseInt(value.replace("#", ""), 16) : value
+
 /**
  * AlphaFold's confidence bands. The uncertainty theme reads the B-factor
  * column, which is where ColabFold writes pLDDT, and it reverses its scale,
@@ -144,6 +148,19 @@ const waitForBox = (el, timeoutMs = 8000) =>
  * `secondary` the residues that support them, in their own colour. A file's
  * HETATM-only chains are drawn too: chain L as the docked substrate, any
  * other as a cofactor.
+ *
+ * The rest are opt-in and default to the behaviour above, so a caller that
+ * does not ask for them renders exactly as before. `surface` swaps the
+ * cartoon for a molecular surface, so the pocket a substrate sits in reads
+ * as a shape; `opacity` below 1 lets that substrate show through it.
+ * `color` paints the chain one colour in place of the `mode` ramps and
+ * `substrateColor` recolours chain L; both take "#rrggbb", as does
+ * `background`, which paints the box and the canvas so a page can sit the
+ * viewer on the same surface as its other figures. `face` is a direction in
+ * the model's own coordinates, [x, y, z]: the camera moves onto that axis,
+ * so whatever lies that way from the centre ends up facing the reader, and
+ * `zoom` tightens Mol*'s framing, which leaves a wide margin around a
+ * compact fold.
  */
 export const StructureViewer = ({
   src,
@@ -152,6 +169,13 @@ export const StructureViewer = ({
   secondary,
   mode = "chain",
   spin = false,
+  surface = false,
+  opacity = 1,
+  zoom = 1,
+  color,
+  substrateColor,
+  background = cssColor(PAPER),
+  face,
   label,
   onState,
 }) => {
@@ -224,10 +248,14 @@ export const StructureViewer = ({
           polymerRef.current = await plugin.builders.structure.representation.addRepresentation(
             polymer,
             {
-              type: "cartoon",
-              typeParams: {},
-              color: (THEME[mode] ?? THEME.chain).name,
-              colorParams: (THEME[mode] ?? THEME.chain).params,
+              type: surface ? "molecular-surface" : "cartoon",
+              typeParams: surface
+                ? { quality: "auto", alpha: opacity }
+                : { alpha: opacity },
+              color: color ? "uniform" : (THEME[mode] ?? THEME.chain).name,
+              colorParams: color
+                ? { value: hexValue(color) }
+                : (THEME[mode] ?? THEME.chain).params,
             }
           )
         }
@@ -235,12 +263,67 @@ export const StructureViewer = ({
         await addTriad(plugin, structure, triad, molstar.lib)
         await addSites(plugin, structure, secondary, molstar.lib, "secondary", SECONDARY_COLOR)
         await addSites(plugin, structure, sites, molstar.lib, "catalytic", TRIAD_COLOR)
-        await addHetChains(plugin, structure, text, molstar.lib)
+        await addHetChains(plugin, structure, text, molstar.lib, substrateColor)
 
         const { Structure } = molstar.lib.structure
         await plugin.managers.camera.focusLoci(
           Structure.toStructureElementLoci(structure.cell.obj.data)
         )
+
+        // focusLoci settles the camera a frame after it resolves, so anything
+        // set now is overwritten. Wait for it to land before aiming. Both of
+        // these are cosmetic, so a Mol* that does not expose the camera this
+        // way must not take the figure down with it.
+        if (face || zoom !== 1) {
+          await new Promise(resolve => setTimeout(resolve, 80))
+          if (!live) return
+        }
+
+        if (face) {
+          try {
+            const camera = plugin.canvas3d?.camera
+            const snapshot = camera?.getSnapshot()
+            if (snapshot) {
+              // Mol*'s Vec3 is a typed array, not {x, y, z}.
+              const at = (v, i) =>
+                Array.isArray(v) || ArrayBuffer.isView(v) ? v[i] : [v.x, v.y, v.z][i]
+              const target = [0, 1, 2].map(i => at(snapshot.target, i))
+              const position = [0, 1, 2].map(i => at(snapshot.position, i))
+              const span = Math.hypot(...position.map((v, i) => v - target[i]))
+              const length = Math.hypot(...face) || 1
+              const u = face.map(v => v / length)
+              // World up with its component along the view axis removed, so
+              // the structure sits upright rather than rolled.
+              const dot = u[1]
+              let up = [-dot * u[0], 1 - dot * u[1], -dot * u[2]]
+              const upLength = Math.hypot(...up)
+              up = upLength < 1e-3 ? [0, 0, 1] : up.map(v => v / upLength)
+              if (Number.isFinite(span) && span > 0) {
+                camera.setState({
+                  ...snapshot,
+                  position: target.map((t, i) => t + u[i] * span),
+                  up,
+                })
+                plugin.canvas3d?.requestDraw?.()
+              }
+            }
+          } catch (err) {
+            console.warn("Mol* structure viewer: could not aim the camera", err)
+          }
+        }
+
+        if (zoom !== 1) {
+          try {
+            const camera = plugin.canvas3d?.camera
+            const snapshot = camera?.getSnapshot()
+            if (snapshot?.radius) {
+              camera.setState({ radius: snapshot.radius / zoom })
+              plugin.canvas3d?.requestDraw?.()
+            }
+          } catch (err) {
+            console.warn("Mol* structure viewer: could not tighten the camera", err)
+          }
+        }
 
         if (!live) return
         setState("ready")
@@ -263,7 +346,7 @@ export const StructureViewer = ({
     // The structure is rebuilt only when the record changes; mode and spin
     // are handled below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, triad, sites, secondary, label])
+  }, [src, triad, sites, secondary, label, surface, opacity, zoom, color, substrateColor, background, face])
 
   useEffect(() => {
     onState?.(state)
@@ -274,6 +357,7 @@ export const StructureViewer = ({
   useEffect(() => {
     const plugin = pluginRef.current
     const polymer = polymerRef.current
+    if (color) return
     if (!plugin || !polymer || state !== "ready") return
     let cancelled = false
     const recolour = async () => {
@@ -304,10 +388,10 @@ export const StructureViewer = ({
   }, [spin, state])
 
   return (
-    <Host>
+    <Host $bg={background}>
       <Target ref={hostRef} />
       {state !== "ready" && (
-        <Notice role="status">
+        <Notice role="status" $bg={background}>
           {state === "loading" ? (
             "Loading the structure…"
           ) : (
@@ -344,7 +428,7 @@ const addSites = async (plugin, structure, sites, lib, key, color) => {
  * any cofactors. Read from the file itself, since the models name every
  * hetero group LIG and only the chain tells a substrate from a heme.
  */
-const addHetChains = async (plugin, structure, text, lib) => {
+const addHetChains = async (plugin, structure, text, lib, substrateColor) => {
   const atom = new Set()
   const het = new Set()
   for (const line of text.split("\n")) {
@@ -374,7 +458,7 @@ const addHetChains = async (plugin, structure, text, lib) => {
       group(["L"]),
       "substrate",
       "Substrate",
-      SUBSTRATE_COLOR,
+      hexValue(substrateColor) ?? SUBSTRATE_COLOR,
       0.4
     )
   }
@@ -434,7 +518,7 @@ const Host = styled.div`
   max-height: 26rem;
   overflow: hidden;
   border-radius: 10px;
-  background: #f3e9e5;
+  background: ${({ $bg }) => $bg};
 
   /* The plugin paints into a canvas that fills the box; its own chrome is
      switched off in the spec above, and this covers anything it still lays
@@ -467,7 +551,7 @@ const Notice = styled.div`
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: #f3e9e5;
+  background: ${({ $bg }) => $bg};
   color: #805340;
   font-size: 0.82rem;
   text-align: center;
