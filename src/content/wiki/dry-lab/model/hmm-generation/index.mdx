@@ -1,0 +1,400 @@
+---
+title: "Catalytic HMM Generation: Methods"
+section: "Dry Lab"
+path: "/dry-lab/model/hmm-generation/"
+navTitle: "HMM generation methods"
+order: 27
+description: "How the seed alignments were built and cleaned, how the 53 catalytic HMMs were built iteratively under a canonical-residue constraint, and the sweep over symfrac, E-value and iteration count that settled their parameters."
+owners: ["Dry Lab"]
+updated: "2026-10-21"
+status: "draft"
+---
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Methods tier for the Seed MSAs and Catalytic HMMs subsection of the Model
+  page. This page is reached only from the Methods link there; it is not in
+  any menu.
+
+  Ported from 3_msa_cleaning.mdx (Thomas, 21 Jul – 30 Aug 2026) and
+  4_hmm_creation.mdx (22 Jul – 13 Sep 2026), both progress: Completed.
+  Prose is kept in the notebook's first person.
+
+  SOURCES FOR EVERY NUMBER (3: = 3_msa_cleaning, 4: = 4_hmm_creation):
+    - tools: 3:44-45, 4:49-54
+    - close homologs at DIAMOND E < 1e-50: 3:61, 3:1043
+    - clustering gradient 50k/10k/100/1 -> 30/50/70/90 pid, target
+      100-1,000 sequences per alignment: 3:62-67
+    - 11 sub-component splits: 3:331-341; four dropped: 3:1045-1053
+    - accessory-domain trimming rule (>50% conservation, >50% max quality),
+      50,000-column alignments, overnight runs: 3:863-865
+    - PPP re-alignment, C016 stayed on Super5: 3:873, 3:1039
+    - the six-step iterative loop: 4:682-687
+    - training 5,997,120 / validation 1,828,480: 4:676
+    - structure map 575,770 rows, 126 skipped: 4:186
+    - 36,322 sampled, 36,321 cut, 1 failed (an AFDB 404): 4:308-311
+    - sweep grid and iteration names: 4:714-728
+    - --total-search-size 1101054423: 4:714
+    - final parameters and the file-name record: 4:1934-1939, 4:1967-1977
+    - per-component coverage spread: 4:1915-1927
+    - quality table: 4:1941-1957
+    - structure annotation style: 4:1986-1990
+    - MST over the HMMs: 4:2517
+
+  CONSISTENCY CHECK WORTH KEEPING: 5,997,120 + 1,828,480 = 7,825,600,
+  which is the 7,825,107 nr hits plus the 493 PETadex-PAZy proteins added
+  to the training set only (4:466).
+
+  OPEN CHECKS:
+    - BLOCKING: were the MSAs refixed? 4:2504-2508 commits to removing the
+      non-hydrolase (likely TM) regions of C010, C017, C019 and C030 from
+      the input MSAs and repeating notebooks 3 and 4. Notebook 4 closed
+      13 Sep; the Logan query search ran 14 Sep. The shipped 53
+      petadex.v260701-*.hmm files are therefore probably the un-fixed ones.
+      Confirm with Thomas, and if they predate the fix, say so on the page.
+      This affects every count on this page and on the Logan query page.
+    - Match-state occupancy: 4:686 says columns above 0.5 coverage become
+      match states; 4:2924 says below 0.7 becomes an insert; the final build
+      used --symfrac 0.7. 0.5 is probably the pre-sweep default. Settle it
+      and state one number.
+    - Structures per component: 4:34 promises max 10k; the sampler uses
+      1,000 (4:124). 1,000 is what ran.
+    - The two CATH annotation links (3:51, 3:645) are live team Google
+      Sheets. Publish the annotations as a table or link a read-only copy
+      before this page leaves draft; they are deliberately not linked here.
+    - 4:2510-2513 ("Examples for figures: C2 has great complete...") is a
+      note to self and is not carried over.
+    - Figure 1's source screenshot has a local file path in its title bar.
+      Crop and re-upload; until then the figure is still legible but shows
+      the path.
+    - Input and output S3 URIs from the notebook headers are deliberately
+      not published.
+*/}
+
+<Callout title="Methods for the PETadex HMMs">
+This page is the full write-up behind the [Seed MSAs and Catalytic HMMs](/dry-lab/model/#seed-msas-and-catalytic-hmms) subsection of the Model page. It picks up where the [NCBI-nr homology search](/dry-lab/model/nr-search/) ends, and what it produces is what the [Logan query](/dry-lab/model/logan-query/) is built from. The notebooks behind it are [3_msa_cleaning.ipynb](https://github.com/QuigDevs/igem-toronto_wiki-freeze/blob/main/notebooks/260721_issue118_3_msa_cleaning.ipynb) and [4_hmm_creation.ipynb](https://github.com/QuigDevs/igem-toronto_wiki-freeze/blob/main/notebooks/260722_issue119_4_hmm_creation.ipynb).
+
+Claude Opus 5 was used to port the notebooks into this Methods page. The prose is largely as written in the notebooks, but the headings were restructured and most of the code was left behind rather than carried over. For the unedited record, read them directly.
+</Callout>
+
+## Why build our own HMMs?
+
+The nr search returns sequences that are predicted to be homologous to plastic-degrading enzymes,
+but we cannot confidently say they contain the domains needed to catalyse the degradation of plastic
+polymers. To make that claim we need HMMs seeded from the catalytic domains of the verified enzymes
+themselves.
+
+I realised that last time I made these HMMs, I had no way of figuring out whether they were
+overfitting. So this time the HMMs are built on hits below E-10 and judged on the hold-out band
+between E-10 and E-5. Restricting what can enter an HMM to the stronger hits forces it to represent
+the query sequences rather than the whole database.
+
+The HMMs get used six ways:
+
+1. Extracting only the catalytic domain for the Logan search, so we do not pay to search accessory
+   domains.
+2. Annotating catalytic domains for each sequence on the website.
+3. Annotating catalytic residues.
+4. Annotating secondary residues — important but non-catalytic.
+5. Telling us which Logan sequences are non-fragmented, since an assembly is inherently fragmented
+   and a full HMM hit is the evidence of completeness.
+6. Finding motifs in the HMM logos, which may inform mechanistic analysis.
+
+That fifth use needs care, because a half-covered catalytic domain has three very different causes:
+
+- **A.** Only half the domain is homologous enough to hit the HMM — a lower-quality homolog.
+- **B.** There is a large insertion between the two halves, so only half is hit — a higher-quality
+  homolog with a solvable problem.
+- **C.** The edge of the hit is the true edge of the domain — the domain really is fragmented.
+
+Telling A, B and C apart requires confidence that the HMMs themselves are good, which means the seed
+alignments have to be good. That is what this page is about.
+
+## Inputs
+
+| Component | Version used | Notes |
+|---|---|---|
+| MUSCLE | 5.3 | Super5 for the first pass, PPP for the final alignments |
+| DIAMOND | 2.2.4.184 | `linclust` for clustering close homologs |
+| HMMER | 3.4 (Aug 2023) | `hmmbuild`, `hmmalign`, `hmmsearch` |
+| AFRAGMENTER | 0.0.6 | Cuts structures into domains for envelope validation |
+| HHalign / HHmake | 3.3.0 | Probability of homology between finished HMMs |
+| Easel | 0.49 | `esl-reformat` |
+| networkx | 3.6.1 | Minimum spanning tree over the HMMs |
+
+Inputs are the PETadex-PAZy proteins, their structures, and the significant nr hits from the
+[previous step](/dry-lab/model/nr-search/).
+
+## Annotating the catalytic residues
+
+To decide what a good alignment even looks like, I went through each CATH domain and learned as much
+about it as I could: the mechanism, and which residues matter. Those annotations are what let me
+infer the catalytic mechanism of each component and build a reference sequence for each one. The
+annotations were made on a representative per CATH domain and then propagated to a representative
+for each sub-component.
+
+## Seeding the alignments with close homologs
+
+A problem I keep hitting is that HMMs built from very few sequences — under ten — have terrible seed
+alignments. With that few sequences there is no way to tell a conserved column from an accident.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/3-msa-cleaning-bad-alignment.avif"
+  alt="Alignment viewer showing the C034 alignment built from fewer than ten PETadex-PAZy sequences, with no clearly conserved columns and large gapped regions."
+  caption={<><strong>Figure 1.</strong> The C034 alignment built from PETadex-PAZy sequences alone. With this few sequences there is nothing to distinguish a conserved column from an accident, which is why the seed alignments were padded with close homologs first.</>}
+  width="100%"
+/>
+
+So the seeds are padded with close nr homologs, taken at **DIAMOND E < 1.0 × 10⁻⁵⁰** to keep them
+very homologous to PETadex-PAZy. That still produces thousands of highly redundant sequences per
+component, so they are clustered at an identity chosen from the component's size:
+
+| Sequences in component | Clustered at |
+|---|---|
+| 50,000+ | 30% identity |
+| 10,000+ | 50% identity |
+| 100+ | 70% identity |
+| 1+ | 90% identity |
+
+Tuning the clustering to the sequence count gives a subset small enough to align without becoming
+gappy, but large enough to show which columns are the consensus columns. The target is roughly
+100–1,000 sequences per alignment.
+
+The first alignment pass uses MUSCLE's Super5 algorithm, which trades accuracy for speed. That is
+fine here, because these sequences are going to be cleaned and re-aligned anyway.
+
+### Splitting components into sub-components
+
+Looking at the alignments at the catalytic residue columns, eleven sub-components needed to be split
+out of their parent: five from C001 (PL121, PL69, PL214, PL120, PL119), one from C006 (PL88), one
+from C008 (PL46), and four from C014 (PL453/PL164/PL166/PL187, PL114, PL74, PL115).
+
+### Dropping sequences that miss the catalytic columns
+
+Every sequence entering an alignment has to carry the canonical catalytic residues of its CATH
+domain. This keeps functional diversity inside an HMM from getting too wide, so the seed alignments
+hold only sequences that align properly and have the right residues.
+
+### Trimming the accessory domains by hand
+
+With smallish alignments per component, I could go through them and clean them up. The main thing I
+removed was accessory domains. These are why each alignment took so long to run — overnight — since
+they forced alignments upwards of **50,000 columns** long to accommodate unalignable accessory
+regions.
+
+The rule I used: find the first column that is highly conserved for a residue — no hard cutoff, but
+generally above 50% conservation and above 50% of maximum quality — and remove everything to its
+left. Then do the same with the last highly conserved column and remove everything to its right.
+Having the first and last column of the alignment be highly conserved is what keeps the HMM on the
+catalytic domain.
+
+### Re-aligning with PPP
+
+With accessory domains gone, the alignments were rebuilt with MUSCLE's PPP algorithm instead of
+Super5, which improves their quality. C016 was taking far too long under PPP, so it stayed on Super5.
+
+### Four sub-components with no HMM
+
+Four sub-components were dropped rather than modelled:
+
+- **C001-5** and **C008-1** have about one nr homolog each, and building an HMM off one sequence is
+  not worthwhile. On investigation, PL119 (the C001-5 representative) is actually a fragment that
+  somehow had activity — my guess is the 6×His tag helped — and for PL46 I have no idea what the
+  mechanism is.
+- **C001-4** and **C014-4** were suspiciously missing catalytic residues. C001-4 turns out to be a
+  fragment, and for C014-4 I cannot work out what the mechanism could be. Without a mechanism there
+  is no way to measure HMM quality, so neither got one.
+
+All four keep their annotations in the reference sheet.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/3-msa-cleaning-c001-4-fragment.avif"
+  alt="Alignment viewer showing the C001-4 representative sequence PL120 ending partway through the catalytic domain while the rest of the component continues."
+  caption={<><strong>Figure 2.</strong> C001-4's representative, PL120, against its component. The sequence stops partway through the catalytic domain — it is a fragment, which is why C001-4 never got an HMM.</>}
+  width="100%"
+/>
+
+## The iterative build
+
+The build pipeline is comparable to JackHMMER, with one addition: a sequence can only enter the next
+iteration if it carries the canonical catalytic residues.
+
+1. `hmmbuild` the HMM from the input MSA.
+2. `hmmalign` the HMM to the reference sequence, to transfer the catalytic site annotations.
+3. `hmmsearch` the HMM against its component's fasta.
+4. Parse the output into an alignment of only those domain hits that contain every catalytic residue
+   — exact matches to the residue identity — and fall below the E-value cutoff. If a sequence has
+   two catalytic domains that both pass, both are added.
+5. Annotate columns above the coverage threshold as match states and the rest as insertions.
+6. Seed the resulting MSA into the next iteration and repeat.
+
+## Training and validation sets
+
+The sets are the significant nr hits plus the PETadex-PAZy proteins, which go into training only:
+
+| Set | Definition | Sequences |
+|---|---|---|
+| Training | nr hits below E-10, plus the PETadex-PAZy proteins | 5,997,120 |
+| Validation | nr hits between E-10 and E-5 | 1,828,480 |
+
+Those sum to 7,825,600, which is the 7,825,107 significant nr sequences plus the 493 PETadex-PAZy
+proteins. Both sets are split per component, which cuts the pipeline's run time substantially.
+
+## Choosing symfrac, E-value and iteration count
+
+I wanted to test different `--symfrac` values, E-value cutoffs and iteration counts, so the sweep ran
+only on components whose `hmmsearch` takes about three seconds — C001, C013, C041 and C045 — rather
+than overnight on everything.
+
+```bash
+COMBOS=("0.5 1e-5" "0.5 1e-10" "0.5 1e-15"
+        "0.7 1e-5" "0.7 1e-10" "0.7 1e-15"
+        "0.9 1e-5" "0.9 1e-10" "0.9 1e-15")
+ITERATIONS="1_plasticome.v2,2_unrefined_petadex,3_refined_petadex,4_overkill,5_overkill_overkill"
+NCBI_SIZE=1101054423   # passed to hmmsearch as --total-search-size
+```
+
+Five iterations because JackHMMER's maximum is five, so that is the number worth testing to.
+
+### Does the HMM stay inside the catalytic domain?
+
+It is hard to tell how good an HMM is without looking at where it hits on a protein. Making that
+automatic meant taking as many structures of the nr hits as possible and finding their domain
+boundaries, then measuring what portion of the catalytic domain the HMM covers. The structure
+mapping holds **575,770 rows** (126 skipped for a malformed component id); up to 1,000 structures per
+component were sampled, giving **36,322 structures**, of which **36,321 were cut** successfully by
+AFRAGMENTER — the one failure was a 404 from AlphaFold DB.
+
+One thing the analysis has to allow for: catalytic domains are often cut at lids or caps, because
+those regions are flexible. A hit spanning a lid has to be compared against the whole catalytic
+domain, not against half of one.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/4-hmm-creation-example-of-lid-cutsite.avif"
+  alt="Cartoon protein structure with the AFRAGMENTER cut site falling at the lid region, shown in green, and the N-terminal extension in red, rather than at a true domain boundary."
+  caption={<><strong>Figure 3.</strong> AFRAGMENTER cutting an α/β hydrolase at its lid and its N-terminal extension rather than at a true domain boundary. This is why hit ranges are scored against the whole catalytic domain.</>}
+  width="100%"
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/4-hmm-creation-cell30-fig1.avif"
+  alt="Violin plots of the share of the AFRAGMENTER-predicted catalytic domain covered by the HMM hit, one violin per build iteration, showing coverage plateauing after the second iteration."
+  caption={<><strong>Figure 4.</strong> Share of the AFRAGMENTER domain covered by the HMM hit, one violin per iteration at symfrac 0.7. Coverage plateaus after iteration 2, while the number of domains with no hit at all creeps up across the five iterations.</>}
+  width="100%"
+/>
+
+Coverage is about 90% of the domain for most components. The exceptions: C001, C012, C026, C028 and
+C039 average about 80%, C014 and C027 about 70%, and C015 about 50%. Out-of-domain coverage averages
+10% or less almost everywhere, with C006 around 25% — bimodal near 0 and 50 — and C008 around 30%.
+There are stragglers that hit far outside the catalytic domain; C014's apparent 1400% is an
+AFRAGMENTER artefact, where a cut site landed about five residues inside the catalytic domain and
+that five-residue insert became the thing being measured against. I could fix that by tuning
+AFRAGMENTER, but I do not think it is worth the time.
+
+### The parameters we settled on
+
+**symfrac.** There is no significant difference between 0.7 and 0.9: both give about the same number
+of catalytically complete hits and total hits, and hit about the same regions. The one real
+difference is that 0.9 fails for C015 while 0.7 works, so **0.7** it is.
+
+**Iterations.** Little separates iterations 3 through 5, but 5 has slightly negative effects —
+reducing hits, and the hit region becoming less accurate — and 3 does not plateau. So **4**, as the
+middle of the two, minimising both problems.
+
+The final HMMs are the symfrac 0.7, E 1e-10, iteration 4 builds, and the file name is the parameter
+record:
+
+```bash
+cp symfrac0.7_evalue1e-10__4_overkill__plasticome.component_${id}.hmm \
+   petadex.v260701-${id}.hmm
+```
+
+Per-component quality, as it stands:
+
+| Component | % outside domain | % inside domain | Fragmentation |
+|---|---|---|---|
+| C001 | | ~80% | under half the hits are fragments (C001-1) or missing fragments (C001-2) |
+| C003 | | | under half the hits are fragments |
+| C006 | ~25% (bimodal, ~0 and ~50) | | missing fragments (C006-1) |
+| C008 | ~30% | | under half the hits are fragments |
+| C009 | | | missing fragments |
+| C010 | | | under half the hits are fragments |
+| C012 | | ~80% | |
+| C014 | | ~70% | missing fragments |
+| C015 | | ~50% | |
+| C018 | | | missing fragments |
+| C023 | | | under half the hits are fragments |
+| C026 | | ~80% | |
+| C027 | | ~70% | missing fragments |
+| C028 | | ~80% | missing fragments |
+| C039 | | ~80% | |
+
+## Looking at the hits on the structures
+
+I also wanted to look at the hit regions on the structures by hand, to see how much of each domain is
+really covered and whether the catalytic residue annotations are right. For each final HMM the script
+samples up to four complete hits, three fragment hits missing a catalytic position, and three
+structures with no hit at all. A structure is only picked for the HMM that gives it its lowest
+E-value within its component.
+
+The annotation style, for reading those images:
+
+- the protein is a white cartoon
+- each HMM domain hit gets its own colour in sequence order
+- catalytic residues are hot pink sticks, labelled with the residue actually found there, with a
+  yellow outline where it is not the expected amino acid
+- residues within 5 Å of a catalytic residue are thin, element-coloured sticks
+
+Three findings from that pass are worth keeping on the record:
+
+- **C010, C017, C019 and C030** have non-hydrolase regions inside the HMM envelope. They are
+  genuinely part of the protein and arguably the same domain, but I believe they have another
+  function — a transmembrane domain — so they should come out of the input MSAs.
+- **C001-2 and C014-2** have no AlphaFold DB structures to look at, so this validation was never run
+  on them. They have very few nr hits, which makes those two HMMs hard to evaluate at all.
+- **C001-1's histidine looks to be in the wrong position.** The actual protein does have a histidine
+  there, but all of its homologs have it somewhere else. This protein is one of the strange Erickson
+  fragments. I am keeping the annotation, in the hope it tells us something about that protein, but
+  otherwise this one should be taken with a grain of salt.
+
+## How the 53 HMMs relate to each other
+
+Finally, I wanted to see how similar the finished HMMs are, so the 53 of them are laid out as a
+minimum spanning tree whose edges are the probability of homology given by HHalign. In theory each
+component should be its own cluster; in practice that is only partly true.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/4-hmm-creation-cell40-fig1.avif"
+  alt="Minimum spanning tree of the 53 final HMMs, nodes coloured by fold family and edges labelled with HHalign probability of homology, with a large alpha-beta hydrolase cluster and several isolated nodes."
+  caption={<><strong>Figure 5.</strong> Minimum spanning tree over the 53 final HMMs, edges labelled with the HHalign probability of homology. The α/β hydrolases dominate and cluster around C001 and C034, while the DD-peptidase and serine protease groups sit apart and a number of HMMs stand alone.</>}
+  width="100%"
+/>
+
+## Limitations
+
+- **Four sub-components have no HMM** (C001-4, C001-5, C008-1, C014-4), so sequences belonging to
+  them are only ever caught by their parent component's model.
+- **C001-2 and C014-2 were never structurally validated**, for want of AlphaFold DB structures.
+- **C015 is the weakest model**, covering about half its catalytic domain on average, and it is also
+  the component that forced symfrac 0.7 over 0.9.
+- **The AFRAGMENTER boundaries are predictions, not truth.** C014's 1400% out-of-domain figure is a
+  cut-site artefact rather than an HMM failure, and the same class of error will inflate other
+  out-of-domain numbers to a smaller degree.
+- **The non-hydrolase regions in C010, C017, C019 and C030 are still inside the envelope** of the
+  HMMs as built here.
+
+## Reproducing
+
+```bash
+# per component: build, transfer catalytic annotations, search, re-seed, four times
+./iterative_hmmbuild.sh \
+  --msa plasticome.component_${id}.afa \
+  --targets training/${id}.fastaa \
+  --symfrac 0.7 --evalue 1e-10 --iterations 4 \
+  --total-search-size 1101054423
+
+# the iteration-4 build is the shipped model
+cp symfrac0.7_evalue1e-10__4_overkill__plasticome.component_${id}.hmm \
+   petadex_hmms/petadex.v260701-${id}.hmm
+```

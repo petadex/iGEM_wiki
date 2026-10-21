@@ -1,0 +1,299 @@
+---
+title: "NCBI-nr Homology Search: Methods"
+section: "Dry Lab"
+path: "/dry-lab/model/nr-search/"
+navTitle: "NCBI-nr search methods"
+order: 26
+description: "How the PETadex-PAZy centroids were searched against NCBI nr with DIAMOND, how 42 million raw hits became 7,825,107 non-redundant sequences, and what the hits look like per component and per query."
+owners: ["Dry Lab"]
+updated: "2026-10-21"
+status: "draft"
+---
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Methods tier for the NCBI-nr Homology Expansion subsection of the Model
+  page. This page is reached only from the Methods link there; it is not in
+  any menu.
+
+  Ported from 2_nr_search.mdx (Thomas, 16 Jul – 21 Aug 2026,
+  progress: Completed). Prose is kept in the notebook's first person.
+
+  SOURCES FOR EVERY NUMBER (line numbers in 2_nr_search.mdx):
+    - tools, ncbi-blast-2.17.0+ and DIAMOND: :38-39, long version at :1611
+    - DIAMOND flags and their rationale: :83-86, invocation :107-123
+    - 42,053,081 raw hits, 8,850,583 unique: :1518
+    - 7,825,107 sequences / 13,209,543 accessions at 1e-5: :715-716, :1524, :1611
+    - the 36 accessions with no nr match: :640-676 (tallied here as
+      6 MGnify-only + 1 too short + 29 suppressed)
+    - component commentary, 75% from 8 components: :1528-1546
+    - 3 sequences = 25%, 11 = 50%, PL411: :1550-1559
+    - characterised seed hit counts: :1571-1584
+    - v1 vs v2 table: :1590-1594; v1-only and v2-only detail :1596-1607
+    - Figure 1 bar values read off the figure: 7,824,372 / 5,997,055 /
+      4,794,228 / 3,914,751 / 3,271,142 / 2,792,212 / 308,880
+    - Venn values read off Figure 4: 5,887,290 / 1,937,817 / 408,597
+
+  OPEN CHECKS:
+    - QUERY COUNT: settled at 411. The notebook says 411 centroids were
+      queried (:894, :1144, :1611) and 410 returned a significant hit
+      (:1146). The Model page's earlier "412 searched" note is superseded
+      and now agrees on 411, as do plasticome/ and component-assignment/.
+      Do NOT write that the one remaining centroid "returned no hits" — it
+      returned hits that better-scoring queries claimed (PL411, :1559).
+    - 7,824,372 (Figure 1, at 1e-5) vs 7,825,107 (final file). Removing
+      PETadex-PAZy from its own results should lower the count; it rises by
+      735. Recount before either number is leaned on.
+    - nr database size is missing: :1611 reads "(n=," with the value never
+      filled in. 1,101,054,423 is the --total-search-size used for the HMM
+      searches downstream; confirm it is the nr sequence count on the search
+      date before quoting it here.
+    - DIAMOND version is given as both "2.2.4" (:39) and "2.2.4.184"
+      (:1611). The long form is used here.
+    - ":1598" ("Gonna try V2 on this, therefore bad hit became cleaned") is
+      unparseable in the source; the MG8 bullet below is a rewrite. Check it
+      says what Thomas meant.
+    - Add the public link to the nr outputs when they are released. The
+      notebook's input and output paths are S3 URIs and are deliberately not
+      published here.
+*/}
+
+<Callout title="Methods for the NCBI-nr search">
+This page is the full write-up behind the [NCBI-nr Homology Expansion](/dry-lab/model/#ncbi-nr-homology-expansion) subsection of the Model page. It picks up where [Component Assignment](/dry-lab/model/component-assignment/) ends, with the PETadex-PAZy centroids in hand. The notebook behind it is [2_nr_search.ipynb](https://github.com/QuigDevs/igem-toronto_wiki-freeze/blob/main/notebooks/260716_issue117_2_nr_search.ipynb).
+
+Claude Opus 5 was used to port the notebook into this Methods page. The prose is largely as written in the notebook, but the headings were restructured and most of the code was left behind rather than carried over. For the unedited record, read it directly.
+</Callout>
+
+## Why search nr?
+
+The goal of this step is to retrieve as many homologs of plastic-degrading enzymes as possible from
+the NCBI non-redundant protein database. When someone studies a protein and obtains its amino acid
+sequence, they deposit that sequence with the National Center for Biotechnology Information. NCBI
+adds it to the nr database, and if the same amino acid sequence has already been deposited it is not
+added again — hence non-redundant. The new accession and its metadata are appended to the existing
+record instead.
+
+We want every homolog of PETadex-PAZy that nr holds, because that set becomes the seed query against
+Logan: the homologs of homologs are where the scale comes from. Whatever nr returns still has to be
+quality controlled with HMMs afterwards, to check that the hit lands on the catalytic domain rather
+than somewhere else in the protein. That is the [next page](/dry-lab/model/hmm-generation/).
+
+One consequence is worth stating up front. PETadex-PAZy sequences are themselves in nr, so the
+search finds them. Every hit whose accession or exact amino acid sequence matches a PETadex-PAZy
+entry is removed from the nr set, which keeps the two datasets non-redundant with respect to each
+other. The whole corpus is therefore clustered at 100% identity by construction: a protein here
+means a 100% identity centroid.
+
+## Inputs
+
+| Component | Version used | Notes |
+|---|---|---|
+| NCBI nr | ncbi-blast-2.17.0+ | Already downloaded and indexed on the server, then converted to a DIAMOND database |
+| DIAMOND | 2.2.4.184 | `blastp`, `--very-sensitive` |
+
+The query is the **411** PETadex-PAZy 90% identity centroids produced by
+[Component Assignment](/dry-lab/model/component-assignment/). 410 of them came back with a
+significant hit; the one that did not is covered [below](#hits-per-query-sequence).
+
+## The search
+
+The flags were chosen for three reasons:
+
+- `--outfmt 6` gives the comprehensive tabular output that the parser downstream expects.
+- `--very-sensitive` searches below 40% identity, into the twilight zone where most remote homologs
+  of our seeds sit.
+- `-k0` allows unlimited hits per query, so a query that has a million homologs is not truncated.
+
+```bash
+diamond blastp -d ncbi-blast_nr-2.17.0+.dmnd -q petadex-pazy.v260701.90pid-centroids.fastaa \
+  --very-sensitive -k0 -b140 -c1 --threads 120 \
+  --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
+```
+
+## From 42 million hits to 7.8 million sequences
+
+The search returned **42,053,081 hits**. Many query sequences hit the same target, and one amino acid
+sequence can carry several GenBank accessions, so the parser keeps the lowest E-value hit per
+non-redundant sequence. That leaves **8,850,583 unique amino acid sequences** before any E-value
+cutoff is applied.
+
+Applying the cutoff of 1.0 × 10⁻⁵ gives **7,825,107 amino acid sequences**, spanning **13,209,543
+unique GenBank accessions**.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/2-nr-search-cell07-fig3.avif"
+  alt="Bar chart of the number of unique nr sequences remaining at seven progressively stricter E-value cutoffs, falling from about 7.8 million at 1e-5 to about 309 thousand at the strictest cutoff."
+  caption={<><strong>Figure 1.</strong> Unique nr sequences surviving each E-value cutoff, before PETadex-PAZy sequences were removed. The 10⁻⁵ cutoff keeps 7,824,372 of the 8,850,583 unique sequences, and even at 10⁻³⁰ there are still 2,792,212.</>}
+  width="100%"
+/>
+
+About a million hits do not meet the cutoff, which makes sense to me. As the cutoff is tightened you
+retrieve fewer and fewer sequences, but there are still a lot of hits even out at 10⁻³⁰. Nothing
+about that distribution looks strange.
+
+### Removing PETadex-PAZy from its own results
+
+Every sequence in the significant-hits file is cross-checked against PETadex-PAZy on two keys: the
+accession and the exact amino acid sequence. Matches are removed from the nr set, and the matching
+accession is recorded in the header of the PETadex-PAZy sequence it matched, so the provenance is
+not lost.
+
+### The 36 accessions that did not come back
+
+36 PETadex-PAZy sequences with GenBank accessions were not retrieved by the search. I went through
+every one of them, and they fall into three groups:
+
+| Why | Count | Example |
+|---|---|---|
+| Record suppressed at NCBI, so it is no longer in nr | 29 | `PL136 / WP_083947829.1` |
+| MGnify accession, never in GenBank | 6 | `PL13 / MGYP000532440779` |
+| Sequence too short for the E-value to clear the cutoff | 1 | `PL56 / P80008.1` |
+
+I can explain why every one of them is absent, so this step is fine.
+
+## What the hits look like
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/2-nr-search-cell14-fig5.avif"
+  alt="Histogram of percent identity between each significant nr hit and its query sequence, roughly bell-shaped with its mode near 28 percent."
+  caption={<><strong>Figure 2.</strong> Percent identity of all 7,825,107 significant hits to their query. The distribution is roughly normal around 30%, so most of what nr returns is not a close relative of anything in PETadex-PAZy — these are new superfamilies, which follows what the previous search found.</>}
+  width="100%"
+/>
+
+### Hits per component
+
+Most components have somewhere between 10,000 and 100,000 homologs in nr, so the hits are fairly
+spread out. A few components hit very high:
+
+- **C16**, cytochrome homologs. This makes a great deal of sense: cytochromes are very well studied
+  across all kingdoms of life, including in humans. They are oxygenases and the main enzymes of drug
+  metabolism, so they have evolved to break down almost anything.
+- **C3**, amidases, which break N–C bonds. We do not have many amidase components, so it makes sense
+  that this one takes a large share.
+- **C34**, a group of α/β hydrolases, possibly carboxylesterases. I can't tell you why there are so
+  many of these.
+- **C14**, another set of α/β hydrolases, perhaps esterases. Also can't tell you why there are so many.
+
+Overall about **75% of the database is attributable to just 8 of the 46 components**.
+
+At the other end are four singletons: **C39** (a PLA depolymerase), **C33** (an archaeal PETase),
+**C23** (an unknown carboxylesterase) and **C27** (a PLA depolymerase from the same paper as C39).
+It would be good to see how many more hits Logan can find for these understudied ones.
+
+C1 is the IsPETase homologs, including LCC, and it accounts for a lot of hits — useful if we want to
+deep-dive that component later.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/2-nr-search-cell14-fig3.avif"
+  alt="Bar chart on a logarithmic scale of significant nr hits per component, spanning four orders of magnitude from singleton components under 1,500 hits to the largest components over a million."
+  caption={<><strong>Figure 3.</strong> Significant hits per component, log scale. Eight components account for about 75% of the database, while C023, C027, C033 and C039 are singletons with under 1,500 hits each.</>}
+  width="100%"
+/>
+
+### Hits per query sequence
+
+Some query sequences dominate their component, and some dominate the whole dataset. Just **three
+sequences account for 25%** of the DIAMOND output:
+
+- **PL175**, a cytochrome P450 singleton cluster
+- **PL128**, a DD-peptidase singleton cluster
+- **PL109**, a urethanase amidase, not a singleton
+
+The top two are singletons, so if there were more sequences in those components the hits would
+probably be split across the component the way they are in C1. Just **11 sequences account for 50%**
+of the hits, so the dataset is less evenly distributed than I would have liked.
+
+One query sequence, **PL411**, is credited with no hits at all. Its top BLAST hits are either
+PETadex-PAZy sequences or sequences that hit PETadex-PAZy. In the raw output PL411 does have hits —
+every one of them simply scored better against another query, so under best-hit attribution it is
+never credited with them.
+
+Here is what the characterised seeds pulled in:
+
+| Enzyme | Hits | Enzyme | Hits |
+|---|---|---|---|
+| IsPETase | 71 | NylA | 10,723 |
+| LCC | 56 | NylB | 40,806 |
+| TfCut_2 | 60 | NylC | 147 |
+| Cut190 | 45 | PhaZ1 | 19,259 |
+| HiC | 52 | PLAse I | 2,843 |
+| Mipa-P | 24 | PueA | 5,344 |
+| Kuba-P | 7 | PET6 | 25 |
+
+The well-studied α/β hydrolases have relatively few hits of their own, because their hits are being
+absorbed by other sequences in the same component. A handful of sequences take up most of the
+dataset.
+
+## Did doubling PETadex-PAZy help?
+
+PETadex-PAZy roughly doubled between v1 and v2, so the question is whether the larger query actually
+reaches new sequence space or just resamples the same space more heavily.
+
+| Statistic | v1 | v2 |
+|---|---|---|
+| Redundant hits | 30,872,783 | 42,053,081 |
+| Non-redundant hits | 7,271,879 | 8,850,583 |
+| Significant hits | 6,295,887 | 7,825,107 |
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/2-nr-search-cell18-fig4.avif"
+  alt="Venn diagram of significant nr hits from the PETadex-PAZy v1 and v2 queries, with a large shared region, a smaller v2-only region, and a small v1-only region."
+  caption={<><strong>Figure 4.</strong> Significant hits from the PETadex-PAZy v1 query against the v2 query. v2 recovers 5,887,290 of v1's hits and adds 1,937,817 that v1 never reached; 408,597 v1-only hits are lost.</>}
+  width="100%"
+/>
+
+The v2-only hits are the interesting half, and they are new sequence space rather than more of the
+same:
+
+- **PL175 / P08684.4**, 1,299,987 hits. Cytochrome P450: new component, new sequence space.
+- **PL174 / P00761.1**, 355,608 hits. Chymotrypsin. The closest centroid in the search is 34%
+  identical, and this is a mammalian trypsin, so it is likely to hit a great deal.
+- **PL378 / WDT94443**, 294,874 hits. Epoxide hydrolase; the closest centroid is almost unalignable.
+- **PL388 / 1ETH_A**, 186,822 hits. Porcine lipase, brand new to PAZy and to PETadex-PAZy.
+- **PL244 / WP_067035690.1**, 127,654 hits. This one is picking up a galactose-binding domain.
+
+Almost all of the v1-only losses trace to four sequences whose accessory domains were trimmed in v2:
+
+- **MBO9320024.1**, 292,146 hits. The Erickson 214 protein. In v2 its 90% identity centroid (PL91,
+  59,526 hits) was searched instead, and the v1 sequence carried an accessory domain the centroid
+  does not, which accounts for the excess.
+- **WP_085690612.1**, 60,525 hits. MG8, whose amino acid sequence changed substantially between v1
+  and v2 along with its source paper, apparently from a PAZy update. InterProScan calls the v1
+  sequence an acyl-protein thioesterase or carboxylesterase-like protein and the v2 sequence a
+  PETase, so the v2 sequence is the one to trust and the v1 hits were picking up the wrong thing.
+- **MCS7037955.1**, 31,165 hits. Erickson 301, whose v1 sequence has a C-terminal accessory domain
+  that v2 trims.
+- **MDT7859148.1**, 17,352 hits. Erickson 307, 70 amino acids longer in v1.
+
+So the doubling bought real expansion, and the losses are cases where the trimmed sequence is the
+more honest query.
+
+## Limitations
+
+- **Best-hit attribution hides a query's reach.** A sequence is credited only to its best-scoring
+  query, which is why PL411 appears to have no hits at all. Per-query counts are therefore a
+  statement about attribution, not about homology.
+- **The dataset is uneven.** 8 components hold about 75% of it, and 11 sequences hold 50%. Anything
+  trained on this corpus has to account for that skew rather than assume breadth.
+- **Suppressed and MGnify-only records are unreachable.** 29 PETadex-PAZy accessions no longer exist
+  in nr and 6 were never in GenBank, so their sequences cannot contribute homologs here.
+- **No domain-level quality control yet.** Everything on this page is sequence-level similarity. A
+  hit that aligns to the wrong part of the protein is still a hit at this stage; the HMMs on the
+  next page are what filter for the catalytic domain.
+
+## Reproducing
+
+```bash
+# 1. convert the indexed BLAST nr database to a DIAMOND database
+diamond prepdb -d ncbi-blast_nr-2.17.0+
+
+# 2. search the PETadex-PAZy centroids against it
+diamond blastp -d ncbi-blast_nr-2.17.0+.dmnd -q petadex-pazy.v260701.90pid-centroids.fastaa \
+  --very-sensitive -k0 -b140 -c1 --threads 120 \
+  --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+  > petadex-nr.v260701.diamond.tsv
+
+# 3. keep the lowest-E-value hit per non-redundant sequence, cut at 1e-5,
+#    then remove every hit that matches PETadex-PAZy by accession or exact sequence
+```

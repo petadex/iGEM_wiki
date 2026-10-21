@@ -1,0 +1,360 @@
+---
+title: "Logan Query and Search QC: Methods"
+section: "Dry Lab"
+path: "/dry-lab/model/logan-query/"
+navTitle: "Logan query methods"
+order: 28
+description: "How the 2,740,458-sequence Logan query was built from the nr catalytic domains, and how 5.57 billion DIAMONDx hits were turned into 3.20 billion unique ORFs, 1.74 billion with a significant HMM hit and 291,922,243 with a complete catalytic domain."
+owners: ["Dry Lab"]
+updated: "2026-10-21"
+status: "draft"
+---
+
+{/*
+  WRITER NOTES — not rendered.
+
+  Methods tier for the Logan Query Extraction subsection of the Model page.
+  This page is reached only from the Methods link there; it is not in any
+  menu.
+
+  Ported from 5_creating_logan_query.mdx (Thomas, 22 Aug – 26 Sep 2026,
+  progress: Completed) and 6_logan_search_qc.mdx (4 Oct 2026,
+  progress: Draft, date_finished empty, and with NO summary section — every
+  Logan number here is read out of printed outputs rather than a summary the
+  author wrote). Prose is kept in the notebook's first person.
+
+  SOURCES FOR EVERY NUMBER (5: = 5_creating_logan_query, 6: = 6_logan_search_qc):
+    - tools: 5:41-43, 6:31
+    - component split cuts search time 10 h -> ~1 h: 5:47
+    - HMM search run, 53 jobs, 02:52 -> 03:42: 5:243-245
+    - 9,468,263 domain-hit rows across 7,562,453 accessions: 5:250
+    - reduced to 7,562,397 accessions (lowest hmm_evalue each): 5:476
+    - 7,561,905 nr accessions written to the proteins fasta: 5:477
+    - 46 precluster component fastas: 5:478
+    - MMseqs2 / DIAMOND parameter equivalence table: 5:578-585
+    - clustering totals, DIAMOND 2,740,458 vs MMseqs2 2,793,566, ratio
+      0.981, singletons 1,846,170 vs 1,911,582, largest 10,229 vs 5,250,
+      over 6,765,103 input domains: 5:966
+    - nr funnel totals 7,825,107 / 7,562,397 / 6,857,617 / 6,343,582 /
+      2,740,458 / 31,498 / 79,405: 5:1558
+    - Logan headline table: 6:1111-1126
+    - ORF length (TOTAL row): 6:1449
+    - dedup TOTAL row, 3,202,954,878 unique, max 784,796, ratio 1.80: 6:1810
+    - HMM run, 5,300 jobs, 17:23 -> 18:09 on 6 Oct: 6:2306-2325
+    - Logan funnel TOTAL row: 6:3562 — 5,780,630,372 / 3,202,954,878 /
+      1,740,282,847 / 297,915,422 / 271,597,707 / 291,922,243 / 144,319 /
+      5,348,968 / 1,442,367,425 / 1,190,913,159 / 251,454,266
+    - truncation rule (10 residues from a terminus): 6:2677
+    - extraction logic and complete_hit_lost_to_better_incomplete_hit:
+      6:2340-2344
+
+  NUMBERS THAT ARE MISLABELLED ELSEWHERE — use these labels:
+    - 5,780,630,372 is ORF PIECES WRITTEN, not hits. The DIAMONDx hit count
+      is 5,573,419,026 (6:1111).
+    - 7,561,905 is nr ACCESSIONS WRITTEN, not significant HMM hits. The
+      significant-hit count is 7,562,397 (5:476); 7,561,905 excludes the
+      PETadex-PAZy sequences that also carried a hit.
+    - 291,922,243 is BEST-HIT complete. Any-hit complete is 297,915,422;
+      the 5,993,179 gap is complete_hit_lost_to_better_incomplete_hit.
+    - 6,764,617 (extractor, 5:521) vs 6,857,617 (funnel, 5:1558) differ
+      because the funnel counts per component across all hits and the
+      extractor reduces to one best hit per accession first.
+
+  OPEN CHECKS:
+    - BLOCKING-ish: the Logan HMM search passes --total-search-size
+      1101054423 (6:2207), the nr database size, which notebooks 4 and 5
+      also used. The Logan database holds 3.2 billion sequences, so every
+      Logan E-value is on an nr-sized scale and the 1e-5 cutoff does not
+      mean what it meant in nr. Caveated in prose below. Confirm whether it
+      was deliberate, for comparability with the nr pass, or a carry-over.
+    - MISSING: the DIAMONDx search parameters. The notebook records only the
+      bucket. No DIAMOND version, sensitivity mode, -k, E-value or Logan
+      release. Get these from Rayan Chikhi before this page leaves draft.
+    - "unique contigs with a hit = 5,573,419,026, mean hits per contig 1.00,
+      contigs with > 1 hit = 0" (6:1115-1117) is implausible — either the
+      search reports one row per contig or the contig key is per-hit. No
+      contig-level number is published here until that is checked.
+    - 16,125,802 SRA libraries with a hit (6:1114) needs a denominator: what
+      share of Logan is that?
+    - 7,562,453 (5:250) vs 7,562,397 (5:476) differ by 56 accessions sitting
+      exactly at the cutoff (>= vs <).
+    - "4600 fastaas must be ran in parallel" (6:2160) vs 5,300 jobs
+      (6:2314): 4,600 is 46 components x 100 shards of input, 5,300 is
+      53 HMMs x 100 shards of search.
+    - Notebook 5's frontmatter says finished 2026-09-13; its header says
+      September 26th.
+    - The Logan domains are NOT yet clustered (6:2673), and notebook 7
+      (petadex_clustering) is a stub. There is no Logan centroid count. This
+      page must not imply the corpus is final, and
+      #clustering-and-corpus-structure must not be linked as done.
+    - Figure 3 is rendered on a white background while the other Logan
+      figures are dark navy. Re-render or accept.
+    - S3 URIs and the /watson machine path from the notebooks are
+      deliberately not published.
+*/}
+
+<Callout title="Methods for the Logan query and search">
+This page is the full write-up behind the [Logan Query Extraction](/dry-lab/model/#logan-query-extraction) subsection of the Model page. It picks up where [catalytic HMM generation](/dry-lab/model/hmm-generation/) ends. The Logan search itself was run by **Rayan Chikhi**, who built the Logan assembly; this page covers how the query was prepared and how the results were quality controlled. The notebooks behind it are [5_creating_logan_query.ipynb](https://github.com/QuigDevs/igem-toronto_wiki-freeze/blob/main/notebooks/260822_issue120_5_creating_logan_query.ipynb) and [6_logan_search_qc.ipynb](https://github.com/QuigDevs/igem-toronto_wiki-freeze/blob/main/notebooks/261004_issue121_6_logan_search_qc.ipynb).
+
+Claude Opus 5 was used to port the notebooks into this Methods page. The prose is largely as written in the notebooks, but the headings were restructured and most of the code was left behind rather than carried over. For the unedited record, read them directly.
+</Callout>
+
+## Why a second search, and why a smaller query?
+
+To query the Logan contigs I need to hand over a fasta of the sequences I want searched, and the
+search costs money in proportion to what is in it. So the query is deliberately narrowed twice over:
+a sequence is only included if the HMMs say it has a **complete catalytic domain** — no empty
+catalytic residue positions — and only 90% identity centroids of those domains are kept.
+
+That removes two kinds of waste. Sequences whose hit misses part of the catalytic machinery are
+off-target for our purposes, and searching accessory domains costs the same as searching catalytic
+ones while telling us nothing about plastic degradation.
+
+## Inputs
+
+| Component | Version used | Notes |
+|---|---|---|
+| HMMER | 3.4 (Aug 2023) | `hmmalign`, `hmmsearch` |
+| DIAMOND | 2.2.4 | `linclust --id 90 --ext global --comp-based-stats 0` |
+| MMseqs2 | Release 18-8cc5c | `easy-linclust`, as an independent check on the clustering |
+
+The inputs are the 53 HMMs from the [previous page](/dry-lab/model/hmm-generation/) and the
+significant nr hits from the [nr search](/dry-lab/model/nr-search/). Splitting the significant hits
+into per-component fastas first takes the search time from about ten hours down to about one.
+
+## Finding the catalytic domains in nr
+
+Searching the HMMs against the nr homologs produces an annotation row per domain hit, carrying: the
+range the HMM hit, the identity of the amino acid found at each catalytic position, and a boolean for
+whether the hit is **complete** — a residue present in every catalytic position — or **partial**.
+
+The 53 jobs ran in about 49 minutes and returned **9,468,263 domain-hit rows across 7,562,453 unique
+accessions**, before any deduplication or completeness filter. Reducing each accession to its single
+lowest-E-value hit leaves **7,562,397 accessions**, of which **7,561,905** are written out as the
+PETadex-nr proteins.
+
+## Cutting the domains out
+
+For every hit that survives, the full sequence is looked up in its component's database fasta and
+only the amino acids from the HMM start to the HMM end are written. The envelope convention matters
+if you are reproducing this, because it is the easiest thing to get wrong:
+
+```python
+domain_seq = sequence[hmm_target_start - 1:hmm_target_end]   # 1-based, inclusive
+```
+
+Hits annotated as incomplete are dropped before this step, which leaves **6,764,617** complete nr
+catalytic domains plus 486 from PETadex-PAZy, spread over 46 component fastas.
+
+## Clustering to the Logan query
+
+Those domains are then clustered at 90% identity with DIAMOND `linclust`, globally rather than
+locally, so that a member has to align across its whole length to its centroid. The centroids are the
+Logan query: **2,740,458 sequences**.
+
+### Checking DIAMOND against MMseqs2
+
+Clustering with one tool and trusting the count is a good way to overstate how many distinct
+sequences you have, so I re-clustered the same input with MMseqs2 and matched the parameters as
+closely as the two tools allow:
+
+| MMseqs2 parameter | What it does | DIAMOND equivalent |
+|---|---|---|
+| `easy-linclust` | linear-time clustering | `linclust` |
+| `--min-seq-id 0.9` | a member must share 90% identity with its centroid | `--id 90` |
+| `-c 0.9 --cov-mode 0` | the alignment must cover 90% of both centroid and member, mimicking a global alignment | `--ext global` |
+| `--alignment-mode 3` | computes the full alignment, including sequence identity | full alignment |
+| `--seq-id-mode 0` | identity calculated over the alignment length | identity over the alignment |
+| `--comp-bias-corr 0` | turns off composition-bias correction | `--comp-based-stats 0` |
+
+Over the same 6,765,103 input domains, DIAMOND produces **2,740,458 clusters** and MMseqs2
+**2,793,566** — a ratio of 0.981, so DIAMOND is making slightly *fewer* clusters, not inflating the
+count by splitting. Singletons come out at 1,846,170 against 1,911,582. The one real difference is the
+largest cluster: 10,229 sequences under DIAMOND against 5,250 under MMseqs2.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/5-creating-logan-query-cell13-fig2.avif"
+  alt="Overlaid histograms of cluster size for DIAMOND linclust and MMseqs2 easy-linclust over the same catalytic domains, with the two distributions almost coincident across all size bins."
+  caption={<><strong>Figure 1.</strong> Cluster size distribution for the same 6.77 million catalytic domains under DIAMOND linclust and MMseqs2 easy-linclust. The curves lie close enough together that the DIAMOND cluster count is not an artefact of splitting.</>}
+  width="100%"
+/>
+
+## The nr quality-control funnel
+
+Laid out end to end, the nr side of the pipeline narrows like this:
+
+| Step | Sequences |
+|---|---|
+| Significant DIAMOND hits from nr | 7,825,107 |
+| With a significant HMM hit | 7,562,397 |
+| With a residue in every catalytic position | 6,857,617 |
+| With the canonical residue in every position | 6,343,582 |
+| 90% identity centroids — the Logan query | 2,740,458 |
+
+Two side counts are worth keeping: **31,498** sequences have two or more catalytically complete
+domain hits, and **79,405** have only incomplete hits that nevertheless complement each other on the
+catalytic residues — one hit covering positions 1 and 2, another covering position 3.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/5-creating-logan-query-cell17-fig4.avif"
+  alt="Bar chart of the nr quality-control funnel, showing counts falling from 7.8 million significant DIAMOND hits through the HMM and catalytic-residue filters to 2.7 million clustered query centroids."
+  caption={<><strong>Figure 2.</strong> The nr quality-control funnel, from 7,825,107 significant DIAMOND hits down to the 2,740,458 centroids that make up the Logan query.</>}
+  width="100%"
+/>
+
+## The Logan search
+
+Rayan Chikhi ran the DIAMONDx search of that query against the Logan contigs and returned the
+results: about **10 TB**, or **2.6 TB compressed**, as 100 `.zst` files. I worked through them one at
+a time.
+
+<Callout tone="warning" title="Two things this page cannot yet tell you">
+The DIAMONDx search parameters were not recorded on our side — version, sensitivity mode, hit limit, E-value cutoff and the Logan release are all outstanding, and need to come from Rayan before this page leaves draft. Separately, the HMM search over the Logan results passed `--total-search-size 1101054423`, the size of **nr**, against a database of 3.2 billion sequences. Every Logan E-value below is therefore on an nr-sized scale, and the 1 × 10⁻⁵ cutoff does not mean what the same cutoff meant in nr.
+</Callout>
+
+The raw search returned **5,573,419,026 DIAMONDx rows**, independently counted three ways — by a
+bash row count over the compressed files, by the parser, and in the parquet — which all agree.
+**2,714,983 of the 2,740,458 query sequences** got at least one hit, and 16,725,463 hits are reported
+with an E-value of exactly 0.
+
+## Turning contig hits into ORFs
+
+Logan returns contigs, not proteins, so each hit has to be turned into an open reading frame. For
+every row the pipeline cleans the header into TSV, records it in a parquet, then calls the ORF
+stop-to-stop on the DNA and finds the frame whose translation exactly contains the reported hit
+region. Three cases come out of that:
+
+- **No internal stop** — one ORF.
+- **An internal stop splits the hit into two valid ORFs**, both at least 30 aa — both are kept.
+- **An internal stop splits the hit but only one side is valid** — the piece under 30 aa is dropped,
+  because it is not a protein.
+
+That gives **5,780,630,372 ORF pieces** written to the component fastas: more pieces than there were
+hits, because **159,279,814 hits were split** on an internal stop, while **395,454,341 pieces were
+dropped** for being under 30 aa. No hit failed to have its frame found. The resulting ORFs run from
+the 30 aa floor to a median of 96 aa, with a mean of 150.9 aa.
+
+## Collapsing identical ORFs
+
+nr is 100% non-redundant by construction, so the Logan set is made to match. Within each component,
+sequences are deduplicated by exact string match, hits above the 1 × 10⁻⁵ cutoff are dropped, and the
+record keeps its lowest-E-value accession first with every duplicate accession listed after it.
+
+**5,780,630,372 ORF pieces collapse to 3,202,954,878 unique sequences**, a ratio of 1.80. The most
+repeated single ORF was found **784,796 times**.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/6-logan-search-qc-cell15-fig1.avif"
+  alt="Histogram on log axes of how many DIAMONDx hits collapsed onto each unique ORF, with the great majority of ORFs seen once and a long tail reaching hundreds of thousands of copies."
+  caption={<><strong>Figure 3.</strong> How many ORF pieces collapsed onto each unique sequence. Most are seen once, but the tail is long: the most repeated ORF appears 784,796 times.</>}
+  width="100%"
+/>
+
+## Running 53 HMMs over 3.2 billion ORFs
+
+The deduplicated set is sharded 100 ways per component, so the HMM search is **5,300 jobs** — 53 HMMs
+across 100 shards — run 40 at a time. The whole search finished inside 46 minutes, with the reduce
+step across sub-components and shards taking another 37. Every job completed; none were killed.
+
+Each sequence with a significant hit is assigned a `petadex_id` of the form `LG{integer}`, and the
+annotations carry the same fields as the nr pass: the hit range, the residue identity at each
+catalytic position, and whether the hit is complete or partial.
+
+## Extracting the Logan catalytic domains
+
+Extraction follows the nr logic exactly. Every `LG` id is reduced to its single lowest-E-value hit
+across every sub-component and domain, its full-length record is written out, and only if that
+winning hit is complete is the catalytic domain written to the precluster fasta.
+
+That last condition is worth being explicit about: a sequence whose *best* hit is incomplete is not
+clustered even if another of its hits is complete. **291,922,243** sequences pass that best-hit test,
+while **297,915,422** have a complete hit somewhere — the 5,993,179 difference is counted separately
+as `complete_hit_lost_to_better_incomplete_hit`.
+
+## The Logan quality-control funnel
+
+| Step | Sequences |
+|---|---|
+| ORF pieces written by the parser | 5,780,630,372 |
+| Unique ORFs after 100% deduplication | 3,202,954,878 |
+| With a significant HMM hit | 1,740,282,847 |
+| With a residue in every catalytic position | 297,915,422 |
+| With the canonical residue in every position | 271,597,707 |
+| Precluster catalytic domains (best hit complete) | 291,922,243 |
+
+As on the nr side, **144,319** sequences have two or more complete, non-overlapping domain hits and
+**5,348,968** have only incomplete hits that complement each other.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/6-logan-search-qc-cell24-fig4.avif"
+  alt="Bar chart of the Logan quality-control funnel, falling from 5.78 billion ORF pieces through deduplication and the HMM and catalytic-residue filters to roughly 292 million complete catalytic domains."
+  caption={<><strong>Figure 4.</strong> The Logan quality-control funnel. 5.78 billion ORF pieces become 3.20 billion unique sequences, 1.74 billion with a significant HMM hit, and 291,922,243 whose best hit covers the whole catalytic domain.</>}
+  width="100%"
+/>
+
+### Complete, truncated, or genuinely partial
+
+**1,442,367,425** sequences have a significant hit but no complete catalytic domain, and it matters a
+great deal whether that is because the protein is divergent or because the assembly ran out. A hit
+counts as a **truncation** when the missing catalytic positions are explained by the ORF ending:
+catalytic sites are ordered by HMM column, and if the missing sites fall before the first present
+site the hit has to start within 10 residues of the N-terminus, or after the last present site it has
+to end within 10 residues of the C-terminus.
+
+On that rule, **1,190,913,159 are truncations** and **251,454,266 are not** — so the large majority
+of incomplete hits are assembly artefacts rather than proteins that genuinely lack the machinery.
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/6-logan-search-qc-cell24-fig10.avif"
+  alt="Log-scale histogram of the distance from each HMM hit to the nearer end of its ORF, drawn separately for complete and partial hits, with partial hits piling up within ten residues of a terminus."
+  caption={<><strong>Figure 5.</strong> Distance from each significant HMM hit to the nearer end of its ORF, complete against partial hits, with the 10-residue truncation threshold marked. Partial hits pile up hard against the terminus, which is what a truncation looks like.</>}
+  width="100%"
+/>
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/drylab-page/thomas/6-logan-search-qc-cell24-fig11.avif"
+  alt="Scatter plots with one point per HMM, showing model length and the span between the first and last catalytic residue against the number and percentage of Logan sequences with a complete hit."
+  caption={<><strong>Figure 6.</strong> One point per HMM: model length and the span between the first and last catalytic residue, against how many Logan sequences get a complete hit. The wider a model's catalytic span, the smaller the share of hits that can cover all of it.</>}
+  width="100%"
+/>
+
+That last figure is the honest summary of the whole exercise: completeness is partly a property of
+the enzyme family, not only of the assembly. An HMM whose catalytic residues are spread far apart
+needs a longer uninterrupted ORF to be satisfied, so its completeness rate will always look worse.
+
+## Limitations
+
+- **The Logan E-values are on an nr-sized scale.** See the caveat above. Everything downstream of the
+  1 × 10⁻⁵ cutoff inherits it.
+- **The search parameters are not recorded on our side.** Until they come from Rayan Chikhi, this page
+  cannot state the sensitivity, the hit limit or the Logan release it describes.
+- **Contig-level statistics are not reported here.** The parquet gives a mean of 1.00 hits per contig
+  and zero contigs with more than one hit, which cannot be right; the contig key needs checking first.
+- **Best-hit extraction discards complete hits.** 5,993,179 sequences have a complete catalytic domain
+  that is not clustered, because a better-scoring incomplete hit won the record.
+- **The HMMs carry their own limits forward**, including the four sub-components with no model and the
+  non-hydrolase regions still inside some envelopes.
+
+## What is still to come
+
+The Logan catalytic domains are **not yet clustered**. The precluster count above stands in for what
+will eventually be the Logan 90% identity centroids, so the corpus is not final and the numbers on
+this page are the state of a draft notebook rather than a finished stage. Clustering across the nr and
+Logan domains together is the next step.
+
+## Reproducing
+
+```bash
+# 1. search the HMMs against the nr homologs, per component, and annotate
+#    hit ranges, catalytic residue identities and completeness
+./hmm_search.sh --hmms petadex_hmms/ --targets per_component/ --evalue 1e-5
+
+# 2. extract complete catalytic domains, then cluster at 90% identity, globally
+diamond linclust -d nr_catalytic_domains.fastaa -o clusters.tsv \
+  --id 90 --ext global --comp-based-stats 0
+
+# 3. after the Logan search returns, parse each .pro.zst into ORFs, dedup at
+#    100% identity, shard, then search the same HMMs over the shards
+./logan_hmm_search.sh --shards per_component_shards/ --jobs 40 \
+  --total-search-size 1101054423   # nr-sized Z — see the caveat above
+```
