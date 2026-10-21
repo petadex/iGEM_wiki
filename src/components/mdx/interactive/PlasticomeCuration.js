@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import DATA from "../../../data/plasticomeCuration.json"
-import { FOLD_GROUPS, cathOf, groupOf } from "./plasticomeCath.js"
+import { COMPONENTS, FOLD_GROUPS, cathOf, groupOf } from "./plasticomeCath.js"
 import {
   Arrow,
   Box,
@@ -49,7 +49,7 @@ import {
  *   PlasticomeByPlastic enzymes per plastic, a bar each
  *   PlasticomeCoverage  a donut of enzymes per plastic, with a menu for
  *                       superkingdom and for PDB structure
- *   PlasticomeExplorer  every record to scroll, with its accession, organism,
+ *   PlasticomeExplorer  every record to search, filter and scroll, with its accession, organism,
  *                       plastics, structure and paper
  *   PlasticomeFlow      the two PAZy snapshots, merged (Methods)
  *   EricksonSequences   the 21 sequences reset to the paper (Methods)
@@ -486,37 +486,60 @@ const Legend = () => (
 
 /* ---------- explorer ---------- */
 
+/** The text a search matches: identifiers, organism, and the CATH and Pfam calls. */
+const haystack = (r) => {
+  const c = cathOf(r)
+  return [r.name, r.acc, r.org, `pl${r.id}`, r.pdb, r.uni, c.cat, c.acc_cath, c.Cn, c.Ca]
+    .join(" ")
+    .toLowerCase()
+}
+
 /**
  * Links of the form #fold=g00 or #comp=C001, from the CATH forest's fold
- * buttons or the component map, open the explorer on that set.
+ * buttons or the component map, open the explorer filtered to that set.
  */
 const HASH_FILTER = /^#(fold|comp)=(g\d+|C\d+)$/
 
-/** Every enzyme in a list to scroll; the one picked is shown beside it. */
+/** Every enzyme in a list to search, filter and scroll; the one picked is shown beside it. */
 export const PlasticomeExplorer = () => {
-  const [only, setOnly] = useState(null) // { kind: "fold" | "comp", key }, from a link
+  const [query, setQuery] = useState("")
+  const [source, setSource] = useState("")
+  const [plastic, setPlastic] = useState("")
+  const [fold, setFold] = useState("")
+  const [comp, setComp] = useState("")
   const [selected, setSelected] = useState(U[0].id)
   const [open, setOpen] = useState(false)
   const boxRef = useRef(null)
 
   const rows = useMemo(() => {
-    if (!only) return U
-    return U.filter((r) =>
-      only.kind === "fold" ? groupOf(r)?.g === only.key : cathOf(r).comp === only.key
+    const q = query.trim().toLowerCase()
+    return U.filter(
+      (r) =>
+        (!source || r.src === source) &&
+        (!plastic || plasticsOf(r).includes(plastic)) &&
+        (!fold || groupOf(r)?.g === fold) &&
+        (!comp || cathOf(r).comp === comp) &&
+        (!q || haystack(r).includes(q))
     )
-  }, [only])
+  }, [query, source, plastic, fold, comp])
   const current = rows.find((r) => r.id === selected) ?? rows[0]
-  const onlyName =
-    only &&
-    (only.kind === "fold"
-      ? FOLD_GROUPS.find((g) => g.g === only.key)?.fold
-      : `component ${only.key}`)
+  const filtered = rows.length < U.length
+
+  const clearFilters = () => {
+    setQuery("")
+    setSource("")
+    setPlastic("")
+    setFold("")
+    setComp("")
+  }
 
   useEffect(() => {
     const fromHash = () => {
       const m = window.location.hash.match(HASH_FILTER)
       if (!m) return
-      setOnly({ kind: m[1], key: m[2] })
+      clearFilters()
+      if (m[1] === "fold") setFold(m[2])
+      else setComp(m[2])
       setOpen(true)
       boxRef.current?.scrollIntoView({ block: "start" })
     }
@@ -529,12 +552,54 @@ export const PlasticomeExplorer = () => {
     <Box ref={boxRef} id="plasticome-explorer">
       <BoxTitle>Explore PETadex-PAZy</BoxTitle>
       <Sub>
-        Every one of the {fmt(U.length)} enzymes. Scroll the list and pick one to see its details.
+        Every one of the {fmt(U.length)} enzymes. Search or filter the list, and pick one to see
+        its details.
       </Sub>
       <TableToggle open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
         <summary>Open the explorer</summary>
         <Explorer>
           <div>
+            <Controls>
+              <input
+                type="search"
+                placeholder="Search name, accession, organism, CATH, Pfam"
+                aria-label="Search enzymes"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <select aria-label="Source" value={source} onChange={(e) => setSource(e.target.value)}>
+                <option value="">All sources</option>
+                {SOURCES.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              <select aria-label="Plastic" value={plastic} onChange={(e) => setPlastic(e.target.value)}>
+                <option value="">All plastics</option>
+                {PLASTICS.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {PLASTIC_NAME[p.code]}
+                  </option>
+                ))}
+              </select>
+              <select aria-label="Fold group" value={fold} onChange={(e) => setFold(e.target.value)}>
+                <option value="">All fold groups</option>
+                {FOLD_GROUPS.map((g) => (
+                  <option key={g.g} value={g.g}>
+                    {g.fold}
+                  </option>
+                ))}
+              </select>
+              <select aria-label="Component" value={comp} onChange={(e) => setComp(e.target.value)}>
+                <option value="">All components</option>
+                {COMPONENTS.map((c) => (
+                  <option key={c.key} value={c.key}>
+                    {c.key} · {c.dom} ({c.n})
+                  </option>
+                ))}
+              </select>
+            </Controls>
             <List role="listbox" aria-label="Enzymes">
               {rows.map((r) => (
                 <ListItem
@@ -550,19 +615,20 @@ export const PlasticomeExplorer = () => {
               ))}
             </List>
             <Count>
-              {only ? (
+              {fmt(rows.length)} of {fmt(U.length)} enzymes
+              {filtered && (
                 <>
-                  {fmt(rows.length)} enzymes in {onlyName} ·{" "}
-                  <LinkButton type="button" onClick={() => setOnly(null)}>
-                    Show all {fmt(U.length)}
+                  {" · "}
+                  <LinkButton type="button" onClick={clearFilters}>
+                    Clear
                   </LinkButton>
                 </>
-              ) : (
-                `${fmt(U.length)} enzymes`
               )}
             </Count>
           </div>
-          <Card aria-live="polite">{current && <RecordCard record={current} />}</Card>
+          <Card aria-live="polite">
+            {current ? <RecordCard record={current} /> : <Sub>No enzymes match.</Sub>}
+          </Card>
         </Explorer>
       </TableToggle>
     </Box>
@@ -1030,6 +1096,22 @@ const Explorer = styled.div`
 
 
 
+
+const Controls = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+
+  input {
+    grid-column: 1 / -1;
+  }
+
+  input,
+  select {
+    ${fieldStyle}
+  }
+`
 
 const List = styled.div`
   display: grid;
