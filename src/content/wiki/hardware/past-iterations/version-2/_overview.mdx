@@ -1,3 +1,68 @@
-{/* Design-Build-Test-Learn for Version 2 is _cycle.mdx, shown with this version. */}
+## Stakeholder Information/Interviews
 
-{/* Add introductory paragraphs here if this version needs text around the cycle. */}
+To inform the design of our bioreactor, we decided to consult a few key expert opinions in order to truly understand the design space and audience we are building the bioreactor for. Here is a summary of the V1 stakeholders and how their input impacted V1 of our bioreactors. For more details, please consult [the stakeholder section on our Motivation page](/hardware/motivation/#stakeholders).
+
+<br />
+
+**Dr. Milica Radisic, Radisic Lab Director and Organ-on-a-Chip Researcher:** As a contact from the Acceleration Consortium, a global research network focusing on high-throughput self-driving labs, Dr. Radisic’s fresh perspective on the research space’s desire for high-throughput and rapid assays helped us reflect on whether our design could be adapted for use in real labs. While our bioreactors would take a significant amount of time to generate results compared to assays that use microfluidics, which is her speciality, both her and Dr. Babaian emphasised that our bioreactor design should take the middle ground between being able to record detailed bacterial/enzymatic data and highly parallelized assays. She also emphasised designing for modularity, where researchers can easily swap various different measurement modules on the same bioreactor and monitor their readings over time using the same UI. Finally, both her and Dr. Babaian agreed on bioreactor system stability so that there was no loss of data from long-term experiments. These breaks in data could set progress back days, and autonomous experiments are important in the context of bioreactors.
+
+Thanks to the microplastics conference held by our team, we were also able to learn from the opinions of various different parties and their priorities when it comes to bioreactor designs. [Notes: Milica Radisic interview](https://docs.google.com/document/d/1C_0B4QMTvo70nwS3QEYtQA7ZQUhzKWpPEgfsW6EpjA4/edit?tab=t.0)
+
+<Figure
+  src="https://static.igem.wiki/teams/6187/wiki/hardware-v2/o6.avif"
+  alt="fig6"
+  caption="Figure 6: Poster presentations of our team’s various projects at the microplastics conference to students, researchers, and experts in the microplastics field."
+/>
+
+**Bioreactor Builders, from various labs:** Some researchers approached us during our poster presentation at the conference with some interesting bioreactor stories of their own. Some were growing cultures in much larger volumes, and some were even cultivating fungi, which had much different concerns such as the formation of “bubbles” in their cultures. They had interesting solutions, such as using fan blades to clear their culture of bubbles. Looking at these challenges, we were wondering if it was possible to introduce modules to the bioreactor so that users can modify their reactors to grow significantly different organisms.
+
+**Patricia Rea, iGEM Toronto Wetlab Lead:** At the conference, we discussed bioreactor features in detail with Patricia again. It turns out that she was interested in purchasing this device, but emphasised user-friendliness and stability for her own experiments. As this device is geared towards non-engineers, we will continue to make the device as convenient as possible for setup, storage, and use.
+
+**Dr. Raphael Loll-Krippleber, Senior Research Associate at Brown Lab:** We spoke briefly with Dr. Loll-Krippleber and we learned that he was developing a similar high-throughput system using the chi bioreactors to develop a yeast platform for recycling and remediation of PET plastic. He spoke of his experience using chi bioreactors and asked us how we could potentially differentiate our design from them, as they also have an intuitive UI, are low-cost, and require little setup. We both learned that pH control is something still left unsolved by the chi bioreactors, and introducing additional modules to further strengthen the uniqueness of our bioreactors is something we should develop for the future.
+
+## Main objective
+
+V2 of our bioreactors focuses on both the software and mechanical integration of all our components. We hoped to establish a strong connection between data and command transfers between our laptop UI and the arduino controlling all the electronic components. We also hoped to design housings and arrangements for all components so that it could sit safely on top of a lab bench.
+
+## Overarching requirements
+
+| Subsystem               | Requirements Summary                                                                                                                                                                                                                            | Link for More Details    |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **CAD**                 | This round, we want to focus on minimising the required tolerance on print as well as print time.<br /><br />Additional housings were generated for the pump(s), perfboard, and heater in a "shelving" style for easy removal of components.    | [CAD V2](#)              |
+| **Temperature Control** | We wanted to further refine our temperature subsystem by minimising temperature fluctuations and the time it took to heat up the vial to a certain temperature.                                                                                 | [Temperature V2](#)      |
+| **Power Management**    | Based on our discussion with various stakeholders, we wanted to ensure that our bioreactors could stay operating for significant durations of time on regular power, so its stability with power was evaluated.                                 | [Power Management V2](#) |
+| **Pumps**               | When considering user-friendliness, disassembly of the pumps was a common issue, based on things we read on online forums. So ensuring that the autoclavable components of the pump could be removed was a priority.                            | [Pumps V2](#)            |
+| **OD**                  | We wanted to make the OD value we obtained more comparable across multiple different bioreactors. Thus we aimed to be able to measure OD600 as well as include a sequence for calibration so that our sensors could measure OD600 of a culture. | [OD V2](#)               |
+| **Data & Controls**     | Upgrades were prioritised for the UI system to ensure user-friendliness and proper data displays from the Arduino.                                                                                                                              | [Data & Controls V2](#)  |
+| **Stirring**            | The target still remains between 150–300 RPM for optimal bacterial growth, and we aimed to fulfil this in our second iteration, with full RPM control.                                                                                          | [Stirring V2](#)         |
+
+## Costing BoM
+
+| Component                                          | Price (CAD)           |
+| -------------------------------------------------- | --------------------- |
+| FIT0845 heater                                     | $5.16                 |
+| DFR0198 temperature probe                          | $15.20                |
+| SRSZ-05VDC-SH relay                                | $6.92                 |
+| Heater mount (Onyx, 3D printed)                    | $2.04                 |
+| USB-C PD/USB-A QC trigger board                    | $2.79                 |
+| 8-port 200W multi-charger (1/7 share)              | $4.37                 |
+| USB C-C cable                                      | $1.78                 |
+| Trigger board for Arduino power module (1/7 share) | $0.39                 |
+| USB C-C cable for Arduino power module (1/7 share) | $0.25                 |
+| Peristaltic pump with tubing                       | $35.18                |
+| Transistor (TIP142)                                | $6.98                 |
+| Diode (1N5819)                                     | Included in kit       |
+| Resistor (2.2 kΩ)                                  | Included in kit       |
+| Power supply (5V)                                  | Free (reused charger) |
+| Arduino Nano                                       | $8.00                 |
+| USB hub                                            | $15.55                |
+| USB-C to USB-C mini cable                          | Included in kit       |
+| Photodiode (AS7343) ×2                             | $56.26                |
+| LED                                                | $0.09                 |
+| Stemma QT connector ×2                             | $0.95                 |
+| Fan                                                | $17.64                |
+| Neodymium magnets                                  | $4.50                 |
+| Magnetic stir bar                                  | $16.00                |
+| OD sensor / vial holder print (V2.1)               | $1.09                 |
+| Heater, fan, pump & protoboard base print (V2.2)   | $3.04                 |
+| **Total**                                          | **$204.18**           |
