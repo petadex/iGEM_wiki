@@ -85,6 +85,13 @@ Then commit what changed under `static/figures/dry-lab-landscape/`.
 narration is one line per step in `narrative.txt` in the other repo, and that is
 the file to change for wording.
 
+Captions can link to where a step is written up: `[[label|/dry-lab/model/#anchor]]`
+anywhere on the line. Links are set small under the caption with a ↗, open in a
+new tab so the reader keeps their step, and are written relative to `static/figures/dry-lab-landscape/` so they
+work under the iGEM path prefix. The anchor is the heading's slug on that page,
+so **renaming a Model or Software heading breaks its link here** — check
+`narrative.txt` when you do.
+
 The sync asserts on every patch site — the wheel guard, the five story patches,
 `KNN_EDGES`. If the figure changes shape upstream it fails with the name of the
 patch that no longer matches, rather than quietly shipping a page with a live
