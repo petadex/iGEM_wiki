@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import DATA from "../../../data/plasticomeCuration.json"
+import PETADEX_PAGES from "../../../data/petadexPages.json"
 import { COMPONENTS, FOLD_GROUPS, cathOf, groupOf } from "./plasticomeCath.js"
 import {
   Arrow,
@@ -131,6 +132,17 @@ const plasticsOf = (r) =>
     .filter((s) => s && s !== "NA")
 
 const has = (v) => v && v !== "NA"
+
+/**
+ * Each record's curated page on petadex.net, at /sequence/{accession}, by
+ * PETadex-PAZy ID. src/data/petadexPages.json says how records were matched
+ * to petadex.net's list; a record without an entry gets no link. Re-pull it
+ * when petadex.net adds pages.
+ */
+const petadexPage = (r) => {
+  const acc = PETADEX_PAGES.pages[String(r.id)]
+  return acc && `https://petadex.net/sequence/${encodeURIComponent(acc)}/`
+}
 
 const countBySource = (rows) =>
   SOURCES.map((s) => ({ ...s, n: rows.filter((r) => r.src === s.key).length }))
@@ -551,10 +563,6 @@ export const PlasticomeExplorer = () => {
   return (
     <Box ref={boxRef} id="plasticome-explorer">
       <BoxTitle>Explore PETadex-PAZy</BoxTitle>
-      <Sub>
-        Every one of the {fmt(U.length)} enzymes. Search or filter the list, and pick one to see
-        its details.
-      </Sub>
       <TableToggle open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
         <summary>Open the explorer</summary>
         <Explorer>
@@ -655,6 +663,12 @@ const RecordCard = ({ record: r }) => {
       <Fields>
         <dt>Protein Accession</dt>
         <dd>{accession}</dd>
+        {petadexPage(r) && (
+          <>
+            <dt>PETadex</dt>
+            <dd>{ext(petadexPage(r), "View this enzyme on petadex.net")}</dd>
+          </>
+        )}
         <dt>Organism</dt>
         <dd>
           {has(r.org) ? r.org : "Not recorded"}
@@ -1110,6 +1124,14 @@ const Controls = styled.div`
   input,
   select {
     ${fieldStyle}
+  }
+
+  /* A select sizes itself to its longest option ("C001 · alpha/beta hydrolase
+     (232)"), which pushes it and its arrow past its column; held to the
+     column, a long choice is cut off instead. */
+  select {
+    width: 100%;
+    text-overflow: ellipsis;
   }
 `
 
