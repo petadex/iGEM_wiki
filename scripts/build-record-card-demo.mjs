@@ -15,8 +15,10 @@
  * one batch provenance lookup for the relatives' coordinates.
  *
  * The structures are the site's own ColabFold predictions. Each is trimmed
- * to backbone plus the catalytic triad's side chains and written to
- * static/figures/record-card/<key>.pdb, which the demo's Mol* viewer loads;
+ * to backbone plus the catalytic triad's side chains and staged at
+ * tmp/cdn-upload/drylab-page/interactives/record-card-<key>.pdb for upload to
+ * static.igem.wiki, where the demo's Mol* viewer loads it (re-upload a changed
+ * one under a new name and update RecordCardDemo.js: the CDN caches for 24 h);
  * only the per-residue pLDDT goes into the JSON, for the caption.
  *
  * The LOBSTER designs are read from the team's fragment-map page
@@ -43,7 +45,7 @@ const LOBSTER_HTML =
 
 const OUT = new URL("../src/data/recordCardDemo.json", import.meta.url)
 // The viewer loads these over HTTP from the built site, not from the JSON.
-const STRUCTURES = new URL("../static/figures/record-card/", import.meta.url)
+const STRUCTURES = new URL("../tmp/cdn-upload/drylab-page/interactives/", import.meta.url)
 
 /**
  * The two records. `triad` is the catalytic serine-aspartate-histidine, as
@@ -250,7 +252,8 @@ for (const spec of RECORDS) {
 
   const pdb = await fetch(struct.pdb_url, { signal: AbortSignal.timeout(90000) }).then((r) => r.text())
   await mkdir(STRUCTURES, { recursive: true })
-  await writeFile(new URL(`${spec.key}.pdb`, STRUCTURES), trimPdb(pdb, spec.triad))
+  await mkdir(STRUCTURES, { recursive: true })
+  await writeFile(new URL(`record-card-${spec.key}.pdb`, STRUCTURES), trimPdb(pdb, spec.triad))
   const trace = confidence(pdb)
   if (trace.n !== seq.length) {
     throw new Error(`${spec.name}: structure has ${trace.n} residues, sequence has ${seq.length}`)

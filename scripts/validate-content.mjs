@@ -144,6 +144,14 @@ for (const filePath of mdxFiles) {
   const frontmatter = parseFrontmatter(filePath)
   validateFrontmatter(filePath, frontmatter)
 
+  // Inline images bloat the repo on every edit; small icons are fine.
+  const inlineImages = fs.readFileSync(filePath, "utf8").match(/data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]{20000,}/g)
+  if (inlineImages) {
+    errors.push(
+      `${relative(filePath)} embeds ${inlineImages.length} large base64 image(s). Run node scripts/extract-inline-images.mjs ${relative(filePath)}.`
+    )
+  }
+
   if (frontmatter.path) {
     const existing = mdxRoutes.get(frontmatter.path)
 
