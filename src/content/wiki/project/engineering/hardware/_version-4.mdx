@@ -11,12 +11,21 @@ firmware.
   caption="The final architecture: control loops, data paths and command actuation across the subsystems."
 />
 
-<Placeholder label="Design — one gap">
+**V3 remains the 40 mL instrument**, not the lower-volume screening tier from C1.3 — that
+tier is the thesis project Radisic is advising, and nothing in it has been built. What V3
+changes relative to V2 is a list of V2's own failures:
 
-State what V3 changes relative to V2, and whether it implements the lower-volume screening
-tier from C1.3 or remains the 40 mL tier. Our records say only that scale-up follows V3.
+| Change | Why |
+| --- | --- |
+| **New fan, controllable down to 150 RPM**, with magnets added to the hub | V2 could not drive the stir bar slowly enough, and the magnet fix is what finally produced a vortex |
+| **Sturdy base** | Fan and table vibration were corrupting the OD reading |
+| **Status tab** showing every connected port and reactor | V1's defect — one reactor failing silenced the rest — plus a bug sending controls to *all* reactors instead of the selected one |
+| **Snap-fit pump lid that actually snaps** | The V2 lid's flaps did not engage, which is why its two pump experiments never ran |
+| **Three-pump architecture**, two in and one out | The requirement from C1.1, now wired, with one pump prototype fully functioning |
+| **OD holder lowered, keyhole cap slot** | Closing the light gap that shifted readings when the vial was reseated |
 
-</Placeholder>
+Every row traces to a measured failure in an earlier cycle, which is the clearest evidence
+the loop was actually running rather than being described after the fact.
 
 </EngineeringStage>
 

@@ -67,28 +67,31 @@ stringency.
 
 <EngineeringStage id="learn">
 
-<Placeholder label="Learn — needs your reading of the integrated result">
+**The biosensor arm answers A2.1's open risk, and the selection arm does not — yet.**
 
-State what the integrated run shows and what it means for the copper mechanism. The
-load-bearing question it speaks to is the open risk from A2.1 — the mentor's 30%-then-50%
-estimate that PETase activity may never release enough copper to cross the pCusC threshold.
-A working end-to-end assay is the direct answer to that; a failure localises the problem to
-the copper step rather than to the circuit.
+The load-bearing question from A2.1 was the mentor's 30%-then-50% estimate that PETase
+activity might never release enough copper to cross the pCusC threshold. The biosensor plate
+speaks to it directly: **M4-Q IsPETase grew *and* fluoresced** on copper mesh, which requires
+copper to have been released, crossed the membrane and driven the promoter. That is the full
+chain working once. The published result is careful to call it an **initial test**, and so
+are we — one plate, one enzyme, no replicates, no dose-response.
 
-Take a position. A Learn block that declines to is the one failure mode this page cannot
-afford.
+**The selection arm carries a confound we should name rather than let a judge find.** All
+test plates grew except Dead-IsPETase, which looks like clean enzyme-dependent survival. But
+the surviving colonies were **morphologically similar to those on the sul1 copper-toxicity
+plates** from A2.2 — the plates where growth was driven by copper tolerance, not by enzyme
+activity. We cannot presently separate "survived because the enzyme released copper" from
+"survived because this construct tolerates copper", because both produce growth on a copper
+plate. The dead-enzyme control narrows it but does not close it: Dead-IsPETase differs from
+the others in more than its catalytic residues.
 
-</Placeholder>
-
-<Callout tone="warning" title="Read the selection evidence with its caveat">
-
-The claim that **selection** is functional rests on constructs in the sul1 lineage, and sul1
-is the subject of the unresolved verification question in A1.1 — it failed whole-plasmid
-verification on 2026-08-11 yet appears in testing afterwards. The **biosensor** arm does not
-depend on that question. If sul1 cannot be resolved, the defensible statement is that the
-biosensor arm is demonstrated end to end and the selection arm is not yet.
-
-</Callout>
+**What this changes for the next iteration.** The biosensor is the readout to push on,
+because its signal is positive and specific — fluorescence has no copper-tolerance
+explanation. The selection arm needs a copper-dose-matched control before any hit from it
+counts, and that control is cheap: the same plates at the same copper concentration with a
+catalytically dead enzyme *and* an enzyme-free construct. Running the formats in parallel was
+the right call in May, but by October the evidence says they are not equally trustworthy, and
+we should say which one we would bet on.
 
 <Callout tone="note" title="What this cycle does not claim">
 
