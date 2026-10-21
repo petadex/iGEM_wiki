@@ -1,15 +1,23 @@
 ### Main Function(s) + Requirements
 
+<br />
+
 | Requirement                                                                                                                                                                                                                                          | Priority | Why (are we considering this)?                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Stirring Speed Must be in Range of 150–300 RPM** <br/><br/> **Metrics & Criteria:** RPM of stir bar, producing vortex <br/><br/> **Constraints:** Ability to spin at controllable levels between 150 and 300 bpm                                   | High     | For _E. coli_ liquid cultures mixed with a stir bar, this is the healthy range recommended for maximal bacterial development.                                                                                                                                                                                                                                                                                                                               |
+| **Stirring Speed Must be in Range of 150–300 RPM** <br/><br/> **Metrics & Criteria:** RPM of stir bar, producing vortex <br/><br/> **Constraints:** Ability to spin at controllable levels between 150 and 300 bpm                                   | High     | For _E. coli_ liquid cultures mixed with a stir bar, this is the healthy range recommended for maximal bacterial development.                                                                                                                                                                                                                                                                                                                             |
 | **Fan Size Must Fit Underneath Vial Diameter** <br/><br/> **Metrics & Criteria:** Outer diameter of vial (27.5 mm). <br/><br/> **Constraints:** Must not be so large such that the magnets on the fan are unable to rotate the stir bar in the vial. | Medium   | We want to ensure that the fan has the actual ability to rotate the stir bar in the vial that it is placed directly underneath. If the fan diameter is too large, the magnets' pull area will not be able to reach the stir bar in the vial. If the fan diameter is too small and the magnets are placed too closely together, the stir bar may not experience enough magnetic force to create a significant rotational force for it to spin in the vial. |
 
+<br />
+
 The stirring mechanism in the bioreactor uses a brushless DC fan as a low cost rotating motor. Creating a rotating magnetic field, two small nickel-plated neodymium magnets secured to the fan hub with Gorilla glue; a magnetic stir bar housed inside the vial follows this field and mixes all components suspended with it. Following the DBTL cycle, initially, several requirements like low power consumption, cost efficiency, and providing various speed settings.
+
+<br />
 
 However, throughout testing, and by better understanding stakeholder needs, specifically the bacteria used in experiments, we identified the most critical requirement: limiting the fan speed. It was found that the lowest RPM of the acting prototype, 1800 RPM, would risk harming the bacteria, while too low a voltage may not start the fan at all. Throughout iterations of this subsystem, speed control at a known RPM, and reduced below 800 was prioritized throughout this subsystem’s design process. Within the context of the entire vessel, the strength of the magnetic field through the heating system was also considered.
 
 ### Component Selection Justification
+
+<br />
 
 | Component         | Purpose                                                                     | Cost   | Sourcing Link                                                                              |
 | ----------------- | --------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------ |
@@ -38,6 +46,8 @@ The initial design of the stirring subsystem started with outlining many require
 />
 
 The Sunon MF40201V1-1000U-G99 was selected for its low starting voltage range (except the range was very large 4.5 ~ 5.5VDC) and footprint. It was low cost, and sourced from [digikey](https://www.digikey.ca/en/products/detail/sunon-fans/MF40201V1-1000U-G99/7927780?gclsrc=aw.ds&gad_source=1&gad_campaignid=23158240004&gbraid=0AAAAADrbLlglFmXf006gWXZ9r1mFa4ZXA&gclid=CjwKCAjwn4vQBhBsEiwAq3hhNwFvLnTkCChn2mS-d67t5cRxdlPJ8rK5c19TzjGfK1Q0bZ8og2zUCxoCfakQAvD_BwE).
+
+<br />
 
 After wiring the fan in several different layouts: directly from nano, using tachometer pins diodes and mosfets, and assembling the magnets and vial with make-shift housing, the magnetic field seemed strong enough to create a vortex in water with the stir bar, and strong enough to pass through the heater. (See image below)
 
