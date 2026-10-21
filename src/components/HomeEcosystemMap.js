@@ -839,10 +839,10 @@ const StageCard = styled.div`
   }
 `
 
-/** Bold, in the PETadex red the landscape uses for its key phrases. */
+/** Bold, in the same teal as the map pins (pin.avif fill). */
 const StageTitle = styled.p`
   margin: 0;
-  color: #e74c4c;
+  color: #3ca77f;
   font-family: var(--font-body);
   ${artFont(34)}
   font-weight: 700;
