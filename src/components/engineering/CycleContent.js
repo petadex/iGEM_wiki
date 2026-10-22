@@ -3,15 +3,8 @@ import styled from "styled-components"
 import { ENGINEERING_STAGES } from "../../data/engineeringCycles.js"
 import { EngineeringCycleWheel } from "./EngineeringCycleWheel.js"
 import { EngineeringStage } from "./EngineeringStage.js"
-import { useMDXComponents } from "@mdx-js/react"
 
 export function CycleContent({ Content, panelId, titleId, art, stacked = false, wheelWidth }) {
-  // Passing `components` to an MDX page replaces the MDXProvider context
-  // rather than extending it, so the cycle files would otherwise lose Figure,
-  // Callout and every other wiki component. Read the context at render time:
-  // importing the registry here would close an import cycle through
-  // wikiComponents -> HardwareIterations -> ... -> CycleContent.
-  const components = { ...useMDXComponents(), EngineeringStage }
   const [activeStage, setActiveStage] = useState(ENGINEERING_STAGES[0].id)
   const panel = useRef(null)
   const scrollTarget = useRef(null)
@@ -68,7 +61,7 @@ export function CycleContent({ Content, panelId, titleId, art, stacked = false, 
         onKeyDown={event => {
           if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) resumeManualScroll()
         }}>
-        <Content components={components} />
+        <Content components={{ EngineeringStage }} />
       </ScrollPanel>
     </CycleLayout>
   )
