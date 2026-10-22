@@ -33,7 +33,7 @@ export function onCreateWebpackConfig({ stage, getConfig, actions }) {
       plugin instanceof TerserPlugin ? new TerserPlugin({
         minify: TerserPlugin.esbuildMinify,
         parallel: false,
-        terserOptions: { target: "es2017" },
+        terserOptions: { target: "es2017", format: "iife" },
       }) : plugin,
     )
   }
