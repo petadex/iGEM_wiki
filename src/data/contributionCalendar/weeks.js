@@ -52,7 +52,7 @@ const DRY = "/dry-lab/overview/"
 const WEB = "/wiki/"
 const VENTURE = "/entrepreneurship/"
 const HP = "/human-practices/"
-const OUTREACH = "/beyond-the-bench/outreach/"
+const OUTREACH = "/outreach/"
 
 const BEFORE_RECORDS =
   "Before the season's records begin. The 2026 team's announcements start on December 19, 2025."

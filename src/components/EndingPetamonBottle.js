@@ -104,7 +104,7 @@ const PIECES = [
     id: "outreach",
     labelAt: { x: 860, y: 2052, side: "above" },
     team: "Outreach",
-    to: "/beyond-the-bench/outreach/",
+    to: "/outreach/",
     color: "#f27ab8",
     ink: "#b40d63",
     blurb:

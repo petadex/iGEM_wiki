@@ -105,7 +105,7 @@ const PETAMONS = [
   {
     id: "outreach",
     team: "Outreach",
-    to: "/beyond-the-bench/outreach/",
+    to: "/outreach/",
     hit: [140, 530, 220, 620],
     say: "Alright everyone, smile! Your PETadex photo is being taken",
   },

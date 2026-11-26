@@ -17,6 +17,14 @@ const requiredFrontmatter = [
   "order",
 ]
 
+// Standalone pages that belong to no section, so they show no section label.
+// Every other page must name its section.
+const sectionlessPages = new Set([
+  "/human-practices/",
+  "/outreach/",
+  "/entrepreneurship/",
+])
+
 const allowedStatuses = new Set(["draft", "review", "published"])
 const errors = []
 
@@ -100,6 +108,7 @@ function isPayloadExport(filePath) {
 
 function validateFrontmatter(filePath, frontmatter) {
   for (const key of requiredFrontmatter) {
+    if (key === "section" && sectionlessPages.has(frontmatter.path)) continue
     if (frontmatter[key] == null || frontmatter[key] === "") {
       errors.push(`${relative(filePath)} is missing frontmatter field "${key}".`)
     }

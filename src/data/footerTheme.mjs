@@ -1,8 +1,8 @@
 const bottomColors = {
   "/human-practices/": "#CDD7B8",
-  "/beyond-the-bench/human-practices/": "#CDD7B8",
+  "/human-practices/": "#CDD7B8",
   "/entrepreneurship/": "#7FE4AA",
-  "/beyond-the-bench/entrepreneurship/": "#7FE4AA",
+  "/entrepreneurship/": "#7FE4AA",
   "/contribution/": "#769B8A",
   "/project/contribution/": "#769B8A",
   "/attributions/": "#EBB9A0",
@@ -18,7 +18,7 @@ const bottomColors = {
   "/model/": "#805340",
   "/software/": "#805340",
   "/wiki/": "#FECC65",
-  "/beyond-the-bench/outreach/": "#D7AB6F",
+  "/outreach/": "#D7AB6F",
   "/": "#296270",
 }
 
