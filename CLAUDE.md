@@ -24,7 +24,7 @@ No test suite is configured.
 
 ### Page structure
 
-Pages live in `src/pages/` and map directly to routes. Nested folders (`project/`, `dry-lab/`, `wet-lab/`, `hardware/`, `beyond-the-bench/`, `team/`) contain sub-pages for each wiki section. [src/components/layout.js](src/components/layout.js) wraps every page with the shared header and global styles.
+Pages live in `src/pages/` and map directly to routes. Nested folders (`project/`, `dry-lab/`, `wet-lab/`, `hardware/`, `team/`) contain sub-pages for each wiki section. Human Practices, Outreach and Entrepreneurship sit at the top level (`/human-practices/`, `/outreach/`, `/entrepreneurship/`) with no section of their own, so they carry no `section` frontmatter — `scripts/validate-content.mjs` allowlists them. [src/components/layout.js](src/components/layout.js) wraps every page with the shared header and global styles.
 
 ### Deployment
 

@@ -75,7 +75,7 @@ export const ENGINEERING_TEAMS = [
     barCrop: [567, 1259, 177, 55], petamonCrop: [565, 1137, 174, 134] },
   { centerImage: `${ART_BASE}venhp-circle.avif`, centerCrop: [285, 1993, 142, 158],
     centerBounds: [110, 106, 130, 125],
-    links: ["https://2026.igem.wiki/toronto/entrepreneurship/", "https://2026.igem.wiki/toronto/beyond-the-bench/outreach/"],
+    links: ["https://2026.igem.wiki/toronto/entrepreneurship/", "https://2026.igem.wiki/toronto/outreach/"],
     petamonOffsetX: "6%",
     buttonCrop: [762, 1120, 182, 196],
     id: "entrepreneurship-outreach", label: "Entrepreneurship & Outreach", color: "#35657b", versionCount: 3,

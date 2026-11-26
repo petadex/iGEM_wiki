@@ -33,7 +33,7 @@ export const wikiNav = [
     { to: "/hardware/notebook/", label: "Notebook" },
   ]},
   { to: "/human-practices/", label: "Human Practices" },
-  { to: "/beyond-the-bench/outreach/", label: "Outreach" },
+  { to: "/outreach/", label: "Outreach" },
   { to: "/entrepreneurship/", label: "Entrepreneurship" },
   { label: "Team", children: [
     { to: "/contribution/", label: "Contribution" },

@@ -45,11 +45,11 @@ const sceneFor = frontmatter => {
   if (frontmatter.section === "Dry Lab") return DRY_LAB_SCENE
   if (frontmatter.section === "Hardware") return HARDWARE_SCENE
   if (frontmatter.section === "Wet Lab") return WET_LAB_SCENE
-  if (frontmatter.path === "/beyond-the-bench/entrepreneurship/")
+  if (frontmatter.path === "/entrepreneurship/")
     return VENTURE_SCENE
-  if (frontmatter.path === "/beyond-the-bench/human-practices/")
+  if (frontmatter.path === "/human-practices/")
     return HP_SCENE
-  if (frontmatter.path === "/beyond-the-bench/outreach/") return OUTREACH_SCENE
+  if (frontmatter.path === "/outreach/") return OUTREACH_SCENE
   if (frontmatter.path === "/project/contribution/") return CONTRIBUTION_SCENE
   // Served at the standard /description/ too (standardRoutes.mjs).
   if (frontmatter.path === "/project/description/") return PROJECT_SCENE
