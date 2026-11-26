@@ -329,6 +329,7 @@ const Article = styled.article`
   h4 {
     color: var(--color-text);
     margin-top: var(--space-xl);
+    overflow-wrap: break-word;
     max-width: ${({ $wide, $wideProse }) => ($wide || $wideProse ? "none" : "48rem")};
   }
 
@@ -371,7 +372,8 @@ const Article = styled.article`
   ol,
   blockquote,
   pre,
-  table {
+  table,
+  .table-scroll {
     max-width: ${({ $wide, $wideProse }) => ($wide || $wideProse ? "none" : "48rem")};
   }
 
@@ -442,6 +444,8 @@ const Article = styled.article`
     border-radius: 4px;
     color: var(--color-text);
     background: rgba(255, 255, 255, 0.32);
+    /* A long identifier wraps instead of running past the card's edge. */
+    overflow-wrap: anywhere;
   }
 
   pre {
@@ -470,6 +474,26 @@ const Article = styled.article`
     vertical-align: top;
     overflow-wrap: anywhere;
     min-width: 0;
+  }
+
+  /* Markdown tables (see MdxTable). Columns size to their content and words
+     stay whole; a table that then needs more room than the column scrolls
+     inside this box. Fixed equal columns with break-anywhere wrapping split
+     headers and numbers mid-token ("Clusterin/g", "6,764,/617"). */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-scroll > table {
+    max-width: none;
+    margin: 0;
+    table-layout: auto;
+  }
+
+  .table-scroll th,
+  .table-scroll td {
+    overflow-wrap: break-word;
   }
 
   table figure {
@@ -543,6 +567,31 @@ const Article = styled.article`
     th,
     td {
       padding: 0.35rem;
+    }
+
+    /* Four or more columns cannot share a phone's width: each came out about
+       70px wide and broke words mid-syllable. Such a table keeps a readable
+       width and scrolls sideways inside its .table-scroll box instead. */
+    .table-scroll > table:has(tr > :nth-child(4)) {
+      min-width: 34rem;
+    }
+
+    .table-scroll > table:has(tr > :nth-child(6)) {
+      min-width: 46rem;
+    }
+
+    /* Tables written as HTML in a page have no .table-scroll around them, so
+       they scroll in place. (Component tables, with a -sc- class, look after
+       themselves.) */
+    :not(.table-scroll) > table:not([class*="-sc-"]):has(tr > :nth-child(4)) {
+      display: block;
+      overflow-x: auto;
+    }
+
+    :not(.table-scroll) > table:not([class*="-sc-"]):has(tr > :nth-child(4)) th,
+    :not(.table-scroll) > table:not([class*="-sc-"]):has(tr > :nth-child(4)) td {
+      min-width: 7rem;
+      overflow-wrap: break-word;
     }
   }
 

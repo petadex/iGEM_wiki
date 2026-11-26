@@ -482,6 +482,17 @@ const MethodsCard = styled.a`
     color: ${INK};
     text-decoration: none;
     transition: border-color 0.2s ease, transform 0.2s ease;
+
+    /* Side by side on a phone, the badge and arrow left the text 130px. */
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem var(--space-sm);
+
+      > :first-child {
+        grid-column: 1 / -1;
+        justify-self: start;
+      }
+    }
   }
 
   &&&:hover {

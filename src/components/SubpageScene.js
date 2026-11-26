@@ -4669,6 +4669,12 @@ const SideColumn = styled.div`
     top: var(--dl-header, 0px);
     z-index: 2;
     padding: 0.5rem 5%;
+
+    /* Out of the way while a figure fills the screen (holdFigureUp): this
+       bar's layer otherwise sits on top of the open window and its Close. */
+    html[data-figure-up] & {
+      visibility: hidden;
+    }
   }
 `
 
@@ -5220,8 +5226,11 @@ const SideNav = styled.nav`
     flex-direction: row;
     gap: 0.25rem;
     margin-left: 0;
-    mask-image: none !important;
-    padding: 0.35rem;
+    /* The right edge fades so the row reads as scrollable; the end padding
+       lets the last link scroll clear of the fade. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 2.25rem), transparent) !important;
+    padding: 0.35rem 2.25rem 0.35rem 0.35rem;
+    scroll-padding-inline: 1rem;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
@@ -5350,9 +5359,13 @@ const SideLink = styled.a`
 
   ${NARROW} {
     flex: none;
+    /* A heading written as a full sentence would otherwise fill the bar. */
+    max-width: 72vw;
     padding: 0.5rem 0.8rem;
     font-size: 0.8rem;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     overflow-wrap: normal;
   }
 `
@@ -5434,7 +5447,10 @@ const SubLink = styled.a`
 
   ${NARROW} {
     flex: none;
+    max-width: 72vw;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     padding: 0.35rem 0.5rem 0.35rem 0.7rem;
   }
 `

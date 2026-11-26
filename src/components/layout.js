@@ -285,7 +285,9 @@ const FooterBottom = styled.div`
 
   @media (max-width: 720px) {
     margin-top: var(--space-md);
-    padding: var(--space-sm) 0 var(--space-md);
+    /* Room for the back-to-top button, which otherwise sits on the last
+       lines of the land acknowledgement with nothing left to scroll. */
+    padding: var(--space-sm) 0 calc(var(--space-md) + 3.5rem);
   }
 `
 
@@ -428,6 +430,7 @@ const FooterMeta = styled.div`
 
   @media (max-width: 720px) {
     justify-content: center;
+    gap: 0.25rem 1rem;
     font-size: 0.75rem;
     text-align: center;
   }
@@ -468,4 +471,9 @@ const MetaSep = styled.span`
   margin: 0 0.5rem;
   user-select: none;
   color: inherit;
+
+  /* The row wraps on a phone, which left a dot hanging at a line's end. */
+  @media (max-width: 720px) {
+    display: none;
+  }
 `

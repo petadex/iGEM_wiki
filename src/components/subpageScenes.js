@@ -706,6 +706,9 @@ export const CONTRIBUTION_SCENE = {
   background: "#c0dad3",
   skyBottom: 400,
   headerColor: "#2e5247",
+  // A pale halo lifts the subtitle off the greenhouse arches behind it.
+  headerShadow:
+    "0 0.04em 0 rgba(255, 255, 255, 0.7), 0 0 0.3em rgba(244, 250, 240, 0.95), 0 0 0.75em rgba(244, 250, 240, 0.9)",
   accent: "#46725f",
   layers: [
     { name: "bg", box: [0, 0, 1110, 4000] },
@@ -1059,8 +1062,9 @@ export const OUTREACH_SCENE = {
   skyBottom: 400,
   /** Cream on the sunlit canopy, lifted off it with a dark shadow. */
   headerColor: "#fff2d6",
+  // A dark halo as well as the drop: the subtitle crosses bright foliage.
   headerShadow:
-    "0 0.06em 0 rgba(30, 36, 14, 0.6), 0 0.1em 0.45em rgba(0, 0, 0, 0.45)",
+    "0 0.06em 0 rgba(30, 36, 14, 0.75), 0 0 0.3em rgba(20, 26, 8, 0.9), 0 0.1em 0.9em rgba(0, 0, 0, 0.6)",
   accent: "#a8642c",
   /**
    * Table header rows use the light gold already set as `tableHead` on

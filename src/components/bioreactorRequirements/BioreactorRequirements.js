@@ -525,6 +525,9 @@ const Table = styled.table`
   border-collapse: collapse;
   font-size: 0.85rem;
   table-layout: fixed;
+  /* Five columns need this much to hold whole words; below it the table
+     scrolls sideways in TableScroll instead of wrapping a letter per line. */
+  min-width: 46rem;
 
   /* Override the global MDX prose table cap (max-width: 48rem) from the
      article template so the table fills its container. Tripled selector
@@ -558,7 +561,6 @@ const Table = styled.table`
     font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    white-space: nowrap;
     z-index: 1;
   }
 

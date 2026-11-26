@@ -618,6 +618,14 @@ const Cards = styled.div`
   gap: clamp(1.25rem, 3vw, max(2rem, 2.6vw)) var(--card-gap);
   max-width: calc(4 * var(--card-w) + 3 * var(--card-gap));
   margin: 0 auto;
+
+  /* On a phone the icon rail takes ~2.4rem off the left, and two 40vw cards
+     no longer fit beside it, which left one card per row for 22 screens.
+     Slightly narrower cards keep two to a row down to a 320px screen. */
+  @media (max-width: 520px) {
+    --card-w: clamp(6.75rem, 36vw, 9.75rem);
+    --card-gap: 0.75rem;
+  }
 `
 
 const Card = styled.article`
@@ -728,7 +736,7 @@ const Name = styled.div`
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 `
 
 const Role = styled.div`
@@ -742,10 +750,11 @@ const Links = styled.div`
   right: 0.4em;
   bottom: 0.4em;
   display: flex;
-  gap: 0.25em;
+  gap: 0.5em;
 `
 
 const IconLink = styled.a`
+  position: relative;
   display: grid;
   place-items: center;
   width: 1.3em;
@@ -757,6 +766,13 @@ const IconLink = styled.a`
   svg {
     width: 0.8em;
     height: 0.8em;
+  }
+
+  /* The drawn box stays small; the area that takes a tap is larger. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -0.45em -0.22em;
   }
 
   &:hover,

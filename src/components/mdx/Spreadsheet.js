@@ -257,6 +257,13 @@ const Cell = styled.td`
         css`
           white-space: normal;
           max-width: 24rem;
+
+          /* The label column is sticky; at 24rem it filled a phone's whole
+             scroller and no number could be scrolled into view. */
+          @media (max-width: 640px) {
+            max-width: 9.5rem;
+            overflow-wrap: break-word;
+          }
         `
       }
       ${$flags.includes("b") && "font-weight: 700;"}
