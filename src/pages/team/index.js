@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { graphql } from "gatsby"
 import styled from "styled-components"
 import WikiLayout from "../../components/layout.js"
+import Seo from "../../components/seo.js"
 
 /*
  * Members come from src/data/team/team.csv (from the team roster). The
@@ -456,7 +457,9 @@ export const query = graphql`
 `
 
 export default TeamPage
-export const Head = () => <title>Meet the Team | iGEM Toronto 2026</title>
+export const Head = () => (
+  <Seo title="Meet the Team" description="The students, advisors and principal investigators of iGEM Toronto 2026." />
+)
 
 const Backdrop = styled.div`
   position: fixed;

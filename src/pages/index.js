@@ -1,5 +1,6 @@
 import React from "react"
 import WikiLayout from "../components/layout.js"
+import Seo from "../components/seo.js"
 import { HomeScrollPrototype } from "../components/HomeScrollPrototype.js"
 
 const HomePage = () => (
@@ -10,4 +11,9 @@ const HomePage = () => (
 
 export default HomePage
 
-export const Head = () => <title>Home | iGEM Toronto 2026</title>
+export const Head = () => (
+  <Seo
+    title="Home"
+    description="iGEM Toronto 2026 (PetaBite): 70 students finding, engineering, and deploying plastic-degrading enzymes."
+  />
+)

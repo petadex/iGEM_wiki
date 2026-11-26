@@ -42,7 +42,7 @@ const ConferenceFlashText = styled.span`
       110deg,
       #553273 20%,
       #80502a 40%,
-      #ffe694 50%,
+      #b8862f 50%,
       #80502a 60%,
       #553273 80%
     );
@@ -342,7 +342,7 @@ const SpotlightTitle = styled.span`
   color: #553273;
 
   @supports (background-clip: text) or (-webkit-background-clip: text) {
-    background: linear-gradient(110deg, #553273 20%, #80502a 40%, #ffe694 50%, #80502a 60%, #553273 80%);
+    background: linear-gradient(110deg, #553273 20%, #80502a 40%, #b8862f 50%, #80502a 60%, #553273 80%);
     background-size: 250% 100%;
     background-clip: text;
     -webkit-background-clip: text;
