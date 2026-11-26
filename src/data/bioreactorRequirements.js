@@ -256,7 +256,7 @@ export const BIOREACTOR_REQUIREMENT_VERSIONS = [
           {
             id: "separation",
             objective: "Separation of undesired final products and product",
-            subObjectives: ["Downstream operation.", "Downstream parts to be added."],
+            subObjectives: ["Downstream operation.", "Downstream parts are not yet specified."],
             metric: [
               "Efficiency of separation.",
               "Pump power to send the effluent to the next stage.",
@@ -639,7 +639,7 @@ export const BIOREACTOR_REQUIREMENT_VERSIONS = [
             metric: [
               "Less text is better — Metric: number of words in the instructions.",
               "Availability of digital and printed formats — Metric: binary (yes/no).",
-              "???????? — Metric: (TBD).",
+              "Ease of navigating each format — Metric: not yet defined.",
               "Inclusion of context clues per component — Metric: binary (yes/no).",
             ],
             constraints: [
@@ -671,7 +671,7 @@ export const BIOREACTOR_REQUIREMENT_VERSIONS = [
             id: "network-limits",
             objective: "Adheres to network limitations (when scaled up to 96)",
             subObjectives: [
-              "System of all 96 pioreactors shall take up no more than ____??? bandwidth.",
+              "System of all 96 bioreactors shall stay within the available network bandwidth; the budget is not yet quantified.",
             ],
             metric: ["Less bandwidth is better? — Metric: bandwidth."],
             constraints: ["96 modules will require a somewhat large bandwidth."],
@@ -714,7 +714,7 @@ export const BIOREACTOR_REQUIREMENT_VERSIONS = [
           {
             id: "sizing",
             objective: "Sizing",
-            subObjectives: ["Artem has a big shelf (dimensions TBD)."],
+            subObjectives: ["Shall fit on a standard lab shelf; target dimensions not yet measured."],
             metric: [],
             constraints: [
               "Wet lab — regular benchtop level of space (Patricia will measure?); a decent-sized desk for one person?",

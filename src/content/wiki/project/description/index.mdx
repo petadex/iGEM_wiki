@@ -168,7 +168,7 @@ We homed in on one use case this year rather than "any condition" to have a cent
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Dry Lab  | A ranked, synthesizable library delivered to Wet Lab, and a model trained on the PETadex to choose enzymes to test.                                                                    | Library delivered (60 kb, two oPools, ordered 2026-09-28). Enrichment: [fill from Model page]                                                              |
 | Wet Lab  | Both readouts working, each with a positive control (FAST-PETase, IsPETase), a negative control (dead PETase) and a copper-dependence control. And having screened our dry lab library | Biosensor and selection constructs each copper- or antibiotic-responsive. PETase display plasmid in transformation. Candidates screened: only control sets |
-| Hardware | N reactors holding temperature within ±X °C and reading OD within Y of a reference spectrophotometer, below $Z per unit. Target of building an 8 bioreactor array                      | [N] units built; ±0.1 °C over one 37 °C run; OD600 calibration [pending]. $[Z] per unit. Built a 2 bioreactor array                                        |
+| Hardware | An array of reactors holding temperature within ±1.5 °C and converting its own optical density reading to OD600 against a reference spectrophotometer, under $250 per unit. Target of building an 8 bioreactor array | 2 bioreactors built. Temperature met: reached 37 °C in under 20 min and held within ±0.3 °C over a 1.5 h run, with bench accuracy ±0.2–0.45 °C from 30 to 50 °C. OD600 calibration not met: the 3-point calibration reached R² = 0.993 on yeast, but absolute OD600 was unreliable and incomparable between runs because the LED and sensor shifted. ≈$204 CAD per unit |
 | Loop     | At least one round where model-ranked sequences were tested and the result changed the model or the next order                                                                         | First turn in progress, and no activity data returned yet                                                                                                  |
 
 ## 5. Our approach: one loop, three engines, three thrusters
@@ -195,7 +195,7 @@ We saw the status quo in the field, and made a core decision: our assays are goi
 ### Hardware
 
 Bioreactors are at the heart of deploying our enzymes. However, commercial bioreactors are either too expensive or too big to run as a parallel array to test different temperature and pH points. So, we designed reactors that can run at a chosen temperature and pH and produce a labelled (sequence, temperature, pH, activity) data point, and those points are fed back into the model for it to learn from.
-The bioreactor we built is a low-cost, open-source platform on an Arduino Nano with optical density and temperature control. We took Pioreactor as the reference design, and V1 was integrated on 2026-07-30 and V2 is assembled. In its first biological run it held a 20 mL E. coli culture at 37 °C to ±0.1 °C and grew to an OD of [insert]. Build files, bill of materials and assembly instructions are on the [Hardware](/hardware/overview/) page.
+The bioreactor we built is a low-cost, open-source platform on an Arduino Nano with optical density and temperature control. We took Pioreactor as the reference design, and V1 was integrated on 2026-07-30 and V2 is assembled. In its first biological run it held a 20 mL E. coli culture at 37 °C to within ±0.3 °C, but the culture did not grow, because the stirring magnets had not yet been fitted and the cells settled out. With stirring working the next day, a culture grew over four hours in the reactor from OD600 0.153 to roughly 1.2 by reference spectrophotometer. Build files, bill of materials and assembly instructions are on the [Hardware](/hardware/overview/) page.
 
 ### Human Practices
 
@@ -244,10 +244,10 @@ Advisor contributions were critical at several points throughout the project. Th
 
 These parts make our copper-release assay reusable by any team seeking a high-throughput, sequenceable readout of polyester degradation. Components are listed only where characterization data were obtained.
 
-- **Copper-responsive reporter cassette** (pCusC → msGFP2). Characterized: copper-inducible fluorescence in BL21(DE3) [concentration series, Registry link].
-- **Copper-responsive selection cassette** (pCusC → sul1). Characterized: growth at sulfadiazine ≥16 µg/mL relative to negative control [Registry link].
-- **pJUMP backbones as used** (pJUMP26 series). Characterized: assembly efficiency and sequence verification [Registry link].
-- **PETase expression constructs** (IsPETase, FAST-PETase, catalytically dead PETase). Characterized: [expression and activity data, or omit until available] [Registry link].
+- **Copper-responsive reporter cassette** ([pCusC](https://registry.igem.org/parts/BBa_K1980004) → [msGFP2](https://registry.igem.org/parts/BBa_26DWFOTU)). Characterized: copper-inducible fluorescence in BL21(DE3) across a copper concentration series.
+- **Copper-responsive selection cassette** ([pCusC](https://registry.igem.org/parts/BBa_K1980004) → [sul1](https://registry.igem.org/parts/BBa_26D63H1J)). Characterized: growth at sulfadiazine ≥16 µg/mL relative to negative control.
+- **pJUMP backbone as used** ([pJUMP26-1A](https://registry.igem.org/parts/BBa_J428350)). Characterized: assembly efficiency and sequence verification.
+- **PETase expression constructs** ([IsPETase](https://registry.igem.org/parts/BBa_2666R1WB), [FAST-PETase](https://registry.igem.org/parts/BBa_26KIWZ9H), [catalytically dead IsPETase](https://registry.igem.org/parts/BBa_2629L2Z5)) in the [PD-V2 display system](https://registry.igem.org/parts/BBa_26ZNYWEW). Sequence-verified; expression and activity not yet measured.
 
 ## 8. Responsible by design
 
