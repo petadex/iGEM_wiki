@@ -63,13 +63,20 @@ const loadMolstar = () => {
  * happen before the viewer is created. Hardware acceleration switched off,
  * and some locked-down school and office browsers, land here.
  */
+let webglAvailable
 const hasWebGL = () => {
+  // Asked once per page: browsers cap live WebGL contexts, and a page that
+  // switches structures would otherwise leave a test context behind each time.
+  if (webglAvailable !== undefined) return webglAvailable
   try {
     const canvas = document.createElement("canvas")
-    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"))
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl")
+    webglAvailable = Boolean(gl)
+    gl?.getExtension("WEBGL_lose_context")?.loseContext()
   } catch (err) {
-    return false
+    webglAvailable = false
   }
+  return webglAvailable
 }
 
 /**
@@ -423,9 +430,7 @@ export const StructureViewer = ({
                 {src && (
                   <>
                     {" "}
-                    <a href={src} download>
-                      Download the structure file
-                    </a>
+                    <a href={src}>Open the structure file</a>
                     .
                   </>
                 )}

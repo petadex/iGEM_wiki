@@ -17,7 +17,7 @@ export function CycleContent({ Content, panelId, titleId, art, stacked = false, 
     const root = panel.current
     // On a phone the panel does not scroll (its notes take their own height),
     // so the page scrolls to the stage instead, clear of the sticky bars.
-    if (root.scrollHeight <= root.clientHeight + 1) {
+    if (getComputedStyle(root).overflowY === "visible") {
       const instant = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
       window.scrollTo({
         top: window.scrollY + target.getBoundingClientRect().top - 140,

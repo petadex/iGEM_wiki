@@ -252,11 +252,10 @@ export const ContributionCalendar = ({ title, caption }) => (
 /**
  * Every Markdown table sits in its own sideways scroller (styled as
  * `.table-scroll` by the article), so a table too wide for the column scrolls
- * inside its box instead of crushing its columns or pushing the page. It is
- * focusable so a keyboard reader can scroll it too.
+ * inside its box instead of crushing its columns or pushing the page.
  */
 const MdxTable = props => (
-  <div className="table-scroll" role="region" aria-label="Table" tabIndex={0}>
+  <div className="table-scroll">
     <table {...props} />
   </div>
 )
