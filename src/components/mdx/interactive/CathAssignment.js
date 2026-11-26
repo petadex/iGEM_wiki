@@ -1238,8 +1238,10 @@ const FoldButtons = styled.nav`
   }
 
   small {
+    flex: none;
     color: ${MUTED};
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 `
 

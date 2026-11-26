@@ -111,8 +111,9 @@ const Card = styled.article`
   box-shadow: 0 3px 12px rgba(79, 65, 89, 0.07);
   overflow-wrap: anywhere;
 `
+/* Tripled: the scene's text box sets h3 margins with a doubled class. */
 const Name = styled.h3`
-  && { margin: 0 0 0.35rem; padding: 0; border: 0; color: #4f4159; font-size: 1.3rem; line-height: 1.3; }
+  &&& { margin: 0 0 0.35rem; padding: 0; border: 0; color: #4f4159; font-size: 1.3rem; line-height: 1.3; }
 `
 const Role = styled.p`
   && { margin: 0 0 1rem; font-size: 0.95rem; font-weight: 600; color: #714653; }

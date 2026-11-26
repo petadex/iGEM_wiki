@@ -17,7 +17,7 @@ const PLAY_AT = 0.3
  * view, then the petamons pop out from behind their pieces, in place.
  */
 export const EndingBottleNav = ({
-  to = "/project/engineering/",
+  to = "/engineering/",
   label = "See the Engineering cycles",
   kicker = "Where to next",
   note = null,

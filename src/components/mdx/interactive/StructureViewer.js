@@ -57,6 +57,29 @@ const loadMolstar = () => {
 }
 
 /**
+ * Whether this browser will hand out a WebGL context. Mol* does not reject
+ * when it cannot get one: it throws from inside its own start-up, and then
+ * again from code that carries on without a canvas, so the check has to
+ * happen before the viewer is created. Hardware acceleration switched off,
+ * and some locked-down school and office browsers, land here.
+ */
+let webglAvailable
+const hasWebGL = () => {
+  // Asked once per page: browsers cap live WebGL contexts, and a page that
+  // switches structures would otherwise leave a test context behind each time.
+  if (webglAvailable !== undefined) return webglAvailable
+  try {
+    const canvas = document.createElement("canvas")
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl")
+    webglAvailable = Boolean(gl)
+    gl?.getExtension("WEBGL_lose_context")?.loseContext()
+  } catch (err) {
+    webglAvailable = false
+  }
+  return webglAvailable
+}
+
+/**
  * The catalytic residues, in pink. It has to stay legible against every
  * colour mode below, the white cartoon most of all, and the ink brown it once
  * was sat too close to the chain's N-terminal end.
@@ -197,6 +220,10 @@ export const StructureViewer = ({
     const start = async () => {
       try {
         setState("loading")
+        if (!hasWebGL()) {
+          setState("unsupported")
+          return
+        }
         const molstar = await loadMolstar()
         if (!live || !hostRef.current) return
 
@@ -394,6 +421,21 @@ export const StructureViewer = ({
         <Notice role="status" $bg={background}>
           {state === "loading" ? (
             "Loading the structure…"
+          ) : state === "unsupported" ? (
+            <>
+              This 3D structure needs WebGL, which is switched off or
+              unavailable in this browser.
+              <Reason>
+                Turn on hardware acceleration, or try another browser or device.
+                {src && (
+                  <>
+                    {" "}
+                    <a href={src}>Open the structure file</a>
+                    .
+                  </>
+                )}
+              </Reason>
+            </>
           ) : (
             <>
               The structure viewer did not load.

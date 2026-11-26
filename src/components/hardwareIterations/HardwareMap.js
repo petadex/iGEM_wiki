@@ -362,7 +362,7 @@ const Pill = styled.span`
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
   color: #1d2a33;
-  font-size: clamp(0.62rem, 2.4cqw, 0.85rem);
+  font-size: clamp(0.7rem, 2.4cqw, 0.85rem);
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;

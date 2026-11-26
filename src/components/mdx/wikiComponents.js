@@ -172,12 +172,18 @@ export const Figure = ({
 
 // Markdown links to other wiki pages are root-relative too, so they need the
 // same prefix. Protocol-relative (//) and hash-only links are left alone.
+// gatsby-plugin-mdx already prefixes `[text](/path)` links when it compiles a
+// page, so a link that arrives with the prefix must not get it a second time
+// (that produced /toronto/toronto/… on the iGEM build).
+const sitePrefix = withPrefix("/")
+const prefixOnce = href => {
+  if (!href.startsWith("/") || href.startsWith("//")) return href
+  if (sitePrefix !== "/" && href.startsWith(sitePrefix)) return href
+  return withPrefix(href)
+}
+
 const MdxLink = ({ href = "", ...props }) => (
-  <a
-    {...props}
-    {...useLinkTarget(href)}
-    href={href.startsWith("/") && !href.startsWith("//") ? withPrefix(href) : href}
-  />
+  <a {...props} {...useLinkTarget(href)} href={prefixOnce(href)} />
 )
 
 export const ImageGrid = ({ children }) => <GridWrap>{children}</GridWrap>
@@ -243,9 +249,21 @@ export const ContributionCalendar = ({ title, caption }) => (
   </ContributionCalendarWrap>
 )
 
+/**
+ * Every Markdown table sits in its own sideways scroller (styled as
+ * `.table-scroll` by the article), so a table too wide for the column scrolls
+ * inside its box instead of crushing its columns or pushing the page.
+ */
+const MdxTable = props => (
+  <div className="table-scroll">
+    <table {...props} />
+  </div>
+)
+
 export const mdxComponents = {
   InterviewCard,
   a: MdxLink,
+  table: MdxTable,
   HardwareIterations,
   HardwareMap,
   Callout,
@@ -427,6 +445,14 @@ const FigureWrap = styled.figure`
   width: 100%;
   max-width: ${({ $width }) => $width};
   margin: var(--space-lg) auto;
+
+  /* A figure set to 40% of the column is 124px wide on a phone, with its
+     caption wrapping two words a line. There it takes the full column. */
+  @media (max-width: 640px) {
+    && {
+      max-width: 100%;
+    }
+  }
   /* Clears the sticky header when a link lands on the figure's id. */
   scroll-margin-top: 6rem;
 

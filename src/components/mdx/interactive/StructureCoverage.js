@@ -202,6 +202,21 @@ const Row = styled.li`
   && {
     margin: 0;
   }
+
+  /* Four columns in a phone's width ran the label into the count. The label
+     takes its own line there, with the count and share beneath it. */
+  @media (max-width: 520px) {
+    grid-template-columns: 0.8rem minmax(0, 1fr) auto;
+    row-gap: 0.15rem;
+
+    > :nth-child(2) {
+      grid-column: 2 / -1;
+    }
+
+    > :nth-child(3) {
+      grid-column: 2;
+    }
+  }
 `
 
 const Swatch = styled.span`

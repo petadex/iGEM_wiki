@@ -712,11 +712,22 @@ const XTitle = styled.span`
   text-align: center;
 `
 
+/* Screen-reader copy of the chart. The article's own table rule
+   (width: 100%) outranks a single class, which stretched this hidden table to
+   the full column and pushed the page sideways; the tripled selector and
+   display: block keep it at 1px. */
 const SrTable = styled.table`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  &&& {
+    display: block;
+    position: absolute;
+    width: 1px;
+    max-width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 `

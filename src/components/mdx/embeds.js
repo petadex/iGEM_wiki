@@ -42,7 +42,7 @@ const ConferenceFlashText = styled.span`
       110deg,
       #553273 20%,
       #80502a 40%,
-      #ffe694 50%,
+      #b8862f 50%,
       #80502a 60%,
       #553273 80%
     );
@@ -283,7 +283,13 @@ const ScaledFigure = ({ href, title, dark, logical, open, frameRef }) => {
  * --figure-max-h tall), centred, at its own `aspect`; in the window it is as
  * large as the window allows at that aspect.
  */
-export const FrameFigure = ({ src, title, caption, width = "100%", aspect = "3 / 4" }) => {
+/**
+ * `autoHeight` marks a figure whose content reflows taller as it narrows (the
+ * LOBSTER fragment map is 730px tall at phone width). Its wide `aspect` would
+ * leave a phone a strip a few lines high, so there the frame takes most of a
+ * screen instead and the figure scrolls inside it.
+ */
+export const FrameFigure = ({ src, title, caption, width = "100%", aspect = "3 / 4", autoHeight = false }) => {
   const href = src.startsWith("/") ? withPrefix(src) : src
   const frameRef = useRef(null)
 
@@ -293,7 +299,14 @@ export const FrameFigure = ({ src, title, caption, width = "100%", aspect = "3 /
         {open => (
           <>
             <FrameFit $open={open} style={{ "--aspect": aspect }}>
-              <FitFrame ref={frameRef} src={href} title={title || "Interactive figure"} loading="lazy" style={{ aspectRatio: aspect }} />
+              <FitFrame
+                ref={frameRef}
+                src={href}
+                title={title || "Interactive figure"}
+                loading="lazy"
+                data-tall={autoHeight ? "" : undefined}
+                style={{ aspectRatio: aspect }}
+              />
             </FrameFit>
             {/* Inside the window, so the caption goes with the figure when it opens. */}
             {caption && <FrameCaption $open={open}>{caption}</FrameCaption>}
@@ -329,7 +342,7 @@ const SpotlightTitle = styled.span`
   color: #553273;
 
   @supports (background-clip: text) or (-webkit-background-clip: text) {
-    background: linear-gradient(110deg, #553273 20%, #80502a 40%, #ffe694 50%, #80502a 60%, #553273 80%);
+    background: linear-gradient(110deg, #553273 20%, #80502a 40%, #b8862f 50%, #80502a 60%, #553273 80%);
     background-size: 250% 100%;
     background-clip: text;
     -webkit-background-clip: text;
@@ -528,6 +541,14 @@ const FitFrame = styled.iframe`
   border: 0;
   border-radius: 0.5rem;
   background: transparent;
+
+  /* !important: the aspect arrives as an inline style. */
+  @media (max-width: 640px) {
+    &[data-tall] {
+      aspect-ratio: auto !important;
+      height: min(46rem, 78vh);
+    }
+  }
 `
 
 /* Open, the box is a size container, so the frame can take the largest size
@@ -546,6 +567,13 @@ const FrameFit = styled.div`
 
       ${FitFrame} {
         width: min(100cqw, 100cqh * var(--aspect));
+      }
+
+      @media (max-width: 640px) {
+        ${FitFrame}[data-tall] {
+          width: 100cqw;
+          height: 100cqh;
+        }
       }
     `}
 `
