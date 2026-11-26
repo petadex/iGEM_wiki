@@ -104,7 +104,7 @@ Every ORF comes with each annotation we could key to it. The [Sequence Annotatio
 | Taxonomy | Organism and lineage | NCBI nr ORFs (0.9% of the corpus) |
 | [Structures](/dry-lab/model/#predicted-structures) | Links to AlphaFold DB [@varadi2022afdb] models | ORFs whose nr accession matches an AlphaFold entry (0.1%) |
 | [Reference membership](/dry-lab/model/#petadex-pazy-reference-curation) | Whether the ORF is a PETadex-PAZy enzyme, and the fold of each homology component | 522 ORFs |
-| [Families](/dry-lab/software/#esm-atlas) | Membership in the 64,730 enzyme families of the atlas, with InterProScan [@jones2014interproscan] domains for each family representative | Family representatives |
+| [Families](/dry-lab/software/) | Membership in the 64,730 enzyme families of the atlas, with InterProScan [@jones2014interproscan] domains for each family representative | Family representatives |
 
 Two layers need care. Logan ORFs are read from one stop codon to the next, so only about 3% begin with a methionine, and annotations that depend on the protein's start (signal peptides and mature-protein properties) are unreliable for them. And few BioSamples record a temperature (0.7%) or a pH (0.15%), so environmental values exist for only part of the corpus; [Closing the loop](#closing-the-loop) describes how we use them.
 

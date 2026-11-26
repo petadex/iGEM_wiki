@@ -30,7 +30,7 @@ Pages live in `src/pages/` and map directly to routes. Nested folders (`project/
 
 GitHub Actions ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) builds and deploys to GitHub Pages on every push to `main`. The built artifact is the `public/` directory.
 
-## home-scroll-prototype (`/home-scroll-prototype/`)
+## Home page (`/`, the HomeScrollPrototype component)
 
 A full-page composited mockup of the wiki front page, built from layered PNG assets served from `/static/wiki-mockup/`. The stack (back → front → logo → bottle → water) is composited with absolute positioning so all layers share the same dimensions, driven by the background image's natural size.
 
